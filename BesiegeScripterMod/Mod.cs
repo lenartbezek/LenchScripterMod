@@ -114,8 +114,6 @@ namespace BesiegeScripterMod
             this.lua.RegisterFunction("besiege.log", this, typeof(Scripter).GetMethod("Log"));
             this.lua.RegisterFunction("besiege.setToggleMode", this, typeof(Scripter).GetMethod("SetToggleMode"));
             this.lua.RegisterFunction("besiege.setSliderValue", this, typeof(Scripter).GetMethod("SetSliderValue"));
-            this.lua.RegisterFunction("besiege.setSliderMin", this, typeof(Scripter).GetMethod("SetSliderMin"));
-            this.lua.RegisterFunction("besiege.setSliderMax", this, typeof(Scripter).GetMethod("SetSliderMax"));
 
             this.lua.RegisterFunction("besiege.getToggleMode", this, typeof(Scripter).GetMethod("GetToggleMode"));
             this.lua.RegisterFunction("besiege.getSliderValue", this, typeof(Scripter).GetMethod("GetSliderValue"));
@@ -238,97 +236,166 @@ namespace BesiegeScripterMod
                 this.ScriptStop();
         }
 
-        // Internal lua methods
-        private Transform GetBlock(string id)
+        private Transform GetBlock(string blockId)
         {
             /* Returns block identifier.
                Initializes block dictionary on the first call. */
             if (simulationBlocks == null) InitializeSimulationBlockIDs();
-            return simulationBlocks[id];
+            return simulationBlocks[blockId];
         }
 
-        // Exposed lua methods
+
+        /***************** Lua methods *****************/
+
+
         public void Log(string msg)
         {
             Debug.Log(msg);
         }
 
-        public void SetToggleMode(string id, bool value)
+        public void SetToggleMode(string blockId, string toggleName, bool value)
         {
-            
+            /* Sets MToggle with DisplayName equal to toggleName to value.
+               Does nothing if such toggle is not found. */
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            foreach (MToggle m in b.Toggles)
+            {
+                Debug.Log(m.DisplayName);
+                if(m.DisplayName == toggleName)
+                {
+                    m.IsActive = value;
+                    return;
+                } 
+            }    
         }
 
-        public void SetSliderValue(string id, float value)
+        public void SetSliderValue(string blockId, string sliderName, float value)
         {
-            
+            /* Sets MSlider with DisplayName equal to sliderName to value.
+               Does nothing if such slider is not found. */
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            foreach (MSlider m in b.Sliders)
+            {
+                Debug.Log(m.DisplayName);
+                if (m.DisplayName == sliderName)
+                {
+                    m.Value = value;
+                    return;
+                }
+            }
         }
 
-        public void SetSliderMin(string id, float value)
+        public bool GetToggleMode(string blockId, string toggleName)
         {
-            
+            /* Returns MToggle with DisplayName equal to toggleName.
+               Throws an exception if such toggle is not found. */
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            foreach (MToggle m in b.Toggles)
+            {
+                Debug.Log(m.DisplayName);
+                if (m.DisplayName == toggleName)
+                {
+                    return m.IsActive;
+                }
+            }
+            throw new Exception("Toggle " + toggleName + " not found.");
         }
 
-        public void SetSliderMax(string id, float value)
+        public float GetSliderValue(string blockId, string sliderName)
         {
-            
+            /* Returns MSlider with DisplayName equal to sliderName.
+               Throws an exception if such slider is not found. */
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            foreach (MSlider m in b.Sliders)
+            {
+                Debug.Log(m.DisplayName);
+                if (m.DisplayName == sliderName)
+                {
+                    return m.Value;
+                }
+            }
+            throw new Exception("Slider " + sliderName + " not found.");
         }
 
-        public bool GetToggleMode(string id)
+        public float GetSliderMin(string blockId, string sliderName)
         {
-            return true;
+            /* Returns MSlider minimum value with DisplayName equal to sliderName.
+               Throws an exception if such slider is not found. */
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            foreach (MSlider m in b.Sliders)
+            {
+                Debug.Log(m.DisplayName);
+                if (m.DisplayName == sliderName)
+                {
+                    return m.Min;
+                }
+            }
+            throw new Exception("Slider " + sliderName + " not found.");
         }
 
-        public float GetSliderValue(string id)
+        public float GetSliderMax(string blockId, string sliderName)
         {
-            return 0;
+            /* Returns MSlider maximum value with DisplayName equal to sliderName.
+               Throws an exception if such slider is not found. */
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            foreach (MSlider m in b.Sliders)
+            {
+                Debug.Log(m.DisplayName);
+                if (m.DisplayName == sliderName)
+                {
+                    return m.Max;
+                }
+            }
+            throw new Exception("Slider " + sliderName + " not found.");
         }
 
-        public float GetSliderMin(string id)
+        /* Position functions */
+
+        public float GetPositionX(string blockId = "STARTING BLOCK 1")
         {
-            return 0;
+            return this.GetBlock(blockId).transform.position.x;
         }
 
-        public float GetSliderMax(string id)
+        public float GetPositionY(string blockId = "STARTING BLOCK 1")
         {
-            return 0;
+            return this.GetBlock(blockId).transform.position.y;
         }
 
-
-        public float GetPositionX(string id)
+        public float GetPositionZ(string blockId = "STARTING BLOCK 1")
         {
-            return this.GetBlock(id).transform.position.x;
-        }
-        public float GetPositionY(string id)
-        {
-            return this.GetBlock(id).transform.position.y;
-        }
-        public float GetPositionZ(string id)
-        {
-            return this.GetBlock(id).transform.position.z;
+            return this.GetBlock(blockId).transform.position.z;
         }
 
-        public float GetHeading(string id)
+        /* Angle functions are swapped in a way to fit starting blocks initial position.
+           This means that at the start of simulation, starting blocks angles will be 0, 0, 0.*/
+
+        public float GetHeading(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = this.GetBlock(id).transform.rotation;
+            /* Returns heading angle of a block in degrees, ranging from 0 to 360. 
+               Works the same as GetYaw. */
+            Quaternion q = this.GetBlock(blockId).transform.rotation;
             float jaw = Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * Mathf.Rad2Deg;
             return jaw < 0 ? jaw + 360 : jaw;
         }
 
-        public float GetYaw(string id)
+        public float GetYaw(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = this.GetBlock(id).transform.rotation;
+            /* Returns yaw directed angle of a block in degrees, ranging from -180 to 180. */
+            Quaternion q = this.GetBlock(blockId).transform.rotation;
             return Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * Mathf.Rad2Deg;
         }
 
-        public float GetPitch(string id)
+        public float GetPitch(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = this.GetBlock(id).transform.rotation;
+            /* Returns pitch directed angle of a block in degrees, ranging from -180 to 180. */
+            Quaternion q = this.GetBlock(blockId).transform.rotation;
             return - Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * Mathf.Rad2Deg;
         }
 
-        public float GetRoll(string id)
+        public float GetRoll(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = this.GetBlock(id).transform.rotation;
+            /* Returns roll directed angle of a block in degrees, ranging from -180 to 180. */
+            Quaternion q = this.GetBlock(blockId).transform.rotation;
             return - Mathf.Asin(2 * q.x * q.y + 2 * q.z * q.w) * Mathf.Rad2Deg;
         }
     }
