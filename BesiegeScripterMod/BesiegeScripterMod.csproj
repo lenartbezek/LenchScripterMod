@@ -7,8 +7,8 @@
     <ProjectGuid>{6A16F1F7-31C2-4CAE-9FD3-0C56BBD29757}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BesiegeScripterMod</RootNamespace>
-    <AssemblyName>BesiegeScripterMod</AssemblyName>
+    <RootNamespace>LenchScripterMod</RootNamespace>
+    <AssemblyName>LenchScripterMod</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

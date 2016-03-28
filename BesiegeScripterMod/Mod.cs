@@ -45,50 +45,48 @@ namespace BesiegeScripterMod
         private string luaFile;
         private GenericBlock hoveredBlock;
 
-        // Dictionaries with references to building and simulating blocks.
-        private Dictionary<string, Transform> buildingBlocks;
+        // Map: Block type -> type count
+        private Dictionary<string, int> typeCount;
+
+        // Map: Building Block -> ID
+        private Dictionary<GenericBlock, string> buildingBlocks;
+
+        // Map: ID -> Simulation Block
         private Dictionary<string, Transform> simulationBlocks;
 
         // Stopwatch for measuring simulation time.
         System.Diagnostics.Stopwatch stopwatch;
 
         /// <summary>
-        /// Adds block reference to the buildingBlocks dictionary.
-        /// Intended to be called for each placed block while building the machine.
+        /// Rebuilds ID dictionary.
         /// </summary>
-        /// <param name="block">Represents the placed block.</param>
         private void AddBlockID(Transform block)
         {
-            string name = block.GetComponent<MyBlockInfo>().blockName.ToUpper();
-            int typeCount = 0;
-            string id;
-            do
-            {
-                typeCount++;
-                id = name + " " + typeCount;
-            } while (buildingBlocks.ContainsKey(id));
-
-            buildingBlocks[id] = block;
+            InitializeBuildingBlockIDs();
         }
 
         /// <summary>
         /// Populates dictionary with references to building blocks.
         /// Used for dumping block IDs while building.
-        /// Also called when removing blocks.
         /// </summary>
         public void InitializeBuildingBlockIDs()
         {
+            if (typeCount != null) typeCount.Clear();
+            else typeCount = new Dictionary<string, int>();
             if (buildingBlocks != null) buildingBlocks.Clear();
             else
             {
                 Game.OnBlockPlaced += AddBlockID;
                 Game.OnBlockRemoved += InitializeBuildingBlockIDs;
-                buildingBlocks = new Dictionary<string, Transform>();
+                buildingBlocks = new Dictionary<GenericBlock, string>();
             }
             Transform buildingMachine = GameObject.Find("Building Machine").transform;
             foreach (Transform b in buildingMachine)
             {
-                AddBlockID(b);
+                GenericBlock block = b.GetComponent<GenericBlock>();
+                string name = block.GetComponent<MyBlockInfo>().blockName.ToUpper();
+                typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
+                buildingBlocks[block] = name + " " + typeCount[name];
             }
         }
 
@@ -107,12 +105,12 @@ namespace BesiegeScripterMod
             {
                 string name = b.GetComponent<MyBlockInfo>().blockName.ToUpper();
 
-                int typeCount = 0;
+                int c = 0;
                 string id;
                 do
                 {
-                    typeCount++;
-                    id = name + " " + typeCount;
+                    c++;
+                    id = name + " " + c;
                 } while (simulationBlocks.ContainsKey(id));
 
                 simulationBlocks[id] = b;
@@ -203,24 +201,23 @@ namespace BesiegeScripterMod
         /// </summary>
         private void DumpHoveredBlock()
         {
-            if (Game.AddPiece.HoveredBlock == null)
+            if (Input.GetKeyDown(KeyCode.LeftShift))
             {
-                this.hoveredBlock = null;
-                return;
-            }
+                if (Game.AddPiece.HoveredBlock == null)
+                {
+                    this.hoveredBlock = null;
+                    return;
+                }
 
-            if (this.hoveredBlock != null && Game.AddPiece.HoveredBlock == this.hoveredBlock)
-                return;
+                if (this.hoveredBlock != null && Game.AddPiece.HoveredBlock == this.hoveredBlock)
+                    return;
 
-            this.hoveredBlock = Game.AddPiece.HoveredBlock;
+                this.hoveredBlock = Game.AddPiece.HoveredBlock;
 
-            if (buildingBlocks == null)
-                InitializeBuildingBlockIDs();
-            
-            foreach (KeyValuePair<string, Transform> entry in buildingBlocks)
-            {
-                if (entry.Value.GetComponent<GenericBlock>() == this.hoveredBlock)
-                    Debug.Log(entry.Key);
+                if (buildingBlocks == null)
+                    InitializeBuildingBlockIDs();
+
+                Debug.Log(buildingBlocks[hoveredBlock]);
             }
         }
 
