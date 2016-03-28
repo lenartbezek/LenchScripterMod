@@ -13,7 +13,7 @@ namespace BesiegeScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 1, 0, 0);
+        public override Version Version { get; } = new Version(0, 2, 0, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
@@ -138,14 +138,17 @@ namespace BesiegeScripterMod
             this.lua.RegisterFunction("besiege.getSliderMin", this, typeof(Scripter).GetMethod("GetSliderMin"));
             this.lua.RegisterFunction("besiege.getSliderMax", this, typeof(Scripter).GetMethod("GetSliderMax"));
 
+            this.lua.RegisterFunction("besiege.getPosition", this, typeof(Scripter).GetMethod("GetPosition"));
             this.lua.RegisterFunction("besiege.getPositionX", this, typeof(Scripter).GetMethod("GetPositionX"));
             this.lua.RegisterFunction("besiege.getPositionY", this, typeof(Scripter).GetMethod("GetPositionY"));
             this.lua.RegisterFunction("besiege.getPositionZ", this, typeof(Scripter).GetMethod("GetPositionZ"));
 
+            this.lua.RegisterFunction("besiege.getVelocity", this, typeof(Scripter).GetMethod("GetVelocity"));
             this.lua.RegisterFunction("besiege.getVelocityX", this, typeof(Scripter).GetMethod("GetVelocityX"));
             this.lua.RegisterFunction("besiege.getVelocityY", this, typeof(Scripter).GetMethod("GetVelocityY"));
             this.lua.RegisterFunction("besiege.getVelocityZ", this, typeof(Scripter).GetMethod("GetVelocityZ"));
 
+            this.lua.RegisterFunction("besiege.getAngular", this, typeof(Scripter).GetMethod("GetAngular"));
             this.lua.RegisterFunction("besiege.getAngularX", this, typeof(Scripter).GetMethod("GetAngularX"));
             this.lua.RegisterFunction("besiege.getAngularY", this, typeof(Scripter).GetMethod("GetAngularY"));
             this.lua.RegisterFunction("besiege.getAngularZ", this, typeof(Scripter).GetMethod("GetAngularZ"));
@@ -155,7 +158,9 @@ namespace BesiegeScripterMod
             this.lua.RegisterFunction("besiege.getRoll", this, typeof(Scripter).GetMethod("GetRoll"));
             this.lua.RegisterFunction("besiege.getYaw", this, typeof(Scripter).GetMethod("GetYaw"));
 
-            
+            this.lua.RegisterFunction("besiege.getRaycastHit", this, typeof(Scripter).GetMethod("GetRaycastHit"));
+
+
             // Populate keycode table
             this.lua.NewTable("besiege.keyCodes");
             foreach (KeyCode value in Enum.GetValues(typeof(KeyCode)))
@@ -429,6 +434,15 @@ namespace BesiegeScripterMod
 
         /// Position functions return coordinates of the specified block.
 
+        public float[] GetPosition(string blockId = "STARTING BLOCK 1")
+        {
+            float[] pos = { 0, 0, 0 };
+            pos[0] = this.GetBlock(blockId).transform.position.x;
+            pos[1] = this.GetBlock(blockId).transform.position.y;
+            pos[2] = this.GetBlock(blockId).transform.position.z;
+            return pos;
+        }
+
         public float GetPositionX(string blockId = "STARTING BLOCK 1")
         {
             return this.GetBlock(blockId).transform.position.x;
@@ -446,6 +460,15 @@ namespace BesiegeScripterMod
 
         /// Velocity functions return the velocity vector of the pecified block.
 
+        public float[] GetVelocity(string blockId = "STARTING BLOCK 1")
+        {
+            float[] vel = { 0, 0, 0 };
+            vel[0] = this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.x;
+            vel[1] = this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.y;
+            vel[2] = this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.z;
+            return vel;
+        }
+
         public float GetVelocityX(string blockId = "STARTING BLOCK 1")
         {
             return this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.x;
@@ -462,6 +485,15 @@ namespace BesiegeScripterMod
         }
 
         /// Angular velocity functions return the angular velocity vector of the pecified block.
+
+        public float[] GetAngular(string blockId = "STARTING BLOCK 1")
+        {
+            float[] ang = { 0, 0, 0 };
+            ang[0] = this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.x;
+            ang[1] = this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.y;
+            ang[2] = this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.z;
+            return ang;
+        }
 
         public float GetAngularX(string blockId = "STARTING BLOCK 1")
         {
@@ -525,6 +557,24 @@ namespace BesiegeScripterMod
         {
             Quaternion q = this.GetBlock(blockId).transform.rotation;
             return - Mathf.Asin(2 * q.x * q.y + 2 * q.z * q.w) * Mathf.Rad2Deg;
+        }
+
+        /// <summary>
+        /// Uses raycast to find out where mouse cursor is pointing.
+        /// </summary>
+        /// <returns>Returns an x, y, z positional vector of the hit.</returns>
+        public float[] GetRaycastHit()
+        {
+            float[] point = { 0, 0, 0 };
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out hit))
+            {
+                point[0] = hit.point.x;
+                point[1] = hit.point.y;
+                point[2] = hit.point.z;
+            }  
+            return point;
         }
     }
 }
