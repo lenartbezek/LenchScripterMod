@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using spaar.ModLoader;
 using UnityEngine;
 using NLua;
+using NLua.Exceptions;
 
 namespace BesiegeScripterMod
 {
@@ -12,7 +13,7 @@ namespace BesiegeScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 5, 0, 0);
+        public override Version Version { get; } = new Version(0, 9, 0, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
@@ -47,6 +48,9 @@ namespace BesiegeScripterMod
         // Dictionaries with references to building and simulating blocks.
         private Dictionary<string, Transform> buildingBlocks;
         private Dictionary<string, Transform> simulationBlocks;
+
+        // Stopwatch for measuring simulation time.
+        System.Diagnostics.Stopwatch stopwatch;
 
         private void AddBlockID(Transform block)
         {
@@ -112,6 +116,7 @@ namespace BesiegeScripterMod
             // Populate function table
             this.lua.NewTable("besiege");
             this.lua.RegisterFunction("besiege.log", this, typeof(Scripter).GetMethod("Log"));
+            this.lua.RegisterFunction("besiege.getTime", this, typeof(Scripter).GetMethod("GetTime"));
 
             this.lua.RegisterFunction("besiege.setToggleMode", this, typeof(Scripter).GetMethod("SetToggleMode"));
             this.lua.RegisterFunction("besiege.setSliderValue", this, typeof(Scripter).GetMethod("SetSliderValue"));
@@ -128,6 +133,10 @@ namespace BesiegeScripterMod
             this.lua.RegisterFunction("besiege.getVelocityX", this, typeof(Scripter).GetMethod("GetVelocityX"));
             this.lua.RegisterFunction("besiege.getVelocityY", this, typeof(Scripter).GetMethod("GetVelocityY"));
             this.lua.RegisterFunction("besiege.getVelocityZ", this, typeof(Scripter).GetMethod("GetVelocityZ"));
+
+            this.lua.RegisterFunction("besiege.getAngularX", this, typeof(Scripter).GetMethod("GetAngularX"));
+            this.lua.RegisterFunction("besiege.getAngularY", this, typeof(Scripter).GetMethod("GetAngularY"));
+            this.lua.RegisterFunction("besiege.getAngularZ", this, typeof(Scripter).GetMethod("GetAngularZ"));
 
             this.lua.RegisterFunction("besiege.getHeading", this, typeof(Scripter).GetMethod("GetHeading"));
             this.lua.RegisterFunction("besiege.getPitch", this, typeof(Scripter).GetMethod("GetPitch"));
@@ -148,7 +157,7 @@ namespace BesiegeScripterMod
             string luaFile = string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua");
             if (File.Exists(luaFile))
             {
-                Debug.Log("Script file: " + luaFile);
+                UnityEngine.Debug.Log("Script file: " + luaFile);
                 this.luaFile = luaFile;
             }
             else
@@ -157,6 +166,10 @@ namespace BesiegeScripterMod
                 this.ScriptStop();
             }
 
+            // Start simulation stopwatch.
+            stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+
         }
 
         public void ScriptStop()
@@ -164,6 +177,7 @@ namespace BesiegeScripterMod
             this.lua.Close();
             this.lua.Dispose();
             this.lua = null;
+            stopwatch.Stop();
             Debug.Log("Script stopped");
         }
 
@@ -260,6 +274,11 @@ namespace BesiegeScripterMod
             Debug.Log(msg);
         }
 
+        public long GetTime()
+        {
+            return stopwatch.ElapsedMilliseconds;
+        }
+
         public void SetToggleMode(string blockId, string toggleName, bool value)
         {
             /* Sets MToggle with DisplayName equal to toggleName to value.
@@ -305,7 +324,7 @@ namespace BesiegeScripterMod
                     return m.IsActive;
                 }
             }
-            throw new Exception("Toggle " + toggleName + " not found.");
+            throw new LuaException("Toggle " + toggleName + " not found.");
         }
 
         public float GetSliderValue(string blockId, string sliderName)
@@ -321,7 +340,7 @@ namespace BesiegeScripterMod
                     return m.Value;
                 }
             }
-            throw new Exception("Slider " + sliderName + " not found.");
+            throw new LuaException("Slider " + sliderName + " not found.");
         }
 
         public float GetSliderMin(string blockId, string sliderName)
@@ -337,7 +356,7 @@ namespace BesiegeScripterMod
                     return m.Min;
                 }
             }
-            throw new Exception("Slider " + sliderName + " not found.");
+            throw new LuaException("Slider " + sliderName + " not found.");
         }
 
         public float GetSliderMax(string blockId, string sliderName)
@@ -353,7 +372,7 @@ namespace BesiegeScripterMod
                     return m.Max;
                 }
             }
-            throw new Exception("Slider " + sliderName + " not found.");
+            throw new LuaException("Slider " + sliderName + " not found.");
         }
 
         /* Position functions */
@@ -373,7 +392,8 @@ namespace BesiegeScripterMod
             return this.GetBlock(blockId).transform.position.z;
         }
 
-        /* Velocity functions */
+        /* Velocity functions:
+           Return velocity vector. */
 
         public float GetVelocityX(string blockId = "STARTING BLOCK 1")
         {
@@ -390,8 +410,26 @@ namespace BesiegeScripterMod
             return this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.z;
         }
 
+        /* Angular velocity functions:
+           Return angular velocity vector. */
+
+        public float GetAngularX(string blockId = "STARTING BLOCK 1")
+        {
+            return this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.x;
+        }
+
+        public float GetAngularY(string blockId = "STARTING BLOCK 1")
+        {
+            return this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.z;
+        }
+
+        public float GetAngularZ(string blockId = "STARTING BLOCK 1")
+        {
+            return this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.z;
+        }
+
         /* Angle functions are swapped in a way to fit starting blocks initial position.
-           This means that at the start of simulation, starting blocks angles will be 0, 0, 0.*/
+           This means that at the start of the simulation, starting blocks angles will be 0, 0, 0.*/
 
         public float GetHeading(string blockId = "STARTING BLOCK 1")
         {
