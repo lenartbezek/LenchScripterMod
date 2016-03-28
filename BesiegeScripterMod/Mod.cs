@@ -6,7 +6,7 @@ using UnityEngine;
 using NLua;
 using NLua.Exceptions;
 
-namespace BesiegeScripterMod
+namespace LenchScripterMod
 {
     public class ScripterLoader : Mod
     {
