@@ -11,7 +11,7 @@ namespace BesiegeScripterMod
     {
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
-        public override string Author { get; } = "lench";
+        public override string Author { get; } = "Lench";
         public override Version Version { get; } = new Version(0, 5, 0, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
@@ -50,8 +50,9 @@ namespace BesiegeScripterMod
 
         private void AddBlockID(Transform block)
         {
-            /* Adds block reference to the buildingBlocks dictionary. */
-            string name = block.GetComponent<MyBlockInfo>().blockName;
+            /* Adds block reference to the buildingBlocks dictionary.
+               Intended to be called while building the machine. */
+            string name = block.GetComponent<MyBlockInfo>().blockName.ToUpper();
             int typeCount = 0;
             string id;
             do
@@ -74,7 +75,6 @@ namespace BesiegeScripterMod
                 Game.OnBlockRemoved += InitializeBuildingBlockIDs;
                 buildingBlocks = new Dictionary<string, Transform>();
             }
-
             Transform buildingMachine = GameObject.Find("Building Machine").transform;
             foreach (Transform b in buildingMachine)
             {
@@ -90,7 +90,7 @@ namespace BesiegeScripterMod
             Transform simulationMachine = GameObject.Find("Simulation Machine").transform;
             foreach (Transform b in simulationMachine)
             {
-                string name = b.GetComponent<MyBlockInfo>().blockName;
+                string name = b.GetComponent<MyBlockInfo>().blockName.ToUpper();
 
                 int typeCount = 0;
                 string id;
@@ -112,6 +112,7 @@ namespace BesiegeScripterMod
             // Populate function table
             this.lua.NewTable("besiege");
             this.lua.RegisterFunction("besiege.log", this, typeof(Scripter).GetMethod("Log"));
+
             this.lua.RegisterFunction("besiege.setToggleMode", this, typeof(Scripter).GetMethod("SetToggleMode"));
             this.lua.RegisterFunction("besiege.setSliderValue", this, typeof(Scripter).GetMethod("SetSliderValue"));
 
@@ -123,6 +124,10 @@ namespace BesiegeScripterMod
             this.lua.RegisterFunction("besiege.getPositionX", this, typeof(Scripter).GetMethod("GetPositionX"));
             this.lua.RegisterFunction("besiege.getPositionY", this, typeof(Scripter).GetMethod("GetPositionY"));
             this.lua.RegisterFunction("besiege.getPositionZ", this, typeof(Scripter).GetMethod("GetPositionZ"));
+
+            this.lua.RegisterFunction("besiege.getVelocityX", this, typeof(Scripter).GetMethod("GetVelocityX"));
+            this.lua.RegisterFunction("besiege.getVelocityY", this, typeof(Scripter).GetMethod("GetVelocityY"));
+            this.lua.RegisterFunction("besiege.getVelocityZ", this, typeof(Scripter).GetMethod("GetVelocityZ"));
 
             this.lua.RegisterFunction("besiege.getHeading", this, typeof(Scripter).GetMethod("GetHeading"));
             this.lua.RegisterFunction("besiege.getPitch", this, typeof(Scripter).GetMethod("GetPitch"));
@@ -238,10 +243,12 @@ namespace BesiegeScripterMod
 
         private Transform GetBlock(string blockId)
         {
-            /* Returns block identifier.
+            /* Returns block reference.
                Initializes block dictionary on the first call. */
-            if (simulationBlocks == null) InitializeSimulationBlockIDs();
-            return simulationBlocks[blockId];
+            if (simulationBlocks == null) {
+                InitializeSimulationBlockIDs();
+            }
+            return simulationBlocks[blockId.ToUpper()];
         }
 
 
@@ -260,8 +267,8 @@ namespace BesiegeScripterMod
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MToggle m in b.Toggles)
             {
-                Debug.Log(m.DisplayName);
-                if(m.DisplayName == toggleName)
+                //Debug.Log(m.DisplayName);
+                if(m.DisplayName.ToUpper() == toggleName.ToUpper())
                 {
                     m.IsActive = value;
                     return;
@@ -276,8 +283,8 @@ namespace BesiegeScripterMod
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
             {
-                Debug.Log(m.DisplayName);
-                if (m.DisplayName == sliderName)
+                //Debug.Log(m.DisplayName);
+                if (m.DisplayName.ToUpper() == sliderName.ToUpper())
                 {
                     m.Value = value;
                     return;
@@ -292,8 +299,8 @@ namespace BesiegeScripterMod
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MToggle m in b.Toggles)
             {
-                Debug.Log(m.DisplayName);
-                if (m.DisplayName == toggleName)
+                //Debug.Log(m.DisplayName);
+                if (m.DisplayName.ToUpper() == toggleName.ToUpper())
                 {
                     return m.IsActive;
                 }
@@ -308,8 +315,8 @@ namespace BesiegeScripterMod
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
             {
-                Debug.Log(m.DisplayName);
-                if (m.DisplayName == sliderName)
+                //Debug.Log(m.DisplayName);
+                if (m.DisplayName.ToUpper() == sliderName.ToUpper())
                 {
                     return m.Value;
                 }
@@ -324,8 +331,8 @@ namespace BesiegeScripterMod
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
             {
-                Debug.Log(m.DisplayName);
-                if (m.DisplayName == sliderName)
+                //Debug.Log(m.DisplayName);
+                if (m.DisplayName.ToUpper() == sliderName.ToUpper())
                 {
                     return m.Min;
                 }
@@ -340,8 +347,8 @@ namespace BesiegeScripterMod
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
             {
-                Debug.Log(m.DisplayName);
-                if (m.DisplayName == sliderName)
+                //Debug.Log(m.DisplayName);
+                if (m.DisplayName.ToUpper() == sliderName.ToUpper())
                 {
                     return m.Max;
                 }
@@ -364,6 +371,23 @@ namespace BesiegeScripterMod
         public float GetPositionZ(string blockId = "STARTING BLOCK 1")
         {
             return this.GetBlock(blockId).transform.position.z;
+        }
+
+        /* Velocity functions */
+
+        public float GetVelocityX(string blockId = "STARTING BLOCK 1")
+        {
+            return this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.x;
+        }
+
+        public float GetVelocityY(string blockId = "STARTING BLOCK 1")
+        {
+            return this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.z;
+        }
+
+        public float GetVelocityZ(string blockId = "STARTING BLOCK 1")
+        {
+            return this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.z;
         }
 
         /* Angle functions are swapped in a way to fit starting blocks initial position.
