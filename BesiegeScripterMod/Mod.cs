@@ -52,10 +52,13 @@ namespace BesiegeScripterMod
         // Stopwatch for measuring simulation time.
         System.Diagnostics.Stopwatch stopwatch;
 
+        /// <summary>
+        /// Adds block reference to the buildingBlocks dictionary.
+        /// Intended to be called for each placed block while building the machine.
+        /// </summary>
+        /// <param name="block">Represents the placed block.</param>
         private void AddBlockID(Transform block)
         {
-            /* Adds block reference to the buildingBlocks dictionary.
-               Intended to be called while building the machine. */
             string name = block.GetComponent<MyBlockInfo>().blockName.ToUpper();
             int typeCount = 0;
             string id;
@@ -68,10 +71,13 @@ namespace BesiegeScripterMod
             buildingBlocks[id] = block;
         }
 
+        /// <summary>
+        /// Populates dictionary with references to building blocks.
+        /// Used for dumping block IDs while building.
+        /// Also called when removing blocks.
+        /// </summary>
         public void InitializeBuildingBlockIDs()
         {
-            /* Populates dictionary with references to building blocks.
-               Used for dumping block IDs while building. */
             if (buildingBlocks != null) buildingBlocks.Clear();
             else
             {
@@ -86,6 +92,11 @@ namespace BesiegeScripterMod
             }
         }
 
+        /// <summary>
+        /// Populates dictionary with references to simulation blocks.
+        /// Used for accessing blocks with GetBlock(blockId) while simulating.
+        /// Called at first call of GetBlock(blockId);
+        /// </summary>
         public void InitializeSimulationBlockIDs()
         {
             /* Populates dictionary with references to simulation blocks.
@@ -108,6 +119,9 @@ namespace BesiegeScripterMod
             }
         }
 
+        /// <summary>
+        /// Called to start script.
+        /// </summary>
         public void ScriptStart()
         {
             simulationBlocks = null;
@@ -172,6 +186,9 @@ namespace BesiegeScripterMod
 
         }
 
+        /// <summary>
+        /// Called to stop script.
+        /// </summary>
         public void ScriptStop()
         {
             this.lua.Close();
@@ -181,9 +198,11 @@ namespace BesiegeScripterMod
             Debug.Log("Script stopped");
         }
 
+        /// <summary>
+        /// Finds hovered block in buildingBlocks dictionary and dumps its ID string.
+        /// </summary>
         private void DumpHoveredBlock()
         {
-            /* Finds hovered block in buildingBlocks dictionary and dumps its ID. */
             if (Game.AddPiece.HoveredBlock == null)
             {
                 this.hoveredBlock = null;
@@ -255,6 +274,12 @@ namespace BesiegeScripterMod
                 this.ScriptStop();
         }
 
+        /// <summary>
+        /// Finds blockId string in dictionary of simulation blocks.
+        /// On first call of the simulation, it also initializes the dictionary.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier.</param>
+        /// <returns>Returns reference to blocks Transform object.</returns>
         private Transform GetBlock(string blockId)
         {
             /* Returns block reference.
@@ -279,14 +304,19 @@ namespace BesiegeScripterMod
             return stopwatch.ElapsedMilliseconds;
         }
 
+        /// <summary>
+        /// Used to toggle various block properties.
+        /// Does nothing if the property is not found.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier.</param>
+        /// <param name="toggleName">Case insensitive string specifying the property to be set.
+        /// Usually identical to in-game label.</param>
+        /// <param name="value">Boolean value to be set.</param>
         public void SetToggleMode(string blockId, string toggleName, bool value)
         {
-            /* Sets MToggle with DisplayName equal to toggleName to value.
-               Does nothing if such toggle is not found. */
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MToggle m in b.Toggles)
             {
-                //Debug.Log(m.DisplayName);
                 if(m.DisplayName.ToUpper() == toggleName.ToUpper())
                 {
                     m.IsActive = value;
@@ -295,14 +325,19 @@ namespace BesiegeScripterMod
             }    
         }
 
+        /// <summary>
+        /// Used to set slider value of various block properties.
+        /// Does nothing if the property is not found.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier.</param>
+        /// <param name="toggleName">Case insensitive string specifying the property to be set.
+        /// Usually identical to in-game label.</param>
+        /// <param name="value">Float value to be set.</param>
         public void SetSliderValue(string blockId, string sliderName, float value)
         {
-            /* Sets MSlider with DisplayName equal to sliderName to value.
-               Does nothing if such slider is not found. */
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
             {
-                //Debug.Log(m.DisplayName);
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
                 {
                     m.Value = value;
@@ -311,14 +346,19 @@ namespace BesiegeScripterMod
             }
         }
 
+        /// <summary>
+        /// Used to get the toggle value of various block properties.
+        /// Throws an exception if the property is not found.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier.</param>
+        /// <param name="toggleName">Case insensitive string specifying the property to be set.
+        /// Usually identical to in-game label.</param>
+        /// <returns>Returns the toggle value of a specified property.</returns>
         public bool GetToggleMode(string blockId, string toggleName)
         {
-            /* Returns MToggle with DisplayName equal to toggleName.
-               Throws an exception if such toggle is not found. */
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MToggle m in b.Toggles)
             {
-                //Debug.Log(m.DisplayName);
                 if (m.DisplayName.ToUpper() == toggleName.ToUpper())
                 {
                     return m.IsActive;
@@ -327,14 +367,19 @@ namespace BesiegeScripterMod
             throw new LuaException("Toggle " + toggleName + " not found.");
         }
 
+        /// <summary>
+        /// Used to get the slider value of various block properties.
+        /// Throws an exception if the property is not found.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier.</param>
+        /// <param name="toggleName">Case insensitive string specifying the property to be set.
+        /// Usually identical to in-game label.</param>
+        /// <returns>Returns the float value of a specified property.</returns>
         public float GetSliderValue(string blockId, string sliderName)
         {
-            /* Returns MSlider with DisplayName equal to sliderName.
-               Throws an exception if such slider is not found. */
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
             {
-                //Debug.Log(m.DisplayName);
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
                 {
                     return m.Value;
@@ -343,14 +388,19 @@ namespace BesiegeScripterMod
             throw new LuaException("Slider " + sliderName + " not found.");
         }
 
+        /// <summary>
+        /// Used to get the minimum slider value of various block properties.
+        /// Throws an exception if the property is not found.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier.</param>
+        /// <param name="toggleName">Case insensitive string specifying the property to be set.
+        /// Usually identical to in-game label.</param>
+        /// <returns>Returns the float value of a specified property.</returns>
         public float GetSliderMin(string blockId, string sliderName)
         {
-            /* Returns MSlider minimum value with DisplayName equal to sliderName.
-               Throws an exception if such slider is not found. */
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
             {
-                //Debug.Log(m.DisplayName);
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
                 {
                     return m.Min;
@@ -359,14 +409,19 @@ namespace BesiegeScripterMod
             throw new LuaException("Slider " + sliderName + " not found.");
         }
 
+        /// <summary>
+        /// Used to get the maximum slider value of various block properties.
+        /// Throws an exception if the property is not found.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier.</param>
+        /// <param name="toggleName">Case insensitive string specifying the property to be set.
+        /// Usually identical to in-game label.</param>
+        /// <returns>Returns the float value of a specified property.</returns>
         public float GetSliderMax(string blockId, string sliderName)
         {
-            /* Returns MSlider maximum value with DisplayName equal to sliderName.
-               Throws an exception if such slider is not found. */
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
             {
-                //Debug.Log(m.DisplayName);
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
                 {
                     return m.Max;
@@ -375,7 +430,7 @@ namespace BesiegeScripterMod
             throw new LuaException("Slider " + sliderName + " not found.");
         }
 
-        /* Position functions */
+        /// Position functions return coordinates of the specified block.
 
         public float GetPositionX(string blockId = "STARTING BLOCK 1")
         {
@@ -392,8 +447,7 @@ namespace BesiegeScripterMod
             return this.GetBlock(blockId).transform.position.z;
         }
 
-        /* Velocity functions:
-           Return velocity vector. */
+        /// Velocity functions return the velocity vector of the pecified block.
 
         public float GetVelocityX(string blockId = "STARTING BLOCK 1")
         {
@@ -410,8 +464,7 @@ namespace BesiegeScripterMod
             return this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.z;
         }
 
-        /* Angular velocity functions:
-           Return angular velocity vector. */
+        /// Angular velocity functions return the angular velocity vector of the pecified block.
 
         public float GetAngularX(string blockId = "STARTING BLOCK 1")
         {
@@ -428,35 +481,51 @@ namespace BesiegeScripterMod
             return this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.z;
         }
 
-        /* Angle functions are swapped in a way to fit starting blocks initial position.
-           This means that at the start of the simulation, starting blocks angles will be 0, 0, 0.*/
+        /// Angle functions are swapped in a way to fit starting blocks initial position.
+        /// This means that at the start of the simulation, starting blocks angles will be 0, 0, 0.
 
+        /// <summary>
+        /// Calculates the heading of the specified block in degrees.
+        /// Works the same as GetYaw.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier. Default is starting block.</param>
+        /// <returns>Float value ranging from 0 to 360.</returns>
         public float GetHeading(string blockId = "STARTING BLOCK 1")
         {
-            /* Returns heading angle of a block in degrees, ranging from 0 to 360. 
-               Works the same as GetYaw. */
             Quaternion q = this.GetBlock(blockId).transform.rotation;
             float jaw = Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * Mathf.Rad2Deg;
             return jaw < 0 ? jaw + 360 : jaw;
         }
 
+        /// <summary>
+        /// Returns directed yaw angle of the specified block in degrees.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier. Default is starting block.</param>
+        /// <returns>Float value ranging from -180 to 180.</returns>
         public float GetYaw(string blockId = "STARTING BLOCK 1")
         {
-            /* Returns yaw directed angle of a block in degrees, ranging from -180 to 180. */
             Quaternion q = this.GetBlock(blockId).transform.rotation;
             return Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * Mathf.Rad2Deg;
         }
 
+        /// <summary>
+        /// Returns directed pitch angle of the specified block in degrees.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier. Default is starting block.</param>
+        /// <returns>Float value ranging from -180 to 180.</returns>
         public float GetPitch(string blockId = "STARTING BLOCK 1")
         {
-            /* Returns pitch directed angle of a block in degrees, ranging from -180 to 180. */
             Quaternion q = this.GetBlock(blockId).transform.rotation;
             return - Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * Mathf.Rad2Deg;
         }
 
+        /// <summary>
+        /// Returns directed roll angle of the specified block in degrees.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier. Default is starting block.</param>
+        /// <returns>Float value ranging from -180 to 180.</returns>
         public float GetRoll(string blockId = "STARTING BLOCK 1")
         {
-            /* Returns roll directed angle of a block in degrees, ranging from -180 to 180. */
             Quaternion q = this.GetBlock(blockId).transform.rotation;
             return - Mathf.Asin(2 * q.x * q.y + 2 * q.z * q.w) * Mathf.Rad2Deg;
         }
