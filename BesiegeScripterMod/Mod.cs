@@ -256,8 +256,6 @@ namespace LenchScripterMod
         /// <returns>Returns reference to blocks Transform object.</returns>
         public Transform GetBlock(string blockId)
         {
-            /* Returns block reference.
-               Initializes block dictionary on the first call. */
             if (simulationBlocks == null) {
                 InitializeSimulationBlockIDs();
             }
@@ -271,12 +269,10 @@ namespace LenchScripterMod
     /// </summary>
     public class LuaMethodWrapper
     {
-        // Stopwatch for measuring simulation time.
         private System.Diagnostics.Stopwatch stopwatch;
 
         public LuaMethodWrapper()
         {
-            // Start simulation stopwatch.
             stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
         }
