@@ -419,6 +419,82 @@ namespace LenchScripterMod
         }
 
         /// <summary>
+        /// Used to add blocks key controls.
+        /// Does nothing if the key name is not found.
+        /// </summary>
+        /// <param name="blockId">Block identifier.</param>
+        /// <param name="keyName">Key display name.</param>
+        /// <param name="key">New key to be assigned.</param>
+        public void addKey(string blockId, string keyName, KeyCode key)
+        {
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            foreach (MKey m in b.Keys)
+            {
+                if (m.DisplayName.ToUpper() == keyName.ToUpper())
+                {
+                    m.AddKey(key);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Used to replace blocks key controls.
+        /// Does nothing if the key name is not found.
+        /// </summary>
+        /// <param name="blockId">Block identifier.</param>
+        /// <param name="keyName">Key display name.</param>
+        /// <param name="key">New key to be assigned.</param>
+        public void replaceKey(string blockId, string keyName, KeyCode key)
+        {
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            foreach (MKey m in b.Keys)
+            {
+                if (m.DisplayName.ToUpper() == keyName.ToUpper())
+                {
+                    m.AddOrReplaceKey(0, key);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Used to replaced blocks key controls.
+        /// Does nothing if the key name is not found.
+        /// </summary>
+        /// <param name="blockId">Block identifier.</param>
+        /// <param name="keyName">Key display name.</param>
+        public KeyCode getKey(string blockId, string keyName)
+        {
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            foreach (MKey m in b.Keys)
+            {
+                if (m.DisplayName.ToUpper() == keyName.ToUpper())
+                {
+                    return m.KeyCode[0];
+                }
+            }
+            throw new LuaException("Key " + keyName + " not found.");
+        }
+
+        /// <summary>
+        /// Used to remove blocks key controls.
+        /// Does nothing if the key name is not found.
+        /// </summary>
+        /// <param name="blockId">Block identifier.</param>
+        /// <param name="keyName">Key display name.</param>
+        /// <param name="key">New key to be assigned.</param>
+        public void removeKeys(string blockId, string keyName)
+        {
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            foreach (MKey m in b.Keys)
+            {
+                if (m.DisplayName.ToUpper() == keyName.ToUpper())
+                {
+                    m.KeyCode.Clear();
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns the position vector of the specified block.
         /// If no argument is used, starting block is used.
         /// </summary>
@@ -474,7 +550,7 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from 0 to 360.</returns>
         public float getHeading(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = this.GetBlock(blockId).transform.rotation;
+            Quaternion q = GetBlock(blockId).transform.rotation;
             float jaw = Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * Mathf.Rad2Deg;
             return jaw < 0 ? jaw + 360 : jaw;
         }
@@ -486,7 +562,7 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from -180 to 180.</returns>
         public float getYaw(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = this.GetBlock(blockId).transform.rotation;
+            Quaternion q = GetBlock(blockId).transform.rotation;
             return Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * Mathf.Rad2Deg;
         }
 
@@ -497,7 +573,7 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from -180 to 180.</returns>
         public float getPitch(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = this.GetBlock(blockId).transform.rotation;
+            Quaternion q = GetBlock(blockId).transform.rotation;
             return - Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * Mathf.Rad2Deg;
         }
 
@@ -508,7 +584,7 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from -180 to 180.</returns>
         public float getRoll(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = this.GetBlock(blockId).transform.rotation;
+            Quaternion q = GetBlock(blockId).transform.rotation;
             return - Mathf.Asin(2 * q.x * q.y + 2 * q.z * q.w) * Mathf.Rad2Deg;
         }
 
@@ -527,5 +603,13 @@ namespace LenchScripterMod
             }
             return new Vector3(0, 0, 0);
         }
+
+        public void setActiveFunction(string blockId, float value)
+        {
+            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            b.SendMessage("setActiveFunction", value, SendMessageOptions.DontRequireReceiver);
+        }
+
+
     }
 }
