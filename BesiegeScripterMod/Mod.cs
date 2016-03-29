@@ -13,7 +13,7 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 3, 1, 0);
+        public override Version Version { get; } = new Version(0, 3, 3, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
@@ -161,6 +161,7 @@ namespace LenchScripterMod
             this.lua.Close();
             this.lua.Dispose();
             this.lua = null;
+            wrapper.clearMarks();
             wrapper = null;
             Debug.Log("Script stopped");
         }
@@ -256,7 +257,8 @@ namespace LenchScripterMod
         /// <returns>Returns reference to blocks Transform object.</returns>
         public Transform GetBlock(string blockId)
         {
-            if (simulationBlocks == null) {
+            if (simulationBlocks == null)
+            {
                 InitializeSimulationBlockIDs();
             }
             return simulationBlocks[blockId.ToUpper()];
@@ -269,10 +271,14 @@ namespace LenchScripterMod
     /// </summary>
     public class LuaMethodWrapper
     {
+        // Stopwatch for measuring simulation time
         private System.Diagnostics.Stopwatch stopwatch;
+        // List of placed marks
+        private List<Mark> marks;
 
         public LuaMethodWrapper()
         {
+            marks = new List<Mark>();
             stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
         }
@@ -305,12 +311,12 @@ namespace LenchScripterMod
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MToggle m in b.Toggles)
             {
-                if(m.DisplayName.ToUpper() == toggleName.ToUpper())
+                if (m.DisplayName.ToUpper() == toggleName.ToUpper())
                 {
                     m.IsActive = value;
                     return;
-                } 
-            }    
+                }
+            }
         }
 
         /// <summary>
@@ -574,7 +580,7 @@ namespace LenchScripterMod
         public float getPitch(string blockId = "STARTING BLOCK 1")
         {
             Quaternion q = GetBlock(blockId).transform.rotation;
-            return - Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * Mathf.Rad2Deg;
+            return -Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * Mathf.Rad2Deg;
         }
 
         /// <summary>
@@ -585,7 +591,7 @@ namespace LenchScripterMod
         public float getRoll(string blockId = "STARTING BLOCK 1")
         {
             Quaternion q = GetBlock(blockId).transform.rotation;
-            return - Mathf.Asin(2 * q.x * q.y + 2 * q.z * q.w) * Mathf.Rad2Deg;
+            return -Mathf.Asin(2 * q.x * q.y + 2 * q.z * q.w) * Mathf.Rad2Deg;
         }
 
         /// <summary>
@@ -604,12 +610,63 @@ namespace LenchScripterMod
             return new Vector3(0, 0, 0);
         }
 
-        public void setActiveFunction(string blockId, float value)
+        /// <summary>
+        /// Creates a mark at a given position.
+        /// </summary>
+        /// <param name="pos">Vector3 specifying position.</param>
+        /// <returns>Reference to the mark.</returns>
+        public Mark createMark(Vector3 pos)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
-            b.SendMessage("setActiveFunction", value, SendMessageOptions.DontRequireReceiver);
+            GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            Mark m = obj.AddComponent<Mark>();
+            m.move(pos);
+            marks.Add(m);
+            return m;
         }
 
+        /// <summary>
+        /// Clears all marks.
+        /// Called by user or at the end of the simulation.
+        /// </summary>
+        public void clearMarks()
+        {
+            foreach (Mark m in marks)
+            {
+                m.clear();
+            }
+            marks.Clear();
+        }
 
     }
+
+    /// <summary>
+    /// Mark script attached to primitive sphere objects.
+    /// Used to mark locations through Lua script.
+    /// </summary>
+    public class Mark : MonoBehaviour
+    {
+        void Start()
+        {
+            GetComponent<Renderer>().material.color = Color.red;
+            Destroy(GetComponent<SphereCollider>());
+        }
+
+        public void move(Vector3 target)
+        {
+            transform.position = target;
+        }
+
+        public void setColor(Color c)
+        {
+            GetComponent<Renderer>().material.color = c;
+        }
+
+        public void clear()
+        {
+            Destroy(gameObject);
+            Destroy(this);
+        }
+    }
 }
+
+
