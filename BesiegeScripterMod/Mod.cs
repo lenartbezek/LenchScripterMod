@@ -13,7 +13,7 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 3, 0, 0);
+        public override Version Version { get; } = new Version(0, 3, 1, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
@@ -286,12 +286,12 @@ namespace LenchScripterMod
             return ScripterMod.scripter.GetBlock(blockId);
         }
 
-        public void Log(string msg)
+        public void log(string msg)
         {
             Debug.Log(msg);
         }
 
-        public long GetTime()
+        public long getTime()
         {
             return stopwatch.ElapsedMilliseconds;
         }
@@ -304,7 +304,7 @@ namespace LenchScripterMod
         /// <param name="toggleName">Case insensitive string specifying the property to be set.
         /// Usually identical to in-game label.</param>
         /// <param name="value">Boolean value to be set.</param>
-        public void SetToggleMode(string blockId, string toggleName, bool value)
+        public void setToggleMode(string blockId, string toggleName, bool value)
         {
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MToggle m in b.Toggles)
@@ -325,7 +325,7 @@ namespace LenchScripterMod
         /// <param name="toggleName">Case insensitive string specifying the property to be set.
         /// Usually identical to in-game label.</param>
         /// <param name="value">Float value to be set.</param>
-        public void SetSliderValue(string blockId, string sliderName, float value)
+        public void setSliderValue(string blockId, string sliderName, float value)
         {
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
@@ -346,7 +346,7 @@ namespace LenchScripterMod
         /// <param name="toggleName">Case insensitive string specifying the property to be set.
         /// Usually identical to in-game label.</param>
         /// <returns>Returns the toggle value of a specified property.</returns>
-        public bool GetToggleMode(string blockId, string toggleName)
+        public bool getToggleMode(string blockId, string toggleName)
         {
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MToggle m in b.Toggles)
@@ -367,7 +367,7 @@ namespace LenchScripterMod
         /// <param name="toggleName">Case insensitive string specifying the property to be set.
         /// Usually identical to in-game label.</param>
         /// <returns>Returns the float value of a specified property.</returns>
-        public float GetSliderValue(string blockId, string sliderName)
+        public float getSliderValue(string blockId, string sliderName)
         {
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
@@ -388,7 +388,7 @@ namespace LenchScripterMod
         /// <param name="toggleName">Case insensitive string specifying the property to be set.
         /// Usually identical to in-game label.</param>
         /// <returns>Returns the float value of a specified property.</returns>
-        public float GetSliderMin(string blockId, string sliderName)
+        public float getSliderMin(string blockId, string sliderName)
         {
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
@@ -409,7 +409,7 @@ namespace LenchScripterMod
         /// <param name="toggleName">Case insensitive string specifying the property to be set.
         /// Usually identical to in-game label.</param>
         /// <returns>Returns the float value of a specified property.</returns>
-        public float GetSliderMax(string blockId, string sliderName)
+        public float getSliderMax(string blockId, string sliderName)
         {
             BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
             foreach (MSlider m in b.Sliders)
@@ -428,7 +428,7 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
         /// <returns>Vector3 object.</returns>
-        public Vector3 GetPosition(string blockId = "STARTING BLOCK 1")
+        public Vector3 getPosition(string blockId = "STARTING BLOCK 1")
         {
             return GetBlock(blockId).transform.position;
         }
@@ -439,20 +439,9 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
         /// <returns>Vector3 object.</returns>
-        public Vector3 GetVelocity(string blockId = "STARTING BLOCK 1")
+        public Vector3 getVelocity(string blockId = "STARTING BLOCK 1")
         {
             return GetBlock(blockId).GetComponent<Rigidbody>().velocity;
-        }
-
-        /// <summary>
-        /// Returns the angular velocity vector of the specified block.
-        /// If no argument is used, starting block is used.
-        /// </summary>
-        /// <param name="blockId">Block identifier.</param>
-        /// <returns>Vector3 object.</returns>
-        public Vector3 GetAngularVelocity(string blockId = "STARTING BLOCK 1")
-        {
-            return GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity;
         }
 
         /// <summary>
@@ -462,9 +451,20 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
         /// <returns>Vector3 object with values in degrees.</returns>
-        public Vector3 GetEulerAngles(string blockId = "STARTING BLOCK 1")
+        public Vector3 getEulerAngles(string blockId = "STARTING BLOCK 1")
         {
             return GetBlock(blockId).transform.eulerAngles;
+        }
+
+        /// <summary>
+        /// Returns the angular velocity vector of the specified block.
+        /// If no argument is used, starting block is used.
+        /// </summary>
+        /// <param name="blockId">Block identifier.</param>
+        /// <returns>Vector3 object.</returns>
+        public Vector3 getAngularVelocity(string blockId = "STARTING BLOCK 1")
+        {
+            return GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity;
         }
 
         /// Following angle functions are swapped in a way to fit starting blocks initial position.
@@ -476,7 +476,7 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Blocks unique identifier. Default is starting block.</param>
         /// <returns>Float value ranging from 0 to 360.</returns>
-        public float GetHeading(string blockId = "STARTING BLOCK 1")
+        public float getHeading(string blockId = "STARTING BLOCK 1")
         {
             Quaternion q = this.GetBlock(blockId).transform.rotation;
             float jaw = Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * Mathf.Rad2Deg;
@@ -488,7 +488,7 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Blocks unique identifier. Default is starting block.</param>
         /// <returns>Float value ranging from -180 to 180.</returns>
-        public float GetYaw(string blockId = "STARTING BLOCK 1")
+        public float getYaw(string blockId = "STARTING BLOCK 1")
         {
             Quaternion q = this.GetBlock(blockId).transform.rotation;
             return Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * Mathf.Rad2Deg;
@@ -499,7 +499,7 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Blocks unique identifier. Default is starting block.</param>
         /// <returns>Float value ranging from -180 to 180.</returns>
-        public float GetPitch(string blockId = "STARTING BLOCK 1")
+        public float getPitch(string blockId = "STARTING BLOCK 1")
         {
             Quaternion q = this.GetBlock(blockId).transform.rotation;
             return - Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * Mathf.Rad2Deg;
@@ -510,7 +510,7 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Blocks unique identifier. Default is starting block.</param>
         /// <returns>Float value ranging from -180 to 180.</returns>
-        public float GetRoll(string blockId = "STARTING BLOCK 1")
+        public float getRoll(string blockId = "STARTING BLOCK 1")
         {
             Quaternion q = this.GetBlock(blockId).transform.rotation;
             return - Mathf.Asin(2 * q.x * q.y + 2 * q.z * q.w) * Mathf.Rad2Deg;
@@ -521,7 +521,7 @@ namespace LenchScripterMod
         /// If not sucessfull, returns zero vector.
         /// </summary>
         /// <returns>Returns an x, y, z positional vector of the hit.</returns>
-        public Vector3 GetRaycastHit()
+        public Vector3 getRaycastHit()
         {
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
