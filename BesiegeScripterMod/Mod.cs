@@ -8,31 +8,29 @@ using NLua.Exceptions;
 
 namespace LenchScripterMod
 {
-    public class ScripterLoader : Mod
+    public class ScripterMod : Mod
     {
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 2, 0, 0);
+        public override Version Version { get; } = new Version(0, 3, 0, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
 
-        private Scripter scripter;
+        public static Scripter scripter;
 
         public override void OnLoad()
         {
             UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
-            this.scripter = Scripter.Instance;
-
-            Game.OnSimulationToggle += this.scripter.OnSimulationToggle;
+            scripter = Scripter.Instance;
+            Game.OnSimulationToggle += scripter.OnSimulationToggle;
         }
         public override void OnUnload()
         {
-            Game.OnSimulationToggle -= this.scripter.OnSimulationToggle;
-            this.scripter.isSimulating = false;
-            this.scripter.ScriptStop();
+            Game.OnSimulationToggle -= scripter.OnSimulationToggle;
+            scripter.OnSimulationToggle(false);
         }
     }
 
@@ -40,6 +38,8 @@ namespace LenchScripterMod
     {
         public override string Name { get; } = "LenchScripter";
         public bool isSimulating;
+
+        private static LuaMethodWrapper wrapper;
 
         private Lua lua;
         private string luaFile;
@@ -54,9 +54,6 @@ namespace LenchScripterMod
         // Map: ID -> Simulation Block
         private Dictionary<string, Transform> simulationBlocks;
 
-        // Stopwatch for measuring simulation time.
-        System.Diagnostics.Stopwatch stopwatch;
-
         /// <summary>
         /// Rebuilds ID dictionary.
         /// </summary>
@@ -69,7 +66,7 @@ namespace LenchScripterMod
         /// Populates dictionary with references to building blocks.
         /// Used for dumping block IDs while building.
         /// </summary>
-        public void InitializeBuildingBlockIDs()
+        private void InitializeBuildingBlockIDs()
         {
             if (typeCount != null) typeCount.Clear();
             else typeCount = new Dictionary<string, int>();
@@ -95,10 +92,8 @@ namespace LenchScripterMod
         /// Used for accessing blocks with GetBlock(blockId) while simulating.
         /// Called at first call of GetBlock(blockId);
         /// </summary>
-        public void InitializeSimulationBlockIDs()
+        private void InitializeSimulationBlockIDs()
         {
-            /* Populates dictionary with references to simulation blocks.
-               Used for accessing blocks with GetBlock(id) function while simulating. */
             simulationBlocks = new Dictionary<string, Transform>();
             Transform simulationMachine = GameObject.Find("Simulation Machine").transform;
             foreach (Transform b in simulationMachine)
@@ -120,53 +115,26 @@ namespace LenchScripterMod
         /// <summary>
         /// Called to start script.
         /// </summary>
-        public void ScriptStart()
+        private void ScriptStart()
         {
             simulationBlocks = null;
-            this.lua = new Lua();
 
-            // Populate function table
-            this.lua.NewTable("besiege");
-            this.lua.RegisterFunction("besiege.log", this, typeof(Scripter).GetMethod("Log"));
-            this.lua.RegisterFunction("besiege.getTime", this, typeof(Scripter).GetMethod("GetTime"));
+            // Lua Environment
+            lua = new Lua();
+            lua.LoadCLRPackage();
+            lua.DoString(@" import 'System'
+                            import 'UnityEngine'
+                            import 'Assembly-CSharp'  ");
 
-            this.lua.RegisterFunction("besiege.setToggleMode", this, typeof(Scripter).GetMethod("SetToggleMode"));
-            this.lua.RegisterFunction("besiege.setSliderValue", this, typeof(Scripter).GetMethod("SetSliderValue"));
-
-            this.lua.RegisterFunction("besiege.getToggleMode", this, typeof(Scripter).GetMethod("GetToggleMode"));
-            this.lua.RegisterFunction("besiege.getSliderValue", this, typeof(Scripter).GetMethod("GetSliderValue"));
-            this.lua.RegisterFunction("besiege.getSliderMin", this, typeof(Scripter).GetMethod("GetSliderMin"));
-            this.lua.RegisterFunction("besiege.getSliderMax", this, typeof(Scripter).GetMethod("GetSliderMax"));
-
-            this.lua.RegisterFunction("besiege.getPosition", this, typeof(Scripter).GetMethod("GetPosition"));
-            this.lua.RegisterFunction("besiege.getPositionX", this, typeof(Scripter).GetMethod("GetPositionX"));
-            this.lua.RegisterFunction("besiege.getPositionY", this, typeof(Scripter).GetMethod("GetPositionY"));
-            this.lua.RegisterFunction("besiege.getPositionZ", this, typeof(Scripter).GetMethod("GetPositionZ"));
-
-            this.lua.RegisterFunction("besiege.getVelocity", this, typeof(Scripter).GetMethod("GetVelocity"));
-            this.lua.RegisterFunction("besiege.getVelocityX", this, typeof(Scripter).GetMethod("GetVelocityX"));
-            this.lua.RegisterFunction("besiege.getVelocityY", this, typeof(Scripter).GetMethod("GetVelocityY"));
-            this.lua.RegisterFunction("besiege.getVelocityZ", this, typeof(Scripter).GetMethod("GetVelocityZ"));
-
-            this.lua.RegisterFunction("besiege.getAngular", this, typeof(Scripter).GetMethod("GetAngular"));
-            this.lua.RegisterFunction("besiege.getAngularX", this, typeof(Scripter).GetMethod("GetAngularX"));
-            this.lua.RegisterFunction("besiege.getAngularY", this, typeof(Scripter).GetMethod("GetAngularY"));
-            this.lua.RegisterFunction("besiege.getAngularZ", this, typeof(Scripter).GetMethod("GetAngularZ"));
-
-            this.lua.RegisterFunction("besiege.getHeading", this, typeof(Scripter).GetMethod("GetHeading"));
-            this.lua.RegisterFunction("besiege.getPitch", this, typeof(Scripter).GetMethod("GetPitch"));
-            this.lua.RegisterFunction("besiege.getRoll", this, typeof(Scripter).GetMethod("GetRoll"));
-            this.lua.RegisterFunction("besiege.getYaw", this, typeof(Scripter).GetMethod("GetYaw"));
-
-            this.lua.RegisterFunction("besiege.getRaycastHit", this, typeof(Scripter).GetMethod("GetRaycastHit"));
-
+            wrapper = new LuaMethodWrapper();
+            lua["besiege"] = wrapper;
 
             // Populate keycode table
-            this.lua.NewTable("besiege.keyCodes");
+            this.lua.NewTable("KeyCode");
             foreach (KeyCode value in Enum.GetValues(typeof(KeyCode)))
             {
                 string str = value.ToString();
-                object[] objArray = new object[] { "besiege.keyCodes[\"", str, "\"] = ", (int)value };
+                object[] objArray = new object[] { "KeyCode[\"", str, "\"] = ", (int)value };
                 lua.DoString(string.Concat(objArray), "chunk");
             }
 
@@ -183,26 +151,23 @@ namespace LenchScripterMod
                 this.ScriptStop();
             }
 
-            // Start simulation stopwatch.
-            stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
-
         }
 
         /// <summary>
         /// Called to stop script.
         /// </summary>
-        public void ScriptStop()
+        private void ScriptStop()
         {
             this.lua.Close();
             this.lua.Dispose();
             this.lua = null;
-            stopwatch.Stop();
+            wrapper = null;
             Debug.Log("Script stopped");
         }
 
         /// <summary>
-        /// Finds hovered block in buildingBlocks dictionary and dumps its ID string.
+        /// Finds hovered block in buildingBlocks dictionary and dumps its ID string
+        /// if LeftShift is pressed.
         /// </summary>
         private void DumpHoveredBlock()
         {
@@ -226,6 +191,9 @@ namespace LenchScripterMod
             }
         }
 
+        /// <summary>
+        /// Calls Lua functions.
+        /// </summary>
         private void Update()
         {
             if (!this.isSimulating)
@@ -243,30 +211,34 @@ namespace LenchScripterMod
                 this.luaFile = null;
             }
 
-            if ((string)this.lua.DoString("return type(besiege.onUpdate)", "chunk")[0] == "function")
-                this.lua.DoString("besiege:onUpdate()", "chunk");
+            if ((string)this.lua.DoString("return type(onUpdate)", "chunk")[0] == "function")
+                this.lua.DoString("onUpdate()", "chunk");
 
             if (Input.anyKey)
             {
-                if ((string)this.lua.DoString("return type(besiege.onKeyHeld)", "chunk")[0] == "function")
+                if ((string)this.lua.DoString("return type(onKeyHeld)", "chunk")[0] == "function")
                 {
                     foreach (KeyCode value in Enum.GetValues(typeof(KeyCode)))
                     {
                         if (!Input.GetKey(value)) continue;
-                        this.lua.DoString(string.Concat("besiege:onKeyHeld(", (int)value, ")"), "chunk");
+                        this.lua.DoString(string.Concat("onKeyHeld(", (int)value, ")"), "chunk");
                     }
                 }
-                if ((string)this.lua.DoString("return type(besiege.onKeyDown)", "chunk")[0] == "function")
+                if ((string)this.lua.DoString("return type(onKeyDown)", "chunk")[0] == "function")
                 {
                     foreach (KeyCode value in Enum.GetValues(typeof(KeyCode)))
                     {
                         if (!Input.GetKeyDown(value)) continue;
-                        this.lua.DoString(string.Concat("besiege:onKeyDown(", (int)value, ")"), "chunk");
+                        this.lua.DoString(string.Concat("onKeyDown(", (int)value, ")"), "chunk");
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Handles starting and stopping of the simulation.
+        /// </summary>
+        /// <param name="isSimulating"></param>
         public void OnSimulationToggle(bool isSimulating)
         {
             this.isSimulating = isSimulating;
@@ -282,7 +254,7 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Blocks unique identifier.</param>
         /// <returns>Returns reference to blocks Transform object.</returns>
-        private Transform GetBlock(string blockId)
+        public Transform GetBlock(string blockId)
         {
             /* Returns block reference.
                Initializes block dictionary on the first call. */
@@ -291,10 +263,28 @@ namespace LenchScripterMod
             }
             return simulationBlocks[blockId.ToUpper()];
         }
+    }
 
+    /// <summary>
+    /// Used as a wrapper for all Lua accessible functions.
+    /// Instantiated at the start of the simulation.
+    /// </summary>
+    public class LuaMethodWrapper
+    {
+        // Stopwatch for measuring simulation time.
+        private System.Diagnostics.Stopwatch stopwatch;
 
-        /***************** Lua methods *****************/
+        public LuaMethodWrapper()
+        {
+            // Start simulation stopwatch.
+            stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+        }
 
+        private Transform GetBlock(string blockId)
+        {
+            return ScripterMod.scripter.GetBlock(blockId);
+        }
 
         public void Log(string msg)
         {
@@ -432,85 +422,52 @@ namespace LenchScripterMod
             throw new LuaException("Slider " + sliderName + " not found.");
         }
 
-        /// Position functions return coordinates of the specified block.
-
-        public float[] GetPosition(string blockId = "STARTING BLOCK 1")
+        /// <summary>
+        /// Returns the position vector of the specified block.
+        /// If no argument is used, starting block is used.
+        /// </summary>
+        /// <param name="blockId">Block identifier.</param>
+        /// <returns>Vector3 object.</returns>
+        public Vector3 GetPosition(string blockId = "STARTING BLOCK 1")
         {
-            float[] pos = { 0, 0, 0 };
-            pos[0] = this.GetBlock(blockId).transform.position.x;
-            pos[1] = this.GetBlock(blockId).transform.position.y;
-            pos[2] = this.GetBlock(blockId).transform.position.z;
-            return pos;
+            return GetBlock(blockId).transform.position;
         }
 
-        public float GetPositionX(string blockId = "STARTING BLOCK 1")
+        /// <summary>
+        /// Returns the velocity vector of the specified block.
+        /// If no argument is used, starting block is used.
+        /// </summary>
+        /// <param name="blockId">Block identifier.</param>
+        /// <returns>Vector3 object.</returns>
+        public Vector3 GetVelocity(string blockId = "STARTING BLOCK 1")
         {
-            return this.GetBlock(blockId).transform.position.x;
+            return GetBlock(blockId).GetComponent<Rigidbody>().velocity;
         }
 
-        public float GetPositionY(string blockId = "STARTING BLOCK 1")
+        /// <summary>
+        /// Returns the angular velocity vector of the specified block.
+        /// If no argument is used, starting block is used.
+        /// </summary>
+        /// <param name="blockId">Block identifier.</param>
+        /// <returns>Vector3 object.</returns>
+        public Vector3 GetAngularVelocity(string blockId = "STARTING BLOCK 1")
         {
-            return this.GetBlock(blockId).transform.position.y;
+            return GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity;
         }
 
-        public float GetPositionZ(string blockId = "STARTING BLOCK 1")
+        /// <summary>
+        /// Returns the euler angles vector of the specified block,
+        /// respective to the blocks forward, right, up vectors.
+        /// If no argument is used, starting block is used.
+        /// </summary>
+        /// <param name="blockId">Block identifier.</param>
+        /// <returns>Vector3 object with values in degrees.</returns>
+        public Vector3 GetEulerAngles(string blockId = "STARTING BLOCK 1")
         {
-            return this.GetBlock(blockId).transform.position.z;
+            return GetBlock(blockId).transform.eulerAngles;
         }
 
-        /// Velocity functions return the velocity vector of the pecified block.
-
-        public float[] GetVelocity(string blockId = "STARTING BLOCK 1")
-        {
-            float[] vel = { 0, 0, 0 };
-            vel[0] = this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.x;
-            vel[1] = this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.y;
-            vel[2] = this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.z;
-            return vel;
-        }
-
-        public float GetVelocityX(string blockId = "STARTING BLOCK 1")
-        {
-            return this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.x;
-        }
-
-        public float GetVelocityY(string blockId = "STARTING BLOCK 1")
-        {
-            return this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.z;
-        }
-
-        public float GetVelocityZ(string blockId = "STARTING BLOCK 1")
-        {
-            return this.GetBlock(blockId).GetComponent<Rigidbody>().velocity.z;
-        }
-
-        /// Angular velocity functions return the angular velocity vector of the pecified block.
-
-        public float[] GetAngular(string blockId = "STARTING BLOCK 1")
-        {
-            float[] ang = { 0, 0, 0 };
-            ang[0] = this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.x;
-            ang[1] = this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.y;
-            ang[2] = this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.z;
-            return ang;
-        }
-
-        public float GetAngularX(string blockId = "STARTING BLOCK 1")
-        {
-            return this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.x;
-        }
-
-        public float GetAngularY(string blockId = "STARTING BLOCK 1")
-        {
-            return this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.z;
-        }
-
-        public float GetAngularZ(string blockId = "STARTING BLOCK 1")
-        {
-            return this.GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity.z;
-        }
-
-        /// Angle functions are swapped in a way to fit starting blocks initial position.
+        /// Following angle functions are swapped in a way to fit starting blocks initial position.
         /// This means that at the start of the simulation, starting blocks angles will be 0, 0, 0.
 
         /// <summary>
@@ -561,20 +518,18 @@ namespace LenchScripterMod
 
         /// <summary>
         /// Uses raycast to find out where mouse cursor is pointing.
+        /// If not sucessfull, returns zero vector.
         /// </summary>
         /// <returns>Returns an x, y, z positional vector of the hit.</returns>
-        public float[] GetRaycastHit()
+        public Vector3 GetRaycastHit()
         {
-            float[] point = { 0, 0, 0 };
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
-                point[0] = hit.point.x;
-                point[1] = hit.point.y;
-                point[2] = hit.point.z;
-            }  
-            return point;
+                return hit.point;
+            }
+            return new Vector3(0, 0, 0);
         }
     }
 }
