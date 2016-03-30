@@ -13,7 +13,7 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 3, 3, 0);
+        public override Version Version { get; } = new Version(0, 4, 0, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
@@ -51,8 +51,11 @@ namespace LenchScripterMod
         // Map: Building Block -> ID
         private Dictionary<GenericBlock, string> buildingBlocks;
 
+        // Map: GUID -> Simulation Block
+        private Dictionary<string, BlockBehaviour> guidToSimulationBlock;
+
         // Map: ID -> Simulation Block
-        private Dictionary<string, Transform> simulationBlocks;
+        private Dictionary<string, BlockBehaviour> idToSimulationBlock;
 
         /// <summary>
         /// Rebuilds ID dictionary.
@@ -68,8 +71,7 @@ namespace LenchScripterMod
         /// </summary>
         private void InitializeBuildingBlockIDs()
         {
-            if (typeCount != null) typeCount.Clear();
-            else typeCount = new Dictionary<string, int>();
+            typeCount = new Dictionary<string, int>();
             if (buildingBlocks != null) buildingBlocks.Clear();
             else
             {
@@ -94,8 +96,14 @@ namespace LenchScripterMod
         /// </summary>
         private void InitializeSimulationBlockIDs()
         {
-            simulationBlocks = new Dictionary<string, Transform>();
+            idToSimulationBlock = new Dictionary<string, BlockBehaviour>();
+            guidToSimulationBlock = new Dictionary<string, BlockBehaviour>();
             Transform simulationMachine = GameObject.Find("Simulation Machine").transform;
+            for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
+            {
+                string guid = Machine.Active().BuildingBlocks[i].Guid.ToString();
+                guidToSimulationBlock[guid] = Machine.Active().Blocks[i];
+            }
             foreach (Transform b in simulationMachine)
             {
                 string name = b.GetComponent<MyBlockInfo>().blockName.ToUpper();
@@ -106,9 +114,9 @@ namespace LenchScripterMod
                 {
                     c++;
                     id = name + " " + c;
-                } while (simulationBlocks.ContainsKey(id));
+                } while (idToSimulationBlock.ContainsKey(id));
 
-                simulationBlocks[id] = b;
+                idToSimulationBlock[id] = b.GetComponent<BlockBehaviour>();
             }
         }
 
@@ -117,7 +125,7 @@ namespace LenchScripterMod
         /// </summary>
         private void ScriptStart()
         {
-            simulationBlocks = null;
+            idToSimulationBlock = null;
 
             // Lua Environment
             lua = new Lua();
@@ -131,10 +139,10 @@ namespace LenchScripterMod
 
             // Populate keycode table
             this.lua.NewTable("KeyCode");
-            foreach (KeyCode value in Enum.GetValues(typeof(KeyCode)))
+            foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
             {
-                string str = value.ToString();
-                object[] objArray = new object[] { "KeyCode[\"", str, "\"] = ", (int)value };
+                string str = key.ToString();
+                object[] objArray = new object[] { "KeyCode[\"", str, "\"] = ", (int)key };
                 lua.DoString(string.Concat(objArray), "chunk");
             }
 
@@ -188,7 +196,9 @@ namespace LenchScripterMod
                 if (buildingBlocks == null)
                     InitializeBuildingBlockIDs();
 
-                Debug.Log(buildingBlocks[hoveredBlock]);
+                string key = buildingBlocks[hoveredBlock];
+                string guid = hoveredBlock.GetComponent<BlockBehaviour>().Guid.ToString();
+                Debug.Log(key + " - " + guid);
             }
         }
 
@@ -219,18 +229,18 @@ namespace LenchScripterMod
             {
                 if ((string)this.lua.DoString("return type(onKeyHeld)", "chunk")[0] == "function")
                 {
-                    foreach (KeyCode value in Enum.GetValues(typeof(KeyCode)))
+                    foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
                     {
-                        if (!Input.GetKey(value)) continue;
-                        this.lua.DoString(string.Concat("onKeyHeld(", (int)value, ")"), "chunk");
+                        if (!Input.GetKey(key)) continue;
+                        this.lua.DoString(string.Concat("onKeyHeld(", (int)key, ")"), "chunk");
                     }
                 }
                 if ((string)this.lua.DoString("return type(onKeyDown)", "chunk")[0] == "function")
                 {
-                    foreach (KeyCode value in Enum.GetValues(typeof(KeyCode)))
+                    foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
                     {
-                        if (!Input.GetKeyDown(value)) continue;
-                        this.lua.DoString(string.Concat("onKeyDown(", (int)value, ")"), "chunk");
+                        if (!Input.GetKeyDown(key)) continue;
+                        this.lua.DoString(string.Concat("onKeyDown(", (int)key, ")"), "chunk");
                     }
                 }
             }
@@ -254,14 +264,17 @@ namespace LenchScripterMod
         /// On first call of the simulation, it also initializes the dictionary.
         /// </summary>
         /// <param name="blockId">Blocks unique identifier.</param>
-        /// <returns>Returns reference to blocks Transform object.</returns>
-        public Transform GetBlock(string blockId)
+        /// <returns>Returns reference to blocks BlockBehaviour object.</returns>
+        public BlockBehaviour GetBlock(string blockId)
         {
-            if (simulationBlocks == null)
-            {
+            if (idToSimulationBlock == null)
                 InitializeSimulationBlockIDs();
-            }
-            return simulationBlocks[blockId.ToUpper()];
+
+            if(idToSimulationBlock.ContainsKey(blockId.ToUpper()))
+                return idToSimulationBlock[blockId.ToUpper()];
+            if (guidToSimulationBlock.ContainsKey(blockId))
+                return guidToSimulationBlock[blockId];
+            throw new LuaException("Block " + blockId + " not found.");
         }
     }
 
@@ -283,7 +296,7 @@ namespace LenchScripterMod
             stopwatch.Start();
         }
 
-        private Transform GetBlock(string blockId)
+        private BlockBehaviour GetBlock(string blockId)
         {
             return ScripterMod.scripter.GetBlock(blockId);
         }
@@ -308,7 +321,7 @@ namespace LenchScripterMod
         /// <param name="value">Boolean value to be set.</param>
         public void setToggleMode(string blockId, string toggleName, bool value)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            BlockBehaviour b = GetBlock(blockId);
             foreach (MToggle m in b.Toggles)
             {
                 if (m.DisplayName.ToUpper() == toggleName.ToUpper())
@@ -329,7 +342,7 @@ namespace LenchScripterMod
         /// <param name="value">Float value to be set.</param>
         public void setSliderValue(string blockId, string sliderName, float value)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            BlockBehaviour b = GetBlock(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -350,7 +363,7 @@ namespace LenchScripterMod
         /// <returns>Returns the toggle value of a specified property.</returns>
         public bool getToggleMode(string blockId, string toggleName)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            BlockBehaviour b = GetBlock(blockId);
             foreach (MToggle m in b.Toggles)
             {
                 if (m.DisplayName.ToUpper() == toggleName.ToUpper())
@@ -371,7 +384,7 @@ namespace LenchScripterMod
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderValue(string blockId, string sliderName)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            BlockBehaviour b = GetBlock(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -392,7 +405,7 @@ namespace LenchScripterMod
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderMin(string blockId, string sliderName)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            BlockBehaviour b = GetBlock(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -413,7 +426,7 @@ namespace LenchScripterMod
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderMax(string blockId, string sliderName)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            BlockBehaviour b = GetBlock(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -431,9 +444,10 @@ namespace LenchScripterMod
         /// <param name="blockId">Block identifier.</param>
         /// <param name="keyName">Key display name.</param>
         /// <param name="key">New key to be assigned.</param>
-        public void addKey(string blockId, string keyName, KeyCode key)
+        public void addKey(string blockId, string keyName, int keyValue)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            KeyCode key = (KeyCode)keyValue;
+            BlockBehaviour b = GetBlock(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -450,9 +464,10 @@ namespace LenchScripterMod
         /// <param name="blockId">Block identifier.</param>
         /// <param name="keyName">Key display name.</param>
         /// <param name="key">New key to be assigned.</param>
-        public void replaceKey(string blockId, string keyName, KeyCode key)
+        public void replaceKey(string blockId, string keyName, int keyValue)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            KeyCode key = (KeyCode)keyValue;
+            BlockBehaviour b = GetBlock(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -468,29 +483,29 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
         /// <param name="keyName">Key display name.</param>
-        public KeyCode getKey(string blockId, string keyName)
+        public int getKey(string blockId, string keyName)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            BlockBehaviour b = GetBlock(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
                 {
-                    return m.KeyCode[0];
+                    return (int)m.KeyCode[0];
                 }
             }
             throw new LuaException("Key " + keyName + " not found.");
         }
 
         /// <summary>
-        /// Used to remove blocks key controls.
+        /// Used to remove all of the blocks key controls.
         /// Does nothing if the key name is not found.
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
         /// <param name="keyName">Key display name.</param>
         /// <param name="key">New key to be assigned.</param>
-        public void removeKeys(string blockId, string keyName)
+        public void clearKeys(string blockId, string keyName)
         {
-            BlockBehaviour b = GetBlock(blockId).GetComponent<BlockBehaviour>();
+            BlockBehaviour b = GetBlock(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -512,7 +527,8 @@ namespace LenchScripterMod
         }
 
         /// <summary>
-        /// Returns the velocity vector of the specified block.
+        /// Returns the velocity vector of the specified block
+        /// in units per second.
         /// If no argument is used, starting block is used.
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
@@ -535,14 +551,18 @@ namespace LenchScripterMod
         }
 
         /// <summary>
-        /// Returns the angular velocity vector of the specified block.
+        /// Returns the angular velocity vector of the specified block
+        /// in degrees per second.
         /// If no argument is used, starting block is used.
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
         /// <returns>Vector3 object.</returns>
         public Vector3 getAngularVelocity(string blockId = "STARTING BLOCK 1")
         {
-            return GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity;
+            Vector3 rad2deg = new Vector3(Mathf.Rad2Deg, Mathf.Rad2Deg, Mathf.Rad2Deg);
+            Vector3 angularVelocity = GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity;
+            angularVelocity.Scale(rad2deg);
+            return angularVelocity;
         }
 
         /// Following angle functions are swapped in a way to fit starting blocks initial position.
@@ -636,7 +656,6 @@ namespace LenchScripterMod
             }
             marks.Clear();
         }
-
     }
 
     /// <summary>
@@ -645,6 +664,7 @@ namespace LenchScripterMod
     /// </summary>
     public class Mark : MonoBehaviour
     {
+
         void Start()
         {
             GetComponent<Renderer>().material.color = Color.red;
