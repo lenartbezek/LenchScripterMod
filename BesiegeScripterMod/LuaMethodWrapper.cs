@@ -11,8 +11,11 @@ namespace LenchScripterMod
     /// </summary>
     public class LuaMethodWrapper
     {
-        // Stopwatch for measuring simulation time
+        // Using radians or degrees
+        private float usingDegrees;
+        // Measuring time
         private System.Diagnostics.Stopwatch stopwatch;
+        private float startTime;
         // List of placed marks
         private List<Mark> marks;
 
@@ -21,9 +24,11 @@ namespace LenchScripterMod
             marks = new List<Mark>();
             stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
+            startTime = Time.time;
+            usingDegrees = Mathf.Rad2Deg;
         }
 
-        private BlockBehaviour GetBlock(string blockId)
+        public BlockBehaviour GetBlock(string blockId)
         {
             return ScripterMod.scripter.GetBlock(blockId);
         }
@@ -33,9 +38,38 @@ namespace LenchScripterMod
             Debug.Log(msg);
         }
 
+        /// <summary>
+        /// Gets simulation time, independent of in-game time scaling.
+        /// </summary>
+        /// <returns></returns>
         public long getTime()
         {
             return stopwatch.ElapsedMilliseconds;
+        }
+
+        /// <summary>
+        /// Gets simulation time, consistent with in-game time scaling.
+        /// </summary>
+        /// <returns></returns>
+        public float getScaledTime()
+        {
+            return Time.time - startTime;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void useDegrees()
+        {
+            usingDegrees = Mathf.Rad2Deg;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void useRadians()
+        {
+            usingDegrees = 1;
         }
 
         /// <summary>
@@ -302,7 +336,7 @@ namespace LenchScripterMod
         /// <returns>Vector3 object.</returns>
         public Vector3 getAngularVelocity(string blockId = "STARTING BLOCK 1")
         {
-            Vector3 rad2deg = new Vector3(Mathf.Rad2Deg, Mathf.Rad2Deg, Mathf.Rad2Deg);
+            Vector3 rad2deg = new Vector3(usingDegrees, usingDegrees, usingDegrees);
             Vector3 angularVelocity = GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity;
             angularVelocity.Scale(rad2deg);
             return angularVelocity;
@@ -320,7 +354,7 @@ namespace LenchScripterMod
         public float getHeading(string blockId = "STARTING BLOCK 1")
         {
             Quaternion q = GetBlock(blockId).transform.rotation;
-            float jaw = Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * Mathf.Rad2Deg;
+            float jaw = Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * usingDegrees;
             return jaw < 0 ? jaw + 360 : jaw;
         }
 
@@ -332,7 +366,7 @@ namespace LenchScripterMod
         public float getYaw(string blockId = "STARTING BLOCK 1")
         {
             Quaternion q = GetBlock(blockId).transform.rotation;
-            return Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * Mathf.Rad2Deg;
+            return Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * usingDegrees;
         }
 
         /// <summary>
@@ -343,7 +377,7 @@ namespace LenchScripterMod
         public float getPitch(string blockId = "STARTING BLOCK 1")
         {
             Quaternion q = GetBlock(blockId).transform.rotation;
-            return -Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * Mathf.Rad2Deg;
+            return -Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * usingDegrees;
         }
 
         /// <summary>
