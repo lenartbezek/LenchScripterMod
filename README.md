@@ -239,6 +239,7 @@ Property identifier is a case insensitive string, identical to the display name 
 It is used as an argument to slider, toggle and key functions.
 
 `besiege.setSliderValue("STEERING HINGE 2", "ROTATION SPEED", 0.5)`
+
 `besiege.addKey("ROCKET 1", "LAUNCH", KeyCode.L)`
 
 Incomplete table of blocks and their properties:
