@@ -7,4 +7,4 @@ It has a new [block identifying system](https://github.com/lench4991/BesiegeScri
 
 Thanks to [Rbtwrrr](http://forum.spiderlinggames.co.uk/forum/main-forum/besiege-early-access/modding/37479-rbtwrrr-scripter-lachcim-s-scripting-mod-revived-spaar-s-mod-loader-besiege-0-23) for making his source code available and enabling me to continue his work.
 
-For documentation and everything else you want to know, see [wiki page](https://github.com/lench4991/BesiegeScripterMod/wiki).
+**For documentation and everything else you want to know, see [wiki page](https://github.com/lench4991/BesiegeScripterMod/wiki).**
