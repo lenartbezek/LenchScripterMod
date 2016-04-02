@@ -13,18 +13,22 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 4, 1, 0);
+        public override Version Version { get; } = new Version(0, 4, 2, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
 
         public static Scripter scripter;
+        internal static LuaWatchlist watchlist;
 
         public override void OnLoad()
         {
+            Keybindings.AddKeybinding("Dump Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
+            Keybindings.AddKeybinding("Lua Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
             UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
             scripter = Scripter.Instance;
+            watchlist = new LuaWatchlist();
             Game.OnSimulationToggle += scripter.OnSimulationToggle;
         }
         public override void OnUnload()
@@ -36,13 +40,13 @@ namespace LenchScripterMod
 
     public class Scripter : SingleInstance<Scripter>
     {
-        public override string Name { get; } = "LenchScripter";
-        public bool isSimulating;
+        public override string Name { get; } = "Lench Scripter";
+        internal bool isSimulating;
 
         private static LuaMethodWrapper wrapper;
 
-        private Lua lua;
-        private string luaFile;
+        internal Lua lua;
+        internal string luaFile;
         private GenericBlock hoveredBlock;
 
         // Map: Block type -> type count
@@ -180,7 +184,7 @@ namespace LenchScripterMod
         /// </summary>
         private void DumpHoveredBlock()
         {
-            if (Input.GetKeyDown(KeyCode.LeftShift))
+            if (Keybindings.Get("Dump Blocks ID").IsDown())
             {
                 if (Game.AddPiece.HoveredBlock == null)
                 {
@@ -203,54 +207,69 @@ namespace LenchScripterMod
         }
 
         /// <summary>
-        /// Calls Lua functions.
+        /// Runs script while simulating.
         /// </summary>
         private void Update()
         {
-            if (!this.isSimulating)
+            // Toggle editor visibility
+            if (Keybindings.Get("Lua Watchlist").Pressed())
+                ScripterMod.watchlist.visible = !ScripterMod.watchlist.visible;
+
+            if (isSimulating)
             {
-                this.DumpHoveredBlock();
-                return;
-            }
+                if (lua == null) return;
 
-            if (!AddPiece.isSimulating) return;
-            if (this.lua == null) return;
-
-            if (this.luaFile != null)
-            {   // load the script on the first update
-                this.lua.DoFile(this.luaFile);
-                this.luaFile = null;
-            }
-
-            if ((string)this.lua.DoString("return type(onUpdate)", "chunk")[0] == "function")
-                this.lua.DoString("onUpdate()", "chunk");
-
-            if (Input.anyKey)
-            {
-                if ((string)this.lua.DoString("return type(onKeyHeld)", "chunk")[0] == "function")
+                // Load the script on the first update
+                if (luaFile != null)
                 {
-                    foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
+                    lua.DoFile(luaFile);
+                    luaFile = null;
+                }
+
+                // Call Lua onUpdate
+                if ((string)lua.DoString("return type(onUpdate)", "chunk")[0] == "function")
+                    lua.DoString("onUpdate()", "chunk");
+
+                // Call Lua onKey
+                if (Input.anyKey)
+                {
+                    if ((string)lua.DoString("return type(onKeyHeld)", "chunk")[0] == "function")
                     {
-                        if (!Input.GetKey(key)) continue;
-                        this.lua.DoString(string.Concat("onKeyHeld(", (int)key, ")"), "chunk");
+                        foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
+                        {
+                            if (!Input.GetKey(key)) continue;
+                            lua.DoString(string.Concat("onKeyHeld(", (int)key, ")"), "chunk");
+                        }
+                    }
+                    if ((string)lua.DoString("return type(onKeyDown)", "chunk")[0] == "function")
+                    {
+                        foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
+                        {
+                            if (!Input.GetKeyDown(key)) continue;
+                            lua.DoString(string.Concat("onKeyDown(", (int)key, ")"), "chunk");
+                        }
                     }
                 }
-                if ((string)this.lua.DoString("return type(onKeyDown)", "chunk")[0] == "function")
-                {
-                    foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
-                    {
-                        if (!Input.GetKeyDown(key)) continue;
-                        this.lua.DoString(string.Concat("onKeyDown(", (int)key, ")"), "chunk");
-                    }
-                }
             }
+            else
+            {
+                DumpHoveredBlock();
+            }
+        }
+
+        /// <summary>
+        /// Calls the editor GUI to render.
+        /// </summary>
+        private void OnGUI()
+        {
+            ScripterMod.watchlist.Render();
         }
 
         /// <summary>
         /// Handles starting and stopping of the simulation.
         /// </summary>
         /// <param name="isSimulating"></param>
-        public void OnSimulationToggle(bool isSimulating)
+        internal void OnSimulationToggle(bool isSimulating)
         {
             this.isSimulating = isSimulating;
             if (isSimulating)
@@ -265,7 +284,7 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Blocks unique identifier.</param>
         /// <returns>Returns reference to blocks BlockBehaviour object.</returns>
-        public BlockBehaviour GetBlock(string blockId)
+        internal BlockBehaviour GetBlock(string blockId)
         {
             if (idToSimulationBlock == null)
                 InitializeSimulationBlockIDs();

@@ -12,7 +12,8 @@ namespace LenchScripterMod
     public class LuaMethodWrapper
     {
         // Using radians or degrees
-        private float usingDegrees;
+        private float convertToDegrees;
+        private float convertToRadians;
         // Measuring time
         private System.Diagnostics.Stopwatch stopwatch;
         private float startTime;
@@ -25,10 +26,14 @@ namespace LenchScripterMod
             stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
             startTime = Time.time;
-            usingDegrees = Mathf.Rad2Deg;
+            convertToDegrees = Mathf.Rad2Deg;
+            convertToRadians = 1;
         }
 
-        public BlockBehaviour GetBlock(string blockId)
+        /// <summary>
+        /// Returns BlockBehaviour object of the specified block.
+        /// </summary>
+        public BlockBehaviour getBlock(string blockId)
         {
             return ScripterMod.scripter.GetBlock(blockId);
         }
@@ -36,6 +41,22 @@ namespace LenchScripterMod
         public void log(string msg)
         {
             Debug.Log(msg);
+        }
+
+        /// <summary>
+        /// Reports the value of the variable to the watchlist.
+        /// </summary>
+        public void watch(string name, System.Object value)
+        {
+            ScripterMod.watchlist.AddToWatchlist(name, value, false);
+        }
+
+        /// <summary>
+        /// Clears the watchlist.
+        /// </summary>
+        public void clearWatchlist()
+        {
+            ScripterMod.watchlist.ClearWatchlist();
         }
 
         /// <summary>
@@ -53,23 +74,25 @@ namespace LenchScripterMod
         /// <returns></returns>
         public float getScaledTime()
         {
-            return Time.time - startTime;
+            return (Time.time - startTime) * 1000;
         }
 
         /// <summary>
-        /// 
+        /// Makes any future calls to angle functions return degrees.
         /// </summary>
         public void useDegrees()
         {
-            usingDegrees = Mathf.Rad2Deg;
+            convertToDegrees = Mathf.Rad2Deg;
+            convertToRadians = 1;
         }
 
         /// <summary>
-        /// 
+        /// Makes any future calls to angle functions return radians.
         /// </summary>
         public void useRadians()
         {
-            usingDegrees = 1;
+            convertToDegrees = 1;
+            convertToRadians = Mathf.Deg2Rad;
         }
 
         /// <summary>
@@ -82,7 +105,7 @@ namespace LenchScripterMod
         /// <param name="value">Boolean value to be set.</param>
         public void setToggleMode(string blockId, string toggleName, bool value)
         {
-            BlockBehaviour b = GetBlock(blockId);
+            BlockBehaviour b = getBlock(blockId);
             foreach (MToggle m in b.Toggles)
             {
                 if (m.DisplayName.ToUpper() == toggleName.ToUpper())
@@ -106,7 +129,7 @@ namespace LenchScripterMod
         {
             if (float.IsNaN(value))
                 throw new LuaException("Value is not a number (NaN).");
-            BlockBehaviour b = GetBlock(blockId);
+            BlockBehaviour b = getBlock(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -128,7 +151,7 @@ namespace LenchScripterMod
         /// <returns>Returns the toggle value of a specified property.</returns>
         public bool getToggleMode(string blockId, string toggleName)
         {
-            BlockBehaviour b = GetBlock(blockId);
+            BlockBehaviour b = getBlock(blockId);
             foreach (MToggle m in b.Toggles)
             {
                 if (m.DisplayName.ToUpper() == toggleName.ToUpper())
@@ -149,7 +172,7 @@ namespace LenchScripterMod
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderValue(string blockId, string sliderName)
         {
-            BlockBehaviour b = GetBlock(blockId);
+            BlockBehaviour b = getBlock(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -170,7 +193,7 @@ namespace LenchScripterMod
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderMin(string blockId, string sliderName)
         {
-            BlockBehaviour b = GetBlock(blockId);
+            BlockBehaviour b = getBlock(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -191,7 +214,7 @@ namespace LenchScripterMod
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderMax(string blockId, string sliderName)
         {
-            BlockBehaviour b = GetBlock(blockId);
+            BlockBehaviour b = getBlock(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -212,7 +235,7 @@ namespace LenchScripterMod
         public void addKey(string blockId, string keyName, int keyValue)
         {
             KeyCode key = (KeyCode)keyValue;
-            BlockBehaviour b = GetBlock(blockId);
+            BlockBehaviour b = getBlock(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -240,7 +263,7 @@ namespace LenchScripterMod
         public void replaceKey(string blockId, string keyName, int keyValue)
         {
             KeyCode key = (KeyCode)keyValue;
-            BlockBehaviour b = GetBlock(blockId);
+            BlockBehaviour b = getBlock(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -259,7 +282,7 @@ namespace LenchScripterMod
         /// <param name="keyName">Key display name.</param>
         public int getKey(string blockId, string keyName)
         {
-            BlockBehaviour b = GetBlock(blockId);
+            BlockBehaviour b = getBlock(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -279,7 +302,7 @@ namespace LenchScripterMod
         /// <param name="key">New key to be assigned.</param>
         public void clearKeys(string blockId, string keyName)
         {
-            BlockBehaviour b = GetBlock(blockId);
+            BlockBehaviour b = getBlock(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -300,7 +323,7 @@ namespace LenchScripterMod
         /// <returns>Vector3 object.</returns>
         public Vector3 getPosition(string blockId = "STARTING BLOCK 1")
         {
-            return GetBlock(blockId).transform.position;
+            return getBlock(blockId).transform.position;
         }
 
         /// <summary>
@@ -312,7 +335,7 @@ namespace LenchScripterMod
         /// <returns>Vector3 object.</returns>
         public Vector3 getVelocity(string blockId = "STARTING BLOCK 1")
         {
-            return GetBlock(blockId).GetComponent<Rigidbody>().velocity;
+            return getBlock(blockId).GetComponent<Rigidbody>().velocity;
         }
 
         /// <summary>
@@ -321,24 +344,26 @@ namespace LenchScripterMod
         /// If no argument is used, starting block is used.
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
-        /// <returns>Vector3 object with values in degrees.</returns>
+        /// <returns>Vector3 object.</returns>
         public Vector3 getEulerAngles(string blockId = "STARTING BLOCK 1")
         {
-            return GetBlock(blockId).transform.eulerAngles;
+            Vector3 d2r = new Vector3(convertToRadians, convertToRadians, convertToRadians);
+            Vector3 euler = getBlock(blockId).transform.eulerAngles;
+            euler.Scale(d2r);
+            return euler;
         }
 
         /// <summary>
-        /// Returns the angular velocity vector of the specified block
-        /// in degrees per second.
+        /// Returns the angular velocity vector of the specified block.
         /// If no argument is used, starting block is used.
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
         /// <returns>Vector3 object.</returns>
         public Vector3 getAngularVelocity(string blockId = "STARTING BLOCK 1")
         {
-            Vector3 rad2deg = new Vector3(usingDegrees, usingDegrees, usingDegrees);
-            Vector3 angularVelocity = GetBlock(blockId).GetComponent<Rigidbody>().angularVelocity;
-            angularVelocity.Scale(rad2deg);
+            Vector3 r2d = new Vector3(convertToDegrees, convertToDegrees, convertToDegrees);
+            Vector3 angularVelocity = getBlock(blockId).GetComponent<Rigidbody>().angularVelocity;
+            angularVelocity.Scale(r2d);
             return angularVelocity;
         }
 
@@ -346,16 +371,16 @@ namespace LenchScripterMod
         /// This means that at the start of the simulation, starting blocks angles will be 0, 0, 0.
 
         /// <summary>
-        /// Calculates the heading of the specified block in degrees.
+        /// Calculates the heading of the specified block.
         /// Works the same as GetYaw.
         /// </summary>
         /// <param name="blockId">Blocks unique identifier. Default is starting block.</param>
-        /// <returns>Float value ranging from 0 to 360.</returns>
+        /// <returns>Float value ranging from 0 to 360 or 2*PI.</returns>
         public float getHeading(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = GetBlock(blockId).transform.rotation;
-            float jaw = Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * usingDegrees;
-            return jaw < 0 ? jaw + 360 : jaw;
+            Quaternion q = getBlock(blockId).transform.rotation;
+            float jaw = Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * convertToDegrees;
+            return jaw < 0 ? jaw + 2 * Mathf.PI * convertToDegrees : jaw;
         }
 
         /// <summary>
@@ -365,8 +390,8 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from -180 to 180.</returns>
         public float getYaw(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = GetBlock(blockId).transform.rotation;
-            return Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * usingDegrees;
+            Quaternion q = getBlock(blockId).transform.rotation;
+            return Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * convertToDegrees;
         }
 
         /// <summary>
@@ -376,8 +401,8 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from -180 to 180.</returns>
         public float getPitch(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = GetBlock(blockId).transform.rotation;
-            return -Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * usingDegrees;
+            Quaternion q = getBlock(blockId).transform.rotation;
+            return -Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * convertToDegrees;
         }
 
         /// <summary>
@@ -387,7 +412,7 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from -180 to 180.</returns>
         public float getRoll(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = GetBlock(blockId).transform.rotation;
+            Quaternion q = getBlock(blockId).transform.rotation;
             return -Mathf.Asin(2 * q.x * q.y + 2 * q.z * q.w) * Mathf.Rad2Deg;
         }
 
