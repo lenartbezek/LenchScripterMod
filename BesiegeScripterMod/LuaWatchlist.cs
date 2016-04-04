@@ -18,7 +18,7 @@ namespace LenchScripterMod
         private static float mainWindowHeight = 500;
 
         private static float editWindowWidth = 240;
-        private static float editWindowHeight = 80;
+        private static float editWindowHeight = 72;
 
         private int mainWindowID = Util.GetWindowID();
         private Rect mainWindowRect = new Rect(Screen.width - mainWindowWidth - 50, 50, mainWindowWidth, mainWindowHeight);
@@ -95,25 +95,28 @@ namespace LenchScripterMod
         {
             List<VariableWatch> toBeRemoved = new List<VariableWatch>();
 
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Width(296), GUILayout.Height(50 + (watched.Count * 24)), GUILayout.MaxWidth(296), GUILayout.MaxHeight(412));
-
             var oldColor = GUI.backgroundColor;
             GUI.backgroundColor = Color.gray;
-            newVariableName = GUI.TextField(new Rect(68, 4, 224, 20), newVariableName, Elements.InputFields.ComponentField);
+            newVariableName = GUI.TextField(new Rect(68, 48, 248, 20), newVariableName, Elements.InputFields.ComponentField);
             GUI.backgroundColor = oldColor;
-            if (GUI.Button(new Rect(4, 4, 60, 20), "Add", Elements.Buttons.Default) && newVariableName != "")
+            if (GUI.Button(new Rect(4, 48, 60, 20), "Add", Elements.Buttons.Default) && Regex.Replace(newVariableName, @"\s+", "") != "")
             {
                 newVariableName = Regex.Replace(newVariableName, @"\s+", "");
                 AddToWatchlist(newVariableName, null, true);
                 newVariableName = "";
             }
 
+            scrollPosition = GUI.BeginScrollView(
+                new Rect(4, 72, 312, 400),
+                scrollPosition,
+                new Rect(0, 0, 296, 4 + (watched.Count * 24)));
+
             int i = 0;
             foreach (VariableWatch v in watched)
             {
 
                 // Button for removing line
-                if (GUI.Button(new Rect(4, 30 + i * 24, 20, 20), "×", Elements.Buttons.Red))
+                if (GUI.Button(new Rect(4, 4 + i * 24, 20, 20), "×", Elements.Buttons.Red))
                     toBeRemoved.Add(v);
 
                 // Color of labels
@@ -122,25 +125,25 @@ namespace LenchScripterMod
                 // Variable name: button for global, label for local
                 if (v.global)
                 {
-                    if (GUI.Button(new Rect(28, 30 + i * 24, 130, 20), v.GetName(), Elements.Buttons.Default))
+                    if (GUI.Button(new Rect(28, 4 + i * 24, 130, 20), v.GetName(), Elements.Buttons.Default))
                     {
                         editing = true;
                         editingVariable = v;
                         newVariableValue = v.GetValue();
                         editWindowRect = new Rect(
                             mainWindowRect.x + 24,
-                            mainWindowRect.y + 50 + i * 24,
+                            mainWindowRect.y + 60 + i * 24,
                             editWindowWidth,
                             editWindowHeight);
                     }
                 }
                 else
                 {
-                    GUI.Label(new Rect(28, 30 + i * 24, 130, 20), v.GetName(), Elements.InputFields.ComponentField);
+                    GUI.Label(new Rect(28, 4 + i * 24, 130, 20), v.GetName(), Elements.InputFields.ComponentField);
                 }
 
                 // Label for variable value
-                GUI.Label(new Rect(162, 30 + i * 24, 130, 20), v.GetValue(), Elements.InputFields.ComponentField);
+                GUI.Label(new Rect(162, 4 + i * 24, 136, 20), v.GetValue(), Elements.InputFields.ComponentField);
 
                 GUI.backgroundColor = oldColor;
 
@@ -150,9 +153,9 @@ namespace LenchScripterMod
             // Remove variables
             foreach (VariableWatch v in toBeRemoved) watched.Remove(v);
 
-            GUILayout.EndScrollView();
+            GUI.EndScrollView();
 
-            if (GUI.Button(new Rect(12, mainWindowWidth - 26, 296, 20), "Clear Watchlist", Elements.Buttons.Red))
+            if (GUI.Button(new Rect(4, 476, 312, 20), "Clear Watchlist", Elements.Buttons.Red))
                 ClearWatchlist();
 
             GUI.DragWindow(new Rect(0, 0, mainWindowRect.width, GUI.skin.window.padding.top));
@@ -165,16 +168,16 @@ namespace LenchScripterMod
         private void DoEditWindow(int id)
         {
             
-            if (GUI.Button(new Rect(4, GUI.skin.window.padding.top, 60, 20), "Set", Elements.Buttons.Default))
+            if (GUI.Button(new Rect(4, 48, 60, 20), "Set", Elements.Buttons.Default))
             {
                 editing = false;
                 editingVariable.SetValue(newVariableValue);
             }
 
             var oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = Color.black;
+            GUI.backgroundColor = Color.gray;
 
-            newVariableValue = GUI.TextField(new Rect(68, GUI.skin.window.padding.top, 168, 20), newVariableValue, Elements.InputFields.ComponentField);
+            newVariableValue = GUI.TextField(new Rect(68, 48, 168, 20), newVariableValue, Elements.InputFields.ComponentField);
 
             GUI.backgroundColor = oldColor;
 
