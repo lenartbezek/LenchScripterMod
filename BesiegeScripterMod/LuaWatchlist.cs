@@ -14,33 +14,32 @@ namespace LenchScripterMod
     internal class LuaWatchlist
     {
 
-        private static float defaultWidth = 320;
-        private static float defaultHeight = 500;
+        private static float mainWindowWidth = 320;
+        private static float mainWindowHeight = 500;
 
-        private int windowID = Util.GetWindowID();
-        private Rect windowRect = new Rect(Screen.width - defaultWidth - 50, 50, defaultWidth, defaultHeight);
-        private string newName = "";
+        private static float editWindowWidth = 240;
+        private static float editWindowHeight = 80;
+
+        private int mainWindowID = Util.GetWindowID();
+        private Rect mainWindowRect = new Rect(Screen.width - mainWindowWidth - 50, 50, mainWindowWidth, mainWindowHeight);
+        private int editWindowID = Util.GetWindowID();
+        private Rect editWindowRect;
+
+        private string newVariableName = "";
+        private string newVariableValue;
+
         private Vector2 scrollPosition = Vector2.zero;
 
         internal List<VariableWatch> watched;
 
         internal bool visible { get; set; } = false;
 
+        private bool editing = false;
+        private VariableWatch editingVariable;
+
         internal LuaWatchlist()
         {
             watched = new List<VariableWatch>();
-        }
-
-        /// <summary>
-        /// Called by OnGUI() for rendering.
-        /// </summary>
-        internal void Render()
-        {
-            if (visible)
-            {
-                GUI.skin = ModGUI.Skin;
-                windowRect = GUI.Window(windowID, windowRect, DoWindow, "Lua Watchlist");
-            }
         }
 
         /// <summary>
@@ -73,10 +72,26 @@ namespace LenchScripterMod
         }
 
         /// <summary>
-        /// Draws the window.
+        /// Called by OnGUI() for rendering.
+        /// </summary>
+        internal void Render()
+        {
+            if (visible)
+            {
+                GUI.skin = ModGUI.Skin;
+                mainWindowRect = GUI.Window(mainWindowID, mainWindowRect, DoMainWindow, "Lua Watchlist");
+                if (editing)
+                {
+                    editWindowRect = GUI.Window(editWindowID, editWindowRect, DoEditWindow, "Edit "+editingVariable.GetName());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draws the main window.
         /// </summary>
         /// <param name="id"></param>
-        private void DoWindow(int id)
+        private void DoMainWindow(int id)
         {
             List<VariableWatch> toBeRemoved = new List<VariableWatch>();
 
@@ -84,13 +99,13 @@ namespace LenchScripterMod
 
             var oldColor = GUI.backgroundColor;
             GUI.backgroundColor = Color.gray;
-            newName = GUI.TextField(new Rect(68, 4, 224, 20), newName, Elements.InputFields.ComponentField);
+            newVariableName = GUI.TextField(new Rect(68, 4, 224, 20), newVariableName, Elements.InputFields.ComponentField);
             GUI.backgroundColor = oldColor;
-            if (GUI.Button(new Rect(4, 4, 60, 20), "Add", Elements.Buttons.Default) && newName != "")
+            if (GUI.Button(new Rect(4, 4, 60, 20), "Add", Elements.Buttons.Default) && newVariableName != "")
             {
-                newName = Regex.Replace(newName, @"\s+", "");
-                AddToWatchlist(newName, null, true);
-                newName = "";
+                newVariableName = Regex.Replace(newVariableName, @"\s+", "");
+                AddToWatchlist(newVariableName, null, true);
+                newVariableName = "";
             }
 
             int i = 0;
@@ -104,8 +119,25 @@ namespace LenchScripterMod
                 // Color of labels
                 GUI.backgroundColor = Color.black;
 
-                // Label for variable name
-                GUI.Label(new Rect(28, 30 + i * 24, 130, 20), v.GetName(), Elements.InputFields.ComponentField);
+                // Variable name: button for global, label for local
+                if (v.global)
+                {
+                    if (GUI.Button(new Rect(28, 30 + i * 24, 130, 20), v.GetName(), Elements.Buttons.Default))
+                    {
+                        editing = true;
+                        editingVariable = v;
+                        newVariableValue = v.GetValue();
+                        editWindowRect = new Rect(
+                            mainWindowRect.x + 24,
+                            mainWindowRect.y + 50 + i * 24,
+                            editWindowWidth,
+                            editWindowHeight);
+                    }
+                }
+                else
+                {
+                    GUI.Label(new Rect(28, 30 + i * 24, 130, 20), v.GetName(), Elements.InputFields.ComponentField);
+                }
 
                 // Label for variable value
                 GUI.Label(new Rect(162, 30 + i * 24, 130, 20), v.GetValue(), Elements.InputFields.ComponentField);
@@ -120,10 +152,33 @@ namespace LenchScripterMod
 
             GUILayout.EndScrollView();
 
-            if (GUI.Button(new Rect(12, defaultHeight - 26, 296, 20), "Clear Watchlist", Elements.Buttons.Red))
+            if (GUI.Button(new Rect(12, mainWindowWidth - 26, 296, 20), "Clear Watchlist", Elements.Buttons.Red))
                 ClearWatchlist();
 
-            GUI.DragWindow(new Rect(0, 0, windowRect.width, GUI.skin.window.padding.top));
+            GUI.DragWindow(new Rect(0, 0, mainWindowRect.width, GUI.skin.window.padding.top));
+        }
+
+        /// <summary>
+        /// Draws the edit window on top of existing window.
+        /// </summary>
+        /// <param name="id"></param>
+        private void DoEditWindow(int id)
+        {
+            
+            if (GUI.Button(new Rect(4, GUI.skin.window.padding.top, 60, 20), "Set", Elements.Buttons.Default))
+            {
+                editing = false;
+                editingVariable.SetValue(newVariableValue);
+            }
+
+            var oldColor = GUI.backgroundColor;
+            GUI.backgroundColor = Color.black;
+
+            newVariableValue = GUI.TextField(new Rect(68, GUI.skin.window.padding.top, 168, 20), newVariableValue, Elements.InputFields.ComponentField);
+
+            GUI.backgroundColor = oldColor;
+
+            GUI.DragWindow(new Rect(0, 0, editWindowRect.width, GUI.skin.window.padding.top));
         }
     }
 
@@ -185,25 +240,7 @@ namespace LenchScripterMod
         {
             if (global)
             {
-                try
-                {
-                    var number = float.Parse(value);
-                    ScripterMod.scripter.lua[name] = number;
-                }
-                catch (System.FormatException)
-                {
-                    if(value == "true")
-                    {
-                        ScripterMod.scripter.lua[name] = true;
-                        return;
-                    }   
-                    if(value == "false")
-                    {
-                        ScripterMod.scripter.lua[name] = false;
-                        return;
-                    }
-                    ScripterMod.scripter.lua[name] = value;
-                }
+                ScripterMod.scripter.lua.DoString(name+" = "+value);
             }
         }
 
