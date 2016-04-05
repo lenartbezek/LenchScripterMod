@@ -18,7 +18,7 @@ namespace LenchScripterMod
         private static float mainWindowHeight = 500;
 
         private static float editWindowWidth = 240;
-        private static float editWindowHeight = 72;
+        private static float editWindowHeight = 124;
 
         private int mainWindowID = Util.GetWindowID();
         private Rect mainWindowRect = new Rect(Screen.width - mainWindowWidth - 50, 50, mainWindowWidth, mainWindowHeight);
@@ -96,7 +96,7 @@ namespace LenchScripterMod
             List<VariableWatch> toBeRemoved = new List<VariableWatch>();
 
             var oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = Color.gray;
+            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 1);
             newVariableName = GUI.TextField(new Rect(68, 48, 248, 20), newVariableName, Elements.InputFields.ComponentField);
             GUI.backgroundColor = oldColor;
             if (GUI.Button(new Rect(4, 48, 60, 20), "Add", Elements.Buttons.Default) && Regex.Replace(newVariableName, @"\s+", "") != "")
@@ -129,7 +129,7 @@ namespace LenchScripterMod
                     {
                         editing = true;
                         editingVariable = v;
-                        newVariableValue = v.GetValue();
+                        newVariableValue = v.GetEditString();
                         editWindowRect = new Rect(
                             mainWindowRect.x + 24,
                             mainWindowRect.y + 60 + i * 24,
@@ -168,16 +168,22 @@ namespace LenchScripterMod
         private void DoEditWindow(int id)
         {
             
-            if (GUI.Button(new Rect(4, 48, 60, 20), "Set", Elements.Buttons.Default))
+            if (GUI.Button(new Rect(4, 96, 114, 20), "Set value", Elements.Buttons.Default))
             {
                 editing = false;
                 editingVariable.SetValue(newVariableValue);
             }
+            if (GUI.Button(new Rect(122, 96, 114, 20), "Cancel", Elements.Buttons.Red))
+            {
+                editing = false;
+            }
+
+            GUI.Label(new Rect(8, 52, 224, 20), "Enter a Lua expression:", Elements.Labels.Default);
 
             var oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = Color.gray;
+            GUI.backgroundColor = Color.black;
 
-            newVariableValue = GUI.TextField(new Rect(68, 48, 168, 20), newVariableValue, Elements.InputFields.ComponentField);
+            newVariableValue = GUI.TextField(new Rect(4, 72, 232, 20), newVariableValue, Elements.InputFields.ComponentField);
 
             GUI.backgroundColor = oldColor;
 
@@ -191,7 +197,7 @@ namespace LenchScripterMod
     class VariableWatch : IEquatable<VariableWatch>
     {
         private string name;
-        private string value;
+        private System.Object value;
         internal bool global = false;
 
         internal VariableWatch(string name)
@@ -208,11 +214,15 @@ namespace LenchScripterMod
         {
             if (value != null)
             {
-                this.value = value.ToString();
+                this.value = value;
+
                 if (!global)
-                {
+                { // Check if global
                     if (ScripterMod.scripter.lua[name] != null)
-                        global = this.value == ScripterMod.scripter.lua[name].ToString();
+                    {
+                        System.Object globalValue = ScripterMod.scripter.lua[name];
+                        global = value.Equals(globalValue);
+                    }
                 }  
             }
         }
@@ -232,13 +242,38 @@ namespace LenchScripterMod
             if (global && ScripterMod.scripter.isSimulating)
             {
                 if(ScripterMod.scripter.lua[name] != null)
-                    value = ScripterMod.scripter.lua[name].ToString();
+                    value = ScripterMod.scripter.lua[name];
             }    
             if (value == null || name == "")
                 return "";
-            return value;
+            return value.ToString();
         }
 
+        /// <summary>
+        /// Returns an edit string used in edit variable window.
+        /// Supposed to be a Lua expression to initialize the edited variable.
+        /// </summary>
+        /// <returns></returns>
+        internal string GetEditString()
+        {
+            if (value != null)
+            {
+                var type = value.GetType();
+                if (type == typeof(Vector3))
+                    return "Vector3" + value.ToString();
+                if (type == typeof(Vector2))
+                    return "Vector2" + value.ToString();
+                if (type == typeof(string))
+                    return '"' + value.ToString() + '"';
+                return value.ToString();
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// Executes Lua statement to set the value.
+        /// </summary>
+        /// <param name="value"></param>
         internal void SetValue(string value)
         {
             if (global)
