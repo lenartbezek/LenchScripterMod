@@ -38,6 +38,28 @@ namespace LenchScripterMod
             return ScripterMod.scripter.GetBlock(blockId);
         }
 
+        /// <summary>
+        /// Returns BlockScript object of the modded block.
+        /// If the block is not a block mod, throws an exception.
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
+        public System.Object getBlockScript(string blockId)
+        {
+            BlockBehaviour b = ScripterMod.scripter.GetBlock(blockId);
+            System.Object bs = b.GetComponent(ScripterMod.blockScriptType);
+
+            if(bs != null) {
+                return bs;
+            }
+
+            throw new LuaException("Block " + blockId + " is not a block mod.");
+        }
+
+        /// <summary>
+        /// Logs the message into the mod-loader's console.
+        /// </summary>
+        /// <param name="msg"></param>
         public void log(string msg)
         {
             Debug.Log(msg);
@@ -316,6 +338,36 @@ namespace LenchScripterMod
         }
 
         /// <summary>
+        /// Returns the forward vector of the specified block.
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
+        public Vector3 getForward(string blockId = "STARTING BLOCK 1")
+        {
+            return getBlock(blockId).transform.forward;
+        }
+
+        /// <summary>
+        /// Returns the up vector of the specified block.
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
+        public Vector3 getUp(string blockId = "STARTING BLOCK 1")
+        {
+            return getBlock(blockId).transform.up;
+        }
+
+        /// <summary>
+        /// Returns the right vector of the specified block.
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
+        public Vector3 getRight(string blockId = "STARTING BLOCK 1")
+        {
+            return getBlock(blockId).transform.right;
+        }
+
+        /// <summary>
         /// Returns the position vector of the specified block.
         /// If no argument is used, starting block is used.
         /// </summary>
@@ -335,7 +387,62 @@ namespace LenchScripterMod
         /// <returns>Vector3 object.</returns>
         public Vector3 getVelocity(string blockId = "STARTING BLOCK 1")
         {
-            return getBlock(blockId).GetComponent<Rigidbody>().velocity;
+            Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
+            if (body != null)
+                return body.velocity;
+            throw new LuaException("Block " + blockId + "has no rigid body.");
+        }
+
+        /// <summary>
+        /// Returns mass of the block.
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
+        public float getMass(string blockId = "STARTING BLOCK 1")
+        {
+            Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
+            if (body != null)
+                return body.mass;
+            throw new LuaException("Block " + blockId + "has no rigid body.");
+        }
+
+        /// <summary>
+        /// Returns the center of mass relative to the blocks position.
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
+        public Vector3 getCenterOfMass(string blockId = "STARTING BLOCK 1")
+        {
+            Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
+            if (body != null)
+                return body.centerOfMass;
+            throw new LuaException("Block " + blockId + "has no rigid body.");
+        }
+
+        /// <summary>
+        /// Returns the mass of the machine.
+        /// </summary>
+        /// <returns></returns>
+        public float getMachineMass()
+        {
+            return Machine.Active().Mass;
+        }
+
+        /// <summary>
+        /// Returns the center of mass of the machine in the world.
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
+        public Vector3 getMachineCenterOfMass()
+        {
+            Vector3 center = new Vector3(0, 0, 0);
+            for (int i = 0; i < Machine.Active().Blocks.Count; i++)
+            {
+                Rigidbody body = Machine.Active().Blocks[i].GetComponent<Rigidbody>();
+                if(body != null)
+                    center += body.worldCenterOfMass * body.mass;
+            }
+            return center / Machine.Active().Mass;
         }
 
         /// <summary>
@@ -361,10 +468,15 @@ namespace LenchScripterMod
         /// <returns>Vector3 object.</returns>
         public Vector3 getAngularVelocity(string blockId = "STARTING BLOCK 1")
         {
-            Vector3 r2d = new Vector3(convertToDegrees, convertToDegrees, convertToDegrees);
-            Vector3 angularVelocity = getBlock(blockId).GetComponent<Rigidbody>().angularVelocity;
-            angularVelocity.Scale(r2d);
-            return angularVelocity;
+            Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
+            if (body != null)
+            {
+                Vector3 convertUnits = new Vector3(convertToDegrees, convertToDegrees, convertToDegrees);
+                Vector3 angularVelocity = body.angularVelocity;
+                angularVelocity.Scale(convertUnits);
+                return angularVelocity;
+            }
+            throw new LuaException("Block " + blockId + "has no rigid body.");
         }
 
         /// Following angle functions are swapped in a way to fit starting blocks initial position.
@@ -429,7 +541,7 @@ namespace LenchScripterMod
             {
                 return hit.point;
             }
-            return new Vector3(0, 0, 0);
+            throw new LuaException("Your raycast does not intersect with a collider.");
         }
 
         /// <summary>

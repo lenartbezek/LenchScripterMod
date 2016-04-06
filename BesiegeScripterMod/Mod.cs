@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Reflection;
 using spaar.ModLoader;
 using UnityEngine;
 using NLua;
@@ -13,28 +14,66 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 5, 3, 0);
+        public override Version Version { get; } = new Version(0, 6, 0, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
 
         public static Scripter scripter;
+
         internal static LuaWatchlist watchlist;
+        internal static Assembly blockLoaderAssembly;
+        internal static Type blockScriptType;
 
         public override void OnLoad()
         {
-            Keybindings.AddKeybinding("Dump Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
-            Keybindings.AddKeybinding("Lua Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
             UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
             scripter = Scripter.Instance;
-            watchlist = new LuaWatchlist();
             Game.OnSimulationToggle += scripter.OnSimulationToggle;
+
+            watchlist = new LuaWatchlist();
+
+            if (LoadBlockLoaderAssembly())
+            {
+                Debug.Log("[Lench Scripter Mod]: Found TGYD's BlockLoader");
+            }
+
+            addKeybinds();
         }
         public override void OnUnload()
         {
             Game.OnSimulationToggle -= scripter.OnSimulationToggle;
             scripter.OnSimulationToggle(false);
+        }
+
+        private bool LoadBlockLoaderAssembly()
+        {
+            try
+            {
+                blockLoaderAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/BlockLoader.dll");
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+
+            foreach (Type type in blockLoaderAssembly.GetExportedTypes())
+            {
+                if (type.FullName == "BlockScript")
+                    blockScriptType = type;
+            }
+
+            if (blockScriptType == null)
+                return false;
+
+            return true;
+        }
+
+        private void addKeybinds()
+        {
+            Keybindings.AddKeybinding("Dump Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
+            Keybindings.AddKeybinding("Lua Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
         }
     }
 
@@ -48,9 +87,6 @@ namespace LenchScripterMod
         internal Lua lua;
         internal string luaFile;
         private GenericBlock hoveredBlock;
-
-        // Map: Block type -> type count
-        private Dictionary<string, int> typeCount;
 
         // Map: Building Block -> ID
         private Dictionary<GenericBlock, string> buildingBlocks;
@@ -74,7 +110,7 @@ namespace LenchScripterMod
         /// Used for dumping block IDs while building.
         /// </summary>
         private void InitializeBuildingBlockIDs()
-        {
+        {/*
             typeCount = new Dictionary<string, int>();
             if (buildingBlocks != null) buildingBlocks.Clear();
             else
@@ -90,7 +126,23 @@ namespace LenchScripterMod
                 string name = block.GetComponent<MyBlockInfo>().blockName.ToUpper();
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
                 buildingBlocks[block] = name + " " + typeCount[name];
+            }*/
+            var typeCount = new Dictionary<string, int>();
+            if (buildingBlocks != null) buildingBlocks.Clear();
+            else
+            {
+                Game.OnBlockPlaced += AddBlockID;
+                Game.OnBlockRemoved += InitializeBuildingBlockIDs;
+                buildingBlocks = new Dictionary<GenericBlock, string>();
             }
+            for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
+            {
+                GenericBlock block = Machine.Active().BuildingBlocks[i].GetComponent<GenericBlock>();
+                string name = Machine.Active().BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
+                typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
+                buildingBlocks[block] = name + " " + typeCount[name];
+            }
+
         }
 
         /// <summary>
@@ -102,12 +154,19 @@ namespace LenchScripterMod
         {
             idToSimulationBlock = new Dictionary<string, BlockBehaviour>();
             guidToSimulationBlock = new Dictionary<string, BlockBehaviour>();
-            Transform simulationMachine = GameObject.Find("Simulation Machine").transform;
+            var typeCount = new Dictionary<string, int>();
             for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
             {
+                string name = Machine.Active().BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
+                typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
+                string id = name + " " + typeCount[name];
                 string guid = Machine.Active().BuildingBlocks[i].Guid.ToString();
+                idToSimulationBlock[id] = Machine.Active().Blocks[i];
                 guidToSimulationBlock[guid] = Machine.Active().Blocks[i];
             }
+
+            /*
+            Transform simulationMachine = GameObject.Find("Simulation Machine").transform;
             foreach (Transform b in simulationMachine)
             {
                 string name = b.GetComponent<MyBlockInfo>().blockName.ToUpper();
@@ -122,6 +181,7 @@ namespace LenchScripterMod
 
                 idToSimulationBlock[id] = b.GetComponent<BlockBehaviour>();
             }
+            */
         }
 
         /// <summary>
@@ -142,7 +202,7 @@ namespace LenchScripterMod
             lua["besiege"] = wrapper;
 
             // Populate keycode table
-            this.lua.NewTable("KeyCode");
+            lua.NewTable("KeyCode");
             foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
             {
                 string str = key.ToString();
@@ -154,13 +214,13 @@ namespace LenchScripterMod
             string luaFile = string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua");
             if (File.Exists(luaFile))
             {
-                UnityEngine.Debug.Log("Script file: " + luaFile);
+                Debug.Log("Script file: " + luaFile);
                 this.luaFile = luaFile;
             }
             else
             {
                 Debug.Log("Script file does not exist: " + luaFile);
-                this.ScriptStop();
+                ScriptStop();
             }
 
         }
