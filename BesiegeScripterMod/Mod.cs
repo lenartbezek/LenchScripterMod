@@ -14,7 +14,7 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 6, 0, 0);
+        public override Version Version { get; } = new Version(0, 6, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
@@ -23,7 +23,6 @@ namespace LenchScripterMod
         public static Scripter scripter;
 
         internal static LuaWatchlist watchlist;
-        internal static Assembly blockLoaderAssembly;
         internal static Type blockScriptType;
 
         public override void OnLoad()
@@ -49,6 +48,7 @@ namespace LenchScripterMod
 
         private bool LoadBlockLoaderAssembly()
         {
+            Assembly blockLoaderAssembly;
             try
             {
                 blockLoaderAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/BlockLoader.dll");
@@ -80,13 +80,15 @@ namespace LenchScripterMod
     public class Scripter : SingleInstance<Scripter>
     {
         public override string Name { get; } = "Lench Scripter";
-        internal bool isSimulating;
 
         private static LuaMethodWrapper wrapper;
 
+        internal bool isSimulating;
         internal Lua lua;
         internal string luaFile;
+
         private GenericBlock hoveredBlock;
+        private bool rebuildDict = false;
 
         // Map: Building Block -> ID
         private Dictionary<GenericBlock, string> buildingBlocks;
@@ -98,43 +100,19 @@ namespace LenchScripterMod
         private Dictionary<string, BlockBehaviour> idToSimulationBlock;
 
         /// <summary>
-        /// Rebuilds ID dictionary.
-        /// </summary>
-        private void AddBlockID(Transform block)
-        {
-            InitializeBuildingBlockIDs();
-        }
-
-        /// <summary>
         /// Populates dictionary with references to building blocks.
         /// Used for dumping block IDs while building.
+        /// Called at first DumpBlockID after machine change.
         /// </summary>
         private void InitializeBuildingBlockIDs()
-        {/*
-            typeCount = new Dictionary<string, int>();
-            if (buildingBlocks != null) buildingBlocks.Clear();
-            else
-            {
-                Game.OnBlockPlaced += AddBlockID;
-                Game.OnBlockRemoved += InitializeBuildingBlockIDs;
-                buildingBlocks = new Dictionary<GenericBlock, string>();
-            }
-            Transform buildingMachine = GameObject.Find("Building Machine").transform;
-            foreach (Transform b in buildingMachine)
-            {
-                GenericBlock block = b.GetComponent<GenericBlock>();
-                string name = block.GetComponent<MyBlockInfo>().blockName.ToUpper();
-                typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
-                buildingBlocks[block] = name + " " + typeCount[name];
-            }*/
+        {
             var typeCount = new Dictionary<string, int>();
-            if (buildingBlocks != null) buildingBlocks.Clear();
-            else
+            if (buildingBlocks == null)
             {
-                Game.OnBlockPlaced += AddBlockID;
-                Game.OnBlockRemoved += InitializeBuildingBlockIDs;
-                buildingBlocks = new Dictionary<GenericBlock, string>();
+                Game.OnBlockPlaced += (Transform block) => rebuildDict = true;
+                Game.OnBlockRemoved += () => rebuildDict = true;
             }
+            buildingBlocks = new Dictionary<GenericBlock, string>();
             for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
             {
                 GenericBlock block = Machine.Active().BuildingBlocks[i].GetComponent<GenericBlock>();
@@ -142,7 +120,7 @@ namespace LenchScripterMod
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
                 buildingBlocks[block] = name + " " + typeCount[name];
             }
-
+            rebuildDict = false;
         }
 
         /// <summary>
@@ -164,24 +142,6 @@ namespace LenchScripterMod
                 idToSimulationBlock[id] = Machine.Active().Blocks[i];
                 guidToSimulationBlock[guid] = Machine.Active().Blocks[i];
             }
-
-            /*
-            Transform simulationMachine = GameObject.Find("Simulation Machine").transform;
-            foreach (Transform b in simulationMachine)
-            {
-                string name = b.GetComponent<MyBlockInfo>().blockName.ToUpper();
-
-                int c = 0;
-                string id;
-                do
-                {
-                    c++;
-                    id = name + " " + c;
-                } while (idToSimulationBlock.ContainsKey(id));
-
-                idToSimulationBlock[id] = b.GetComponent<BlockBehaviour>();
-            }
-            */
         }
 
         /// <summary>
@@ -257,12 +217,12 @@ namespace LenchScripterMod
 
                 this.hoveredBlock = Game.AddPiece.HoveredBlock;
 
-                if (buildingBlocks == null)
+                if (rebuildDict || buildingBlocks == null)
                     InitializeBuildingBlockIDs();
 
                 string key = buildingBlocks[hoveredBlock];
                 string guid = hoveredBlock.GetComponent<BlockBehaviour>().Guid.ToString();
-                Debug.Log(key + " - " + guid);
+                Debug.Log(key + " \t " + guid);
             }
         }
 
@@ -271,7 +231,7 @@ namespace LenchScripterMod
         /// </summary>
         private void Update()
         {
-            // Toggle editor visibility
+            // Toggle watchlist visibility
             if (Keybindings.Get("Lua Watchlist").Pressed())
                 ScripterMod.watchlist.visible = !ScripterMod.watchlist.visible;
 

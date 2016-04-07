@@ -276,7 +276,7 @@ namespace LenchScripterMod
         /// <param name="value"></param>
         internal void SetValue(string value)
         {
-            if (global)
+            if (global && ScripterMod.scripter.lua != null)
             {
                 ScripterMod.scripter.lua.DoString(name+" = "+value);
             }

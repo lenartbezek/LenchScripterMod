@@ -390,7 +390,7 @@ namespace LenchScripterMod
             Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
             if (body != null)
                 return body.velocity;
-            throw new LuaException("Block " + blockId + "has no rigid body.");
+            throw new LuaException("Block " + blockId + " has no rigid body.");
         }
 
         /// <summary>
@@ -403,7 +403,7 @@ namespace LenchScripterMod
             Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
             if (body != null)
                 return body.mass;
-            throw new LuaException("Block " + blockId + "has no rigid body.");
+            throw new LuaException("Block " + blockId + " has no rigid body.");
         }
 
         /// <summary>
@@ -416,7 +416,7 @@ namespace LenchScripterMod
             Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
             if (body != null)
                 return body.centerOfMass;
-            throw new LuaException("Block " + blockId + "has no rigid body.");
+            throw new LuaException("Block " + blockId + " has no rigid body.");
         }
 
         /// <summary>
@@ -476,7 +476,7 @@ namespace LenchScripterMod
                 angularVelocity.Scale(convertUnits);
                 return angularVelocity;
             }
-            throw new LuaException("Block " + blockId + "has no rigid body.");
+            throw new LuaException("Block " + blockId + " has no rigid body.");
         }
 
         /// Following angle functions are swapped in a way to fit starting blocks initial position.
