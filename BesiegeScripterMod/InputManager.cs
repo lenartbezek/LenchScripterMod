@@ -40,7 +40,7 @@ namespace LenchScripterMod
                 Vk = (ushort)keyCode,
                 Scan = 0,
                 Flags = 2,
-                Time = 20,
+                Time = 0,
                 ExtraInfo = IntPtr.Zero
             };
             INPUT[] inputs = new INPUT[] { input, input2 };

@@ -279,8 +279,16 @@ namespace LenchScripterMod
                 // Send action keys
                 if (sendActionKey)
                 {
-                    InputManager.SendKeyDown(VirtualKeyCode.ACTION_KEY_CODE);
-                    InputManager.SendKeyUp(VirtualKeyCode.ACTION_KEY_CODE);
+                    try
+                    {
+                        InputManager.SendKeyDown(VirtualKeyCode.ACTION_KEY_CODE);
+                        InputManager.SendKeyUp(VirtualKeyCode.ACTION_KEY_CODE);
+                    }
+                    catch (DllNotFoundException)
+                    {
+                        Debug.LogError("Calling block actions is not supported on your system.");
+                        LuaMethodWrapper.actionCallsEnabled = false;
+                    }
                     clearActionKeys();
                     sendActionKey = false;
                 }

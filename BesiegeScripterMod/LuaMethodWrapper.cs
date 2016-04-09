@@ -19,6 +19,8 @@ namespace LenchScripterMod
         private float startTime;
         // List of placed marks
         private List<Mark> marks;
+        // Action calls enabled
+        internal static bool actionCallsEnabled = true;
 
         public LuaMethodWrapper()
         {
@@ -124,6 +126,8 @@ namespace LenchScripterMod
         /// <param name="actionName"></param>
         public void action(string blockId, string actionName)
         {
+            if (!actionCallsEnabled)
+                return;
             BlockBehaviour b = getBlock(blockId);
             bool keyAdded = false;
             foreach (MKey m in b.Keys)
