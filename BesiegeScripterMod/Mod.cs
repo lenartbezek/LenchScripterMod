@@ -136,7 +136,7 @@ namespace LenchScripterMod
         /// <summary>
         /// Populates dictionary with references to simulation blocks.
         /// Used for accessing blocks with GetBlock(blockId) while simulating.
-        /// Called at first call of GetBlock(blockId);
+        /// Called at the start of simulation.
         /// </summary>
         private void InitializeSimulationBlockIDs()
         {
