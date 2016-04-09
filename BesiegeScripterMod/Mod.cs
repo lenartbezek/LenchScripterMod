@@ -14,7 +14,7 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 6, 0);
+        public override Version Version { get; } = new Version(0, 7, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
@@ -81,13 +81,23 @@ namespace LenchScripterMod
     {
         public override string Name { get; } = "Lench Scripter";
 
+        // Object passed to lua
         private static LuaMethodWrapper wrapper;
 
         internal bool isSimulating;
+
+        // Blocks to remove actionKey in next frame.
+        internal List<BlockBehaviour> activatedBlocks = new List<BlockBehaviour>();
+        internal bool sendActionKey = false;
+
+        // Lua environment
         internal Lua lua;
         internal string luaFile;
 
+        // Hovered block for ID dumping
         private GenericBlock hoveredBlock;
+
+        // Machine changed - flag for rebuild
         private bool rebuildDict = false;
 
         // Map: Building Block -> ID
@@ -157,6 +167,7 @@ namespace LenchScripterMod
             lua.DoString(@" import 'System'
                             import 'UnityEngine'
                             import 'Assembly-CSharp'  ");
+            lua.DoString(@"package.path = package.path .. ';"+ Application.dataPath + "/Scripts/?.lua'");
 
             wrapper = new LuaMethodWrapper();
             lua["besiege"] = wrapper;
@@ -222,8 +233,27 @@ namespace LenchScripterMod
 
                 string key = buildingBlocks[hoveredBlock];
                 string guid = hoveredBlock.GetComponent<BlockBehaviour>().Guid.ToString();
-                Debug.Log(key + " \t " + guid);
+                Debug.Log(key + "  -  " + guid);
             }
+        }
+
+        /// <summary>
+        /// To be called after blocks respond to action.
+        /// </summary>
+        internal void clearActionKeys()
+        {
+            foreach (BlockBehaviour b in activatedBlocks)
+            {
+                foreach (MKey m in b.Keys)
+                {
+                    for (int i = 0; i < m.KeyCode.Count; i++)
+                        if (m.KeyCode[i] == InputManager.actionKeyCode)
+                        {
+                            m.AddOrReplaceKey(i, KeyCode.None);
+                        }
+                }
+            }
+            activatedBlocks.Clear();
         }
 
         /// <summary>
@@ -246,6 +276,15 @@ namespace LenchScripterMod
                     luaFile = null;
                 }
 
+                // Send action keys
+                if (sendActionKey)
+                {
+                    InputManager.SendKeyDown(VirtualKeyCode.ACTION_KEY_CODE);
+                    InputManager.SendKeyUp(VirtualKeyCode.ACTION_KEY_CODE);
+                    clearActionKeys();
+                    sendActionKey = false;
+                }
+
                 // Call Lua onUpdate
                 if ((string)lua.DoString("return type(onUpdate)", "chunk")[0] == "function")
                     lua.DoString("onUpdate()", "chunk");
@@ -257,16 +296,18 @@ namespace LenchScripterMod
                     {
                         foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
                         {
-                            if (!Input.GetKey(key)) continue;
+                            if (!Input.GetKey(key) || key == InputManager.actionKeyCode) continue;
                             lua.DoString(string.Concat("onKeyHeld(", (int)key, ")"), "chunk");
                         }
                     }
+
                     if ((string)lua.DoString("return type(onKeyDown)", "chunk")[0] == "function")
                     {
                         foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
                         {
-                            if (!Input.GetKeyDown(key)) continue;
+                            if (!Input.GetKeyDown(key) || key == InputManager.actionKeyCode) continue;
                             lua.DoString(string.Concat("onKeyDown(", (int)key, ")"), "chunk");
+                            Debug.Log(key.ToString());
                         }
                     }
                 }

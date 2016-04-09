@@ -33,7 +33,7 @@ namespace LenchScripterMod
         /// <summary>
         /// Returns BlockBehaviour object of the specified block.
         /// </summary>
-        public BlockBehaviour getBlock(string blockId)
+        private BlockBehaviour getBlock(string blockId)
         {
             return ScripterMod.scripter.GetBlock(blockId);
         }
@@ -115,6 +115,36 @@ namespace LenchScripterMod
         {
             convertToDegrees = 1;
             convertToRadians = Mathf.Deg2Rad;
+        }
+
+        /// <summary>
+        /// Makes a block do something.
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <param name="actionName"></param>
+        public void action(string blockId, string actionName)
+        {
+            BlockBehaviour b = getBlock(blockId);
+            bool keyAdded = false;
+            foreach (MKey m in b.Keys)
+            {
+                if (m.DisplayName.ToUpper() == actionName.ToUpper())
+                {
+                    for (int i = 0; i < m.KeyCode.Count; i++)
+                        if (m.KeyCode[i] == KeyCode.None)
+                        {
+                            m.AddOrReplaceKey(i, InputManager.actionKeyCode);
+                            keyAdded = true;
+                            break;
+                        }
+                    if (!keyAdded)
+                        m.AddKey(InputManager.actionKeyCode);
+                    ScripterMod.scripter.sendActionKey = true;
+                    ScripterMod.scripter.activatedBlocks.Add(b);
+                    return;
+                }
+            }
+            throw new LuaException("Action " + actionName + " not found.");
         }
 
         /// <summary>
