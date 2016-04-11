@@ -14,17 +14,24 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 7, 0);
+        public override Version Version { get; } = new Version(0, 7, 1);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
 
+        /// <summary>
+        /// SingleInstance of scripter mod.
+        /// </summary>
         public static Scripter scripter;
 
         internal static LuaWatchlist watchlist;
         internal static Type blockScriptType;
 
+        /// <summary>
+        /// Instantiates the mod and it's components.
+        /// Looks for and loads assemblies.
+        /// </summary>
         public override void OnLoad()
         {
             UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
@@ -40,12 +47,20 @@ namespace LenchScripterMod
 
             addKeybinds();
         }
+
+        /// <summary>
+        /// Disables the mod from executing scripts.
+        /// </summary>
         public override void OnUnload()
         {
             Game.OnSimulationToggle -= scripter.OnSimulationToggle;
             scripter.OnSimulationToggle(false);
         }
 
+        /// <summary>
+        /// Attempts to load TGYD's BlockLoader assembly.
+        /// </summary>
+        /// <returns>Returns true if successfull.</returns>
         private bool LoadBlockLoaderAssembly()
         {
             Assembly blockLoaderAssembly;
@@ -77,8 +92,14 @@ namespace LenchScripterMod
         }
     }
 
+    /// <summary>
+    /// Class representing an instance of the mod.
+    /// </summary>
     public class Scripter : SingleInstance<Scripter>
     {
+        /// <summary>
+        /// Name in the Unity hierarchy.
+        /// </summary>
         public override string Name { get; } = "Lench Scripter";
 
         // Object passed to lua
@@ -114,7 +135,7 @@ namespace LenchScripterMod
         /// Used for dumping block IDs while building.
         /// Called at first DumpBlockID after machine change.
         /// </summary>
-        private void InitializeBuildingBlockIDs()
+        internal void InitializeBuildingBlockIDs()
         {
             var typeCount = new Dictionary<string, int>();
             if (buildingBlocks == null)
@@ -231,9 +252,19 @@ namespace LenchScripterMod
                 if (rebuildDict || buildingBlocks == null)
                     InitializeBuildingBlockIDs();
 
-                string key = buildingBlocks[hoveredBlock];
+                string key;
+                try
+                {
+                    key = buildingBlocks[hoveredBlock];
+                }
+                catch (KeyNotFoundException)
+                {
+                    InitializeBuildingBlockIDs();
+                    key = buildingBlocks[hoveredBlock];
+                }
                 string guid = hoveredBlock.GetComponent<BlockBehaviour>().Guid.ToString();
                 Debug.Log(key + "  -  " + guid);
+
             }
         }
 
@@ -315,7 +346,6 @@ namespace LenchScripterMod
                         {
                             if (!Input.GetKeyDown(key) || key == InputManager.actionKeyCode) continue;
                             lua.DoString(string.Concat("onKeyDown(", (int)key, ")"), "chunk");
-                            Debug.Log(key.ToString());
                         }
                     }
                 }

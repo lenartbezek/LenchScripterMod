@@ -22,7 +22,10 @@ namespace LenchScripterMod
         // Action calls enabled
         internal static bool actionCallsEnabled = true;
 
-        public LuaMethodWrapper()
+        /// <summary>
+        /// Instantiates the interface that is passed to Lua as besiege object.
+        /// </summary>
+        internal LuaMethodWrapper()
         {
             marks = new List<Mark>();
             stopwatch = new System.Diagnostics.Stopwatch();
@@ -35,7 +38,7 @@ namespace LenchScripterMod
         /// <summary>
         /// Returns BlockBehaviour object of the specified block.
         /// </summary>
-        private BlockBehaviour getBlock(string blockId)
+        public BlockBehaviour getBlock(string blockId)
         {
             return ScripterMod.scripter.GetBlock(blockId);
         }
@@ -178,7 +181,7 @@ namespace LenchScripterMod
         /// Throws an exception if the property is not found.
         /// </summary>
         /// <param name="blockId">Blocks unique identifier.</param>
-        /// <param name="toggleName">Case insensitive string specifying the property to be set.
+        /// <param name="sliderName">Case insensitive string specifying the property to be set.
         /// Usually identical to in-game label.</param>
         /// <param name="value">Float value to be set.</param>
         public void setSliderValue(string blockId, string sliderName, float value)
@@ -223,7 +226,7 @@ namespace LenchScripterMod
         /// Throws an exception if the property is not found.
         /// </summary>
         /// <param name="blockId">Blocks unique identifier.</param>
-        /// <param name="toggleName">Case insensitive string specifying the property to be set.
+        /// <param name="sliderName">Case insensitive string specifying the property to be set.
         /// Usually identical to in-game label.</param>
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderValue(string blockId, string sliderName)
@@ -244,7 +247,7 @@ namespace LenchScripterMod
         /// Throws an exception if the property is not found.
         /// </summary>
         /// <param name="blockId">Blocks unique identifier.</param>
-        /// <param name="toggleName">Case insensitive string specifying the property to be set.
+        /// <param name="sliderName">Case insensitive string specifying the property to be set.
         /// Usually identical to in-game label.</param>
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderMin(string blockId, string sliderName)
@@ -265,7 +268,7 @@ namespace LenchScripterMod
         /// Throws an exception if the property is not found.
         /// </summary>
         /// <param name="blockId">Blocks unique identifier.</param>
-        /// <param name="toggleName">Case insensitive string specifying the property to be set.
+        /// <param name="sliderName">Case insensitive string specifying the property to be set.
         /// Usually identical to in-game label.</param>
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderMax(string blockId, string sliderName)
@@ -287,7 +290,7 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
         /// <param name="keyName">Key display name.</param>
-        /// <param name="key">New key to be assigned.</param>
+        /// <param name="keyValue">New key to be assigned.</param>
         public void addKey(string blockId, string keyName, int keyValue)
         {
             KeyCode key = (KeyCode)keyValue;
@@ -315,7 +318,7 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
         /// <param name="keyName">Key display name.</param>
-        /// <param name="key">New key to be assigned.</param>
+        /// <param name="keyValue">New key to be assigned.</param>
         public void replaceKey(string blockId, string keyName, int keyValue)
         {
             KeyCode key = (KeyCode)keyValue;
@@ -355,7 +358,6 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Block identifier.</param>
         /// <param name="keyName">Key display name.</param>
-        /// <param name="key">New key to be assigned.</param>
         public void clearKeys(string blockId, string keyName)
         {
             BlockBehaviour b = getBlock(blockId);
@@ -456,7 +458,7 @@ namespace LenchScripterMod
         /// <summary>
         /// Returns the mass of the machine.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Float value representing total mass.</returns>
         public float getMachineMass()
         {
             return Machine.Active().Mass;
@@ -465,8 +467,7 @@ namespace LenchScripterMod
         /// <summary>
         /// Returns the center of mass of the machine in the world.
         /// </summary>
-        /// <param name="blockId"></param>
-        /// <returns></returns>
+        /// <returns>Vector3 position of world COM.</returns>
         public Vector3 getMachineCenterOfMass()
         {
             Vector3 center = new Vector3(0, 0, 0);
@@ -619,16 +620,27 @@ namespace LenchScripterMod
             Destroy(GetComponent<SphereCollider>());
         }
 
+        /// <summary>
+        /// Moves the mark to the target position.
+        /// </summary>
+        /// <param name="target">Vector3 target position.</param>
         public void move(Vector3 target)
         {
             transform.position = target;
         }
 
+        /// <summary>
+        /// Sets the color of the mark.
+        /// </summary>
+        /// <param name="c">UnityEngine.Color object.</param>
         public void setColor(Color c)
         {
             GetComponent<Renderer>().material.color = c;
         }
 
+        /// <summary>
+        /// Clears the mark.
+        /// </summary>
         public void clear()
         {
             Destroy(gameObject);
