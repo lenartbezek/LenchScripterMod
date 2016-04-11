@@ -146,7 +146,6 @@ namespace LenchScripterMod
                         }
                     if (!keyAdded)
                         m.AddKey(InputManager.actionKeyCode);
-                    ScripterMod.scripter.sendActionKey = true;
                     ScripterMod.scripter.activatedBlocks.Add(b);
                     return;
                 }

@@ -108,8 +108,7 @@ namespace LenchScripterMod
         internal bool isSimulating;
 
         // Blocks to remove actionKey in next frame.
-        internal List<BlockBehaviour> activatedBlocks = new List<BlockBehaviour>();
-        internal bool sendActionKey = false;
+        internal HashSet<BlockBehaviour> activatedBlocks = new HashSet<BlockBehaviour>();
 
         // Lua environment
         internal Lua lua;
@@ -308,20 +307,23 @@ namespace LenchScripterMod
                 }
 
                 // Send action keys
-                if (sendActionKey)
+                if (LuaMethodWrapper.actionCallsEnabled)
                 {
                     try
                     {
-                        InputManager.SendKeyDown(VirtualKeyCode.ACTION_KEY_CODE);
-                        InputManager.SendKeyUp(VirtualKeyCode.ACTION_KEY_CODE);
+                        InputManager.SendKeyPress(VirtualKeyCode.ACTION_KEY_CODE);
                     }
                     catch (DllNotFoundException)
                     {
                         Debug.LogError("Calling block actions is not supported on your system.");
                         LuaMethodWrapper.actionCallsEnabled = false;
                     }
+                }
+
+                // Receive action keys and reset mappings
+                if (Input.GetKey(InputManager.actionKeyCode))
+                {
                     clearActionKeys();
-                    sendActionKey = false;
                 }
 
                 // Call Lua onUpdate
