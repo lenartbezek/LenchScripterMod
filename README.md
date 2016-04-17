@@ -1,6 +1,6 @@
 [![GitHub license](https://img.shields.io/github/license/lench4991/LenchScripterMod.svg)](https://github.com/lench4991/LenchScripterMod/blob/master/LICENSE.md)
 [![GitHub release](https://img.shields.io/github/release/lench4991/LenchScripterMod.svg)](https://github.com/lench4991/LenchScripterMod/releases)
-[![Github All Releases](https://img.shields.io/github/downloads/lench4991/LenchScripterMod/total.svg)](https://github.com/lench4991/LenchScripterMod/releases)
+[![Github Releases](https://img.shields.io/github/downloads/lench4991/LenchScripterMod/latest/total.svg?maxAge=2592000)](https://github.com/lench4991/LenchScripterMod/releases)
 
 # Lench Scripter Mod
 Lua scripting mod for Besiege v0.27
