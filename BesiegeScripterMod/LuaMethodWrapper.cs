@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using NLua.Exceptions;
+using LenchScripterMod.Blocks;
 
 namespace LenchScripterMod
 {
@@ -35,12 +36,16 @@ namespace LenchScripterMod
             convertToRadians = 1;
         }
 
-        /// <summary>
-        /// Returns BlockBehaviour object of the specified block.
-        /// </summary>
-        public BlockBehaviour getBlock(string blockId)
+        public Block getBlock(string blockId)
         {
-            return ScripterMod.scripter.GetBlock(blockId);
+            BlockBehaviour bb = ScripterMod.scripter.GetBlockBehaviour(blockId);
+            if (Cog.isCog(bb))
+                return new Cog(bb);
+            if (Steering.isSteering(bb))
+                return new Steering(bb);
+            if (Cannon.isCannon(bb))
+                return new Cannon(bb);
+            return new Block(bb);
         }
 
         /// <summary>
@@ -51,7 +56,7 @@ namespace LenchScripterMod
         /// <returns></returns>
         public System.Object getBlockScript(string blockId)
         {
-            BlockBehaviour b = ScripterMod.scripter.GetBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             System.Object bs = b.GetComponent(ScripterMod.blockScriptType);
 
             if(bs != null) {
@@ -71,7 +76,7 @@ namespace LenchScripterMod
             BlockBehaviour b;
             try
             {
-                b = ScripterMod.scripter.GetBlock(blockId);
+                b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             }
             catch (LuaException)
             {
@@ -154,7 +159,7 @@ namespace LenchScripterMod
         {
             if (!actionCallsEnabled)
                 return;
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             bool keyAdded = false;
             foreach (MKey m in b.Keys)
             {
@@ -186,7 +191,7 @@ namespace LenchScripterMod
         /// <param name="value">Boolean value to be set.</param>
         public void setToggleMode(string blockId, string toggleName, bool value)
         {
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             foreach (MToggle m in b.Toggles)
             {
                 if (m.DisplayName.ToUpper() == toggleName.ToUpper())
@@ -210,7 +215,7 @@ namespace LenchScripterMod
         {
             if (float.IsNaN(value))
                 throw new LuaException("Value is not a number (NaN).");
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -223,6 +228,30 @@ namespace LenchScripterMod
         }
 
         /// <summary>
+        /// Used to set limit value of various block properties.
+        /// Throws an exception if the property is not found.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier.</param>
+        /// <param name="limitName">Case insensitive string specifying the property to be set.
+        /// Usually identical to in-game label.</param>
+        /// <param name="value">Float value to be set.</param>
+        public void setLimitValue(string blockId, string limitName, float value)
+        {
+            if (float.IsNaN(value))
+                throw new LuaException("Value is not a number (NaN).");
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
+            foreach (MLimits m in b.Limits)
+            {
+                if (m.DisplayName.ToUpper() == limitName.ToUpper())
+                {
+                    m.MaxValue = value;
+                    return;
+                }
+            }
+            throw new LuaException("Slider " + limitName + " not found.");
+        }
+
+        /// <summary>
         /// Used to get the toggle value of various block properties.
         /// Throws an exception if the property is not found.
         /// </summary>
@@ -232,7 +261,7 @@ namespace LenchScripterMod
         /// <returns>Returns the toggle value of a specified property.</returns>
         public bool getToggleMode(string blockId, string toggleName)
         {
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             foreach (MToggle m in b.Toggles)
             {
                 if (m.DisplayName.ToUpper() == toggleName.ToUpper())
@@ -253,7 +282,7 @@ namespace LenchScripterMod
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderValue(string blockId, string sliderName)
         {
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -262,6 +291,27 @@ namespace LenchScripterMod
                 }
             }
             throw new LuaException("Slider " + sliderName + " not found.");
+        }
+
+        /// <summary>
+        /// Used to get the limit value of various block properties.
+        /// Throws an exception if the property is not found.
+        /// </summary>
+        /// <param name="blockId">Blocks unique identifier.</param>
+        /// <param name="limitName">Case insensitive string specifying the property to be set.
+        /// Usually identical to in-game label.</param>
+        /// <returns>Returns the float value of a specified property.</returns>
+        public float getLimitValue(string blockId, string limitName)
+        {
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
+            foreach (MLimits m in b.Limits)
+            {
+                if (m.DisplayName.ToUpper() == limitName.ToUpper())
+                {
+                    return m.MaxValue;
+                }
+            }
+            throw new LuaException("Slider " + limitName + " not found.");
         }
 
         /// <summary>
@@ -274,7 +324,7 @@ namespace LenchScripterMod
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderMin(string blockId, string sliderName)
         {
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -295,7 +345,7 @@ namespace LenchScripterMod
         /// <returns>Returns the float value of a specified property.</returns>
         public float getSliderMax(string blockId, string sliderName)
         {
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             foreach (MSlider m in b.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -316,7 +366,7 @@ namespace LenchScripterMod
         public void addKey(string blockId, string keyName, int keyValue)
         {
             KeyCode key = (KeyCode)keyValue;
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -344,7 +394,7 @@ namespace LenchScripterMod
         public void replaceKey(string blockId, string keyName, int keyValue)
         {
             KeyCode key = (KeyCode)keyValue;
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -363,7 +413,7 @@ namespace LenchScripterMod
         /// <param name="keyName">Key display name.</param>
         public int getKey(string blockId, string keyName)
         {
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -382,7 +432,7 @@ namespace LenchScripterMod
         /// <param name="keyName">Key display name.</param>
         public void clearKeys(string blockId, string keyName)
         {
-            BlockBehaviour b = getBlock(blockId);
+            BlockBehaviour b = ScripterMod.scripter.GetBlockBehaviour(blockId);
             foreach (MKey m in b.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -402,7 +452,7 @@ namespace LenchScripterMod
         /// <returns></returns>
         public Vector3 getForward(string blockId = "STARTING BLOCK 1")
         {
-            return getBlock(blockId).transform.forward;
+            return ScripterMod.scripter.GetBlockBehaviour(blockId).transform.forward;
         }
 
         /// <summary>
@@ -412,7 +462,7 @@ namespace LenchScripterMod
         /// <returns></returns>
         public Vector3 getUp(string blockId = "STARTING BLOCK 1")
         {
-            return getBlock(blockId).transform.up;
+            return ScripterMod.scripter.GetBlockBehaviour(blockId).transform.up;
         }
 
         /// <summary>
@@ -422,7 +472,7 @@ namespace LenchScripterMod
         /// <returns></returns>
         public Vector3 getRight(string blockId = "STARTING BLOCK 1")
         {
-            return getBlock(blockId).transform.right;
+            return ScripterMod.scripter.GetBlockBehaviour(blockId).transform.right;
         }
 
         /// <summary>
@@ -433,7 +483,7 @@ namespace LenchScripterMod
         /// <returns>Vector3 object.</returns>
         public Vector3 getPosition(string blockId = "STARTING BLOCK 1")
         {
-            return getBlock(blockId).transform.position;
+            return ScripterMod.scripter.GetBlockBehaviour(blockId).transform.position;
         }
 
         /// <summary>
@@ -445,7 +495,7 @@ namespace LenchScripterMod
         /// <returns>Vector3 object.</returns>
         public Vector3 getVelocity(string blockId = "STARTING BLOCK 1")
         {
-            Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
+            Rigidbody body = ScripterMod.scripter.GetBlockBehaviour(blockId).GetComponent<Rigidbody>();
             if (body != null)
                 return body.velocity;
             throw new LuaException("Block " + blockId + " has no rigid body.");
@@ -458,7 +508,7 @@ namespace LenchScripterMod
         /// <returns></returns>
         public float getMass(string blockId = "STARTING BLOCK 1")
         {
-            Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
+            Rigidbody body = ScripterMod.scripter.GetBlockBehaviour(blockId).GetComponent<Rigidbody>();
             if (body != null)
                 return body.mass;
             throw new LuaException("Block " + blockId + " has no rigid body.");
@@ -471,7 +521,7 @@ namespace LenchScripterMod
         /// <returns></returns>
         public Vector3 getCenterOfMass(string blockId = "STARTING BLOCK 1")
         {
-            Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
+            Rigidbody body = ScripterMod.scripter.GetBlockBehaviour(blockId).GetComponent<Rigidbody>();
             if (body != null)
                 return body.centerOfMass;
             throw new LuaException("Block " + blockId + " has no rigid body.");
@@ -512,7 +562,7 @@ namespace LenchScripterMod
         public Vector3 getEulerAngles(string blockId = "STARTING BLOCK 1")
         {
             Vector3 d2r = new Vector3(convertToRadians, convertToRadians, convertToRadians);
-            Vector3 euler = getBlock(blockId).transform.eulerAngles;
+            Vector3 euler = ScripterMod.scripter.GetBlockBehaviour(blockId).transform.eulerAngles;
             euler.Scale(d2r);
             return euler;
         }
@@ -525,7 +575,7 @@ namespace LenchScripterMod
         /// <returns>Vector3 object.</returns>
         public Vector3 getAngularVelocity(string blockId = "STARTING BLOCK 1")
         {
-            Rigidbody body = getBlock(blockId).GetComponent<Rigidbody>();
+            Rigidbody body = ScripterMod.scripter.GetBlockBehaviour(blockId).GetComponent<Rigidbody>();
             if (body != null)
             {
                 Vector3 convertUnits = new Vector3(convertToDegrees, convertToDegrees, convertToDegrees);
@@ -544,7 +594,7 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from 0 to 360 or 2*PI.</returns>
         public float getHeading(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = getBlock(blockId).transform.rotation;
+            Quaternion q = ScripterMod.scripter.GetBlockBehaviour(blockId).transform.rotation;
             float jaw = Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * convertToDegrees;
             return jaw < 0 ? jaw + 2 * Mathf.PI * convertToDegrees : jaw;
         }
@@ -556,7 +606,7 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from -180 to 180.</returns>
         public float getYaw(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = getBlock(blockId).transform.rotation;
+            Quaternion q = ScripterMod.scripter.GetBlockBehaviour(blockId).transform.rotation;
             return Mathf.Atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z) * convertToDegrees;
         }
 
@@ -567,7 +617,7 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from -180 to 180.</returns>
         public float getPitch(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = getBlock(blockId).transform.rotation;
+            Quaternion q = ScripterMod.scripter.GetBlockBehaviour(blockId).transform.rotation;
             return -Mathf.Atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z) * convertToDegrees;
         }
 
@@ -578,7 +628,7 @@ namespace LenchScripterMod
         /// <returns>Float value ranging from -180 to 180.</returns>
         public float getRoll(string blockId = "STARTING BLOCK 1")
         {
-            Quaternion q = getBlock(blockId).transform.rotation;
+            Quaternion q = ScripterMod.scripter.GetBlockBehaviour(blockId).transform.rotation;
             return -Mathf.Asin(2 * q.x * q.y + 2 * q.z * q.w) * Mathf.Rad2Deg;
         }
 

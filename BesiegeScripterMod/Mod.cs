@@ -410,7 +410,7 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Blocks unique identifier.</param>
         /// <returns>Returns reference to blocks BlockBehaviour object.</returns>
-        internal BlockBehaviour GetBlock(string blockId)
+        internal BlockBehaviour GetBlockBehaviour(string blockId)
         {
             if (idToSimulationBlock == null)
                 InitializeSimulationBlockIDs();
