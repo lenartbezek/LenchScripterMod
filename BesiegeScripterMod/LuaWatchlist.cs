@@ -33,6 +33,7 @@ namespace LenchScripterMod
         internal List<VariableWatch> watched;
 
         internal bool visible { get; set; } = false;
+        internal bool autoadd { get; set; } = false;
 
         private bool editing = false;
         private VariableWatch editingVariable;
@@ -215,7 +216,6 @@ namespace LenchScripterMod
             if (value != null)
             {
                 this.value = value;
-
                 if (!global)
                 { // Check if global
                     if (ScripterMod.scripter.lua[name] != null)

@@ -62,28 +62,35 @@ namespace LenchScripterMod
         }
 
         /// <summary>
+        /// Returns true if a block exists in a physical form.
+        /// </summary>
+        /// <param name="blockId">Block identifier.</param>
+        /// <returns>Boolean value.</returns>
+        public bool exists(string blockId)
+        {
+            BlockBehaviour b;
+            try
+            {
+                b = ScripterMod.scripter.GetBlock(blockId);
+            }
+            catch (LuaException)
+            {
+                return false;
+            }
+                
+            if (b == null) return false;
+            if (b.transform == null) return false;
+            if (b.GetComponent<Rigidbody>() == null) return false;
+            return true;
+        }
+
+        /// <summary>
         /// Logs the message into the mod-loader's console.
         /// </summary>
         /// <param name="msg"></param>
         public void log(string msg)
         {
             Debug.Log(msg);
-        }
-
-        /// <summary>
-        /// Reports the value of the variable to the watchlist.
-        /// </summary>
-        public void watch(string name, System.Object value)
-        {
-            ScripterMod.watchlist.AddToWatchlist(name, value, false);
-        }
-
-        /// <summary>
-        /// Clears the watchlist.
-        /// </summary>
-        public void clearWatchlist()
-        {
-            ScripterMod.watchlist.ClearWatchlist();
         }
 
         /// <summary>
@@ -102,6 +109,22 @@ namespace LenchScripterMod
         public float getScaledTime()
         {
             return (Time.time - startTime) * 1000;
+        }
+
+        /// <summary>
+        /// Reports the value of the variable to the watchlist.
+        /// </summary>
+        public void watch(string name, System.Object value)
+        {
+            ScripterMod.watchlist.AddToWatchlist(name, value, false);
+        }
+
+        /// <summary>
+        /// Clears the watchlist.
+        /// </summary>
+        public void clearWatchlist()
+        {
+            ScripterMod.watchlist.ClearWatchlist();
         }
 
         /// <summary>
@@ -512,9 +535,6 @@ namespace LenchScripterMod
             }
             throw new LuaException("Block " + blockId + " has no rigid body.");
         }
-
-        /// Following angle functions are swapped in a way to fit starting blocks initial position.
-        /// This means that at the start of the simulation, starting blocks angles will be 0, 0, 0.
 
         /// <summary>
         /// Calculates the heading of the specified block.

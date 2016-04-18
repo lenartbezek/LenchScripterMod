@@ -14,7 +14,7 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 7, 1);
+        public override Version Version { get; } = new Version(0, 7, 5);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
@@ -105,14 +105,20 @@ namespace LenchScripterMod
         // Object passed to lua
         private static LuaMethodWrapper wrapper;
 
+        // Lua environment
+        internal Lua lua;
+        private string scriptFile;
+
+        // Lua functions
+        private static LuaFunction luaOnUpdate;
+        private static LuaFunction luaOnFixedUpdate;
+        private static LuaFunction luaOnKeyDown;
+        private static LuaFunction luaOnKeyHeld;
+
         internal bool isSimulating;
 
         // Blocks to remove actionKey in next frame.
         internal HashSet<BlockBehaviour> activatedBlocks = new HashSet<BlockBehaviour>();
-
-        // Lua environment
-        internal Lua lua;
-        internal string luaFile;
 
         // Hovered block for ID dumping
         private GenericBlock hoveredBlock;
@@ -174,12 +180,25 @@ namespace LenchScripterMod
             }
         }
 
+        private void InitializeLuaScript()
+        {
+            lua.DoFile(scriptFile);
+            luaOnUpdate = lua["onUpdate"] as LuaFunction;
+            luaOnFixedUpdate = lua["onFixedUpdate"] as LuaFunction;
+            luaOnKeyDown = lua["onKeyDown"] as LuaFunction;
+            luaOnKeyHeld = lua["onKeyHeld"] as LuaFunction;
+        }
+
         /// <summary>
         /// Called to start script.
         /// </summary>
         private void ScriptStart()
         {
             idToSimulationBlock = null;
+            luaOnUpdate = null;
+            luaOnFixedUpdate = null;
+            luaOnKeyDown = null;
+            luaOnKeyHeld = null;
 
             // Lua Environment
             lua = new Lua();
@@ -206,14 +225,13 @@ namespace LenchScripterMod
             if (File.Exists(luaFile))
             {
                 Debug.Log("Script file: " + luaFile);
-                this.luaFile = luaFile;
+                this.scriptFile = luaFile;
             }
             else
             {
-                Debug.Log("Script file does not exist: " + luaFile);
+                Debug.Log("Script file not found: " + luaFile);
                 ScriptStop();
             }
-
         }
 
         /// <summary>
@@ -235,36 +253,32 @@ namespace LenchScripterMod
         /// </summary>
         private void DumpHoveredBlock()
         {
-            if (Keybindings.Get("Dump Blocks ID").IsDown())
+            if (Game.AddPiece.HoveredBlock == null)
             {
-                if (Game.AddPiece.HoveredBlock == null)
-                {
-                    this.hoveredBlock = null;
-                    return;
-                }
-
-                if (this.hoveredBlock != null && Game.AddPiece.HoveredBlock == this.hoveredBlock)
-                    return;
-
-                this.hoveredBlock = Game.AddPiece.HoveredBlock;
-
-                if (rebuildDict || buildingBlocks == null)
-                    InitializeBuildingBlockIDs();
-
-                string key;
-                try
-                {
-                    key = buildingBlocks[hoveredBlock];
-                }
-                catch (KeyNotFoundException)
-                {
-                    InitializeBuildingBlockIDs();
-                    key = buildingBlocks[hoveredBlock];
-                }
-                string guid = hoveredBlock.GetComponent<BlockBehaviour>().Guid.ToString();
-                Debug.Log(key + "  -  " + guid);
-
+                this.hoveredBlock = null;
+                return;
             }
+
+            if (this.hoveredBlock != null && Game.AddPiece.HoveredBlock == this.hoveredBlock)
+                return;
+
+            this.hoveredBlock = Game.AddPiece.HoveredBlock;
+
+            if (rebuildDict || buildingBlocks == null)
+                InitializeBuildingBlockIDs();
+
+            string key;
+            try
+            {
+                key = buildingBlocks[hoveredBlock];
+            }
+            catch (KeyNotFoundException)
+            {
+                InitializeBuildingBlockIDs();
+                key = buildingBlocks[hoveredBlock];
+            }
+            string guid = hoveredBlock.GetComponent<BlockBehaviour>().Guid.ToString();
+            Debug.Log(key + "  -  " + guid);
         }
 
         /// <summary>
@@ -287,75 +301,86 @@ namespace LenchScripterMod
         }
 
         /// <summary>
-        /// Runs script while simulating.
+        /// Mod functionality.
+        /// Calls Lua functions.
         /// </summary>
         private void Update()
         {
+            // Initialize Lua script
+            if (scriptFile != null)
+            {
+                InitializeLuaScript();
+                scriptFile = null;
+            }
+
             // Toggle watchlist visibility
             if (Keybindings.Get("Lua Watchlist").Pressed())
+            {
                 ScripterMod.watchlist.visible = !ScripterMod.watchlist.visible;
-
-            if (isSimulating)
+            }
+                
+            if (!isSimulating)
             {
-                if (lua == null) return;
-
-                // Load the script on the first update
-                if (luaFile != null)
+                // Dump block identifiers
+                if (Keybindings.Get("Dump Blocks ID").IsDown())
                 {
-                    lua.DoFile(luaFile);
-                    luaFile = null;
+                    DumpHoveredBlock();
+                }
+            }
+
+            if (!isSimulating) return;
+
+            if (lua == null) return;
+
+            // Send action keys
+            if (LuaMethodWrapper.actionCallsEnabled)
+            {
+                try
+                {
+                    InputManager.SendKeyPress(VirtualKeyCode.ACTION_KEY_CODE);
+                }
+                catch (DllNotFoundException)
+                {
+                    Debug.LogError("Calling block actions is not supported on your system.");
+                    LuaMethodWrapper.actionCallsEnabled = false;
+                }
+            }
+
+            // Receive action keys and reset mappings
+            if (Input.GetKey(InputManager.actionKeyCode))
+            {
+                InputManager.SendKeyUp(VirtualKeyCode.ACTION_KEY_CODE);
+                clearActionKeys();
+            }
+
+            // Call Lua onUpdate
+            if (luaOnUpdate != null)
+                luaOnUpdate.Call();
+
+            // Call Lua onKey
+            if (Input.anyKey)
+            {
+                if ((string)lua.DoString("return type(onKeyHeld)", "chunk")[0] == "function")
+                {
+                    foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
+                    {
+                        if (!Input.GetKey(key) || key == InputManager.actionKeyCode) continue;
+                        if (luaOnKeyHeld != null)
+                            luaOnKeyHeld.Call((int)key);
+                    }
                 }
 
-                // Send action keys
-                if (LuaMethodWrapper.actionCallsEnabled)
+                if ((string)lua.DoString("return type(onKeyDown)", "chunk")[0] == "function")
                 {
-                    try
+                    foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
                     {
-                        InputManager.SendKeyPress(VirtualKeyCode.ACTION_KEY_CODE);
-                    }
-                    catch (DllNotFoundException)
-                    {
-                        Debug.LogError("Calling block actions is not supported on your system.");
-                        LuaMethodWrapper.actionCallsEnabled = false;
-                    }
-                }
-
-                // Receive action keys and reset mappings
-                if (Input.GetKey(InputManager.actionKeyCode))
-                {
-                    clearActionKeys();
-                }
-
-                // Call Lua onUpdate
-                if ((string)lua.DoString("return type(onUpdate)", "chunk")[0] == "function")
-                    lua.DoString("onUpdate()", "chunk");
-
-                // Call Lua onKey
-                if (Input.anyKey)
-                {
-                    if ((string)lua.DoString("return type(onKeyHeld)", "chunk")[0] == "function")
-                    {
-                        foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
-                        {
-                            if (!Input.GetKey(key) || key == InputManager.actionKeyCode) continue;
-                            lua.DoString(string.Concat("onKeyHeld(", (int)key, ")"), "chunk");
-                        }
-                    }
-
-                    if ((string)lua.DoString("return type(onKeyDown)", "chunk")[0] == "function")
-                    {
-                        foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
-                        {
-                            if (!Input.GetKeyDown(key) || key == InputManager.actionKeyCode) continue;
-                            lua.DoString(string.Concat("onKeyDown(", (int)key, ")"), "chunk");
-                        }
+                        if (!Input.GetKeyDown(key) || key == InputManager.actionKeyCode) continue;
+                        if (luaOnKeyDown != null)
+                            luaOnKeyDown.Call((int)key);
                     }
                 }
             }
-            else
-            {
-                DumpHoveredBlock();
-            }
+
         }
 
         /// <summary>

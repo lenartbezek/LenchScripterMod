@@ -3,3 +3,7 @@
 ################################################################################
 
 *.user
+/BesiegeScripterMod/LenchScripterMod.pfx
+/.vs/BesiegeScripterMod/v14
+/BesiegeScripterMod/bin/Debug
+/BesiegeScripterMod/obj/Debug
