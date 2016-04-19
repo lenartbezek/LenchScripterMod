@@ -9,7 +9,6 @@ namespace LenchScripterMod.Blocks
         private static float convertToRadians = 1;
 
         public string blockName;
-
         private BlockBehaviour bb;
         private System.Object bs;
 

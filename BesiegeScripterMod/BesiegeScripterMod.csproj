@@ -74,7 +74,16 @@
     <Compile Include="Blocks\Block.cs" />
     <Compile Include="Blocks\Cannon.cs" />
     <Compile Include="Blocks\Cog.cs" />
+    <Compile Include="Blocks\Decoupler.cs" />
+    <Compile Include="Blocks\Flamethrower.cs" />
+    <Compile Include="Blocks\FlyingSpiral.cs" />
+    <Compile Include="Blocks\Grabber.cs" />
+    <Compile Include="Blocks\Grenade.cs" />
+    <Compile Include="Blocks\Piston.cs" />
+    <Compile Include="Blocks\Rocket.cs" />
+    <Compile Include="Blocks\Spring.cs" />
     <Compile Include="Blocks\Steering.cs" />
+    <Compile Include="Blocks\WaterCannon.cs" />
     <Compile Include="InputManager.cs" />
     <Compile Include="LuaMethodWrapper.cs" />
     <Compile Include="Mod.cs" />

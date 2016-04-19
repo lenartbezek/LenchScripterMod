@@ -49,20 +49,20 @@ namespace LenchScripterMod.Blocks
             {
                 if (!sw.flipped)
                 {
-                    angleyToBe.SetValue(sw, Mathf.Clamp((float)angleyToBe.GetValue(sw), -this.limitsSlider.Min, this.limitsSlider.Max));
+                    angleyToBe.SetValue(sw, Mathf.Clamp((float)angleyToBe.GetValue(sw), - limitsSlider.Min, limitsSlider.Max));
                 }
                 else
                 {
-                    angleyToBe.SetValue(sw, Mathf.Clamp((float)angleyToBe.GetValue(sw), -this.limitsSlider.Max, this.limitsSlider.Min));
+                    angleyToBe.SetValue(sw, Mathf.Clamp((float)angleyToBe.GetValue(sw), - limitsSlider.Max, limitsSlider.Min));
                 }
             }
             else if ((float)angleyToBe.GetValue(sw) > (float)180)
             {
-                angleyToBe.SetValue(sw, (float)angleyToBe.GetValue(sw) - (float)360);
+                angleyToBe.SetValue(sw, (float)angleyToBe.GetValue(sw) - 360);
             }
             else if ((float)angleyToBe.GetValue(sw) < (float)-180)
             {
-                angleyToBe.SetValue(sw, (float)angleyToBe.GetValue(sw) + (float)360);
+                angleyToBe.SetValue(sw, (float)angleyToBe.GetValue(sw) + 360);
             }
         }
 

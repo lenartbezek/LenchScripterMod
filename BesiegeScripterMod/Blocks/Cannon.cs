@@ -11,8 +11,8 @@ namespace LenchScripterMod.Blocks
         internal Cannon(BlockBehaviour bb) : base(bb)
         {
             cb = bb.GetComponent<CanonBlock>();
-            var turret_field = cb.GetType().GetField("turret", BindingFlags.NonPublic | BindingFlags.Instance);
-            var shrapnel_field = cb.GetType().GetField("shrapnel", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo turret_field = cb.GetType().GetField("turret", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo shrapnel_field = cb.GetType().GetField("shrapnel", BindingFlags.NonPublic | BindingFlags.Instance);
             turret = turret_field.GetValue(cb) as ArrowTurret;
             shrapnel = shrapnel_field.GetValue(cb) as ShrapnelCannon;
         }
