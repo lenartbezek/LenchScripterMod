@@ -36,43 +36,90 @@ namespace LenchScripterMod
             convertToRadians = 1;
         }
   
-
+        /// <summary>
+        /// Returns the block's handler.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>Block object.</returns>
         public Block getBlock(string blockId)
         {
             return ScripterMod.scripter.GetBlock(blockId);
         }
 
+        /// <summary>
+        /// Returns the block mod's BlockScript object.
+        /// Throws a NotSupportedException if the block's not a mod.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>BlockScript object.</returns>
+        public System.Object getBlockScript(string blockId)
+        {
+            return ScripterMod.scripter.GetBlock(blockId).getBlockScript();
+        }
+
+        /// <summary>
+        /// Returns true if the block has RigidBody.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>Boolean value.</returns>
         public bool exists(string blockId)
         {
             Block b = getBlock(blockId);
             return b.exists();
         }
 
+        /// <summary>
+        /// Logs the string into the debug console.
+        /// </summary>
+        /// <param name="msg">Message string to be logged.</param>
         public void log(string msg)
         {
             Debug.Log(msg);
         }
 
-        public long getTime()
+        /// <summary>
+        /// Returns the time in seconds from the start of the simulation.
+        /// Independent of the in-game time-scale slider.
+        /// Useful for benchmarking your script's time of execution.
+        /// </summary>
+        /// <returns>Float value.</returns>
+        public float getTime()
         {
-            return stopwatch.ElapsedMilliseconds;
+            return stopwatch.ElapsedMilliseconds / 1000f;
         }
 
+        /// <summary>
+        /// Returns the the time in seconds from the start of the simulation.
+        /// Consistent with the in-game time-scale slider.
+        /// Useful for calculating the rate of change (speed).
+        /// </summary>
+        /// <returns>Float value.</returns>
         public float getScaledTime()
         {
-            return (Time.time - startTime) * 1000;
+            return (Time.time - startTime);
         }
 
+        /// <summary>
+        /// Adds a value to watchlist under the specified display name.
+        /// </summary>
+        /// <param name="name">Display name of the variable.</param>
+        /// <param name="value">Variable value to be reported.</param>
         public void watch(string name, System.Object value)
         {
             ScripterMod.watchlist.AddToWatchlist(name, value, false);
         }
 
+        /// <summary>
+        /// Clears all entries from the watchlist.
+        /// </summary>
         public void clearWatchlist()
         {
             ScripterMod.watchlist.ClearWatchlist();
         }
 
+        /// <summary>
+        /// Toggles all functions to return angles in degrees.
+        /// </summary>
         public void useDegrees()
         {
             Block.useDegrees();
@@ -80,6 +127,9 @@ namespace LenchScripterMod
             convertToRadians = 1;
         }
 
+        /// <summary>
+        /// Toggles all functions to returns angles in radians.
+        /// </summary>
         public void useRadians()
         {
             Block.useRadians();
@@ -87,18 +137,35 @@ namespace LenchScripterMod
             convertToRadians = Mathf.Deg2Rad;
         }
 
+        /// <summary>
+        /// Invokes the block's action.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="actionName">Display name of the action.</param>
         public void action(string blockId, string actionName)
         {
             Block b = getBlock(blockId);
             b.action(actionName);
         }
 
+        /// <summary>
+        /// Sets the toggle mode of the block, specified by the toggle display name.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="toggleName">Toggle property to be set.</param>
+        /// <param name="value">Boolean value to be set.</param>
         public void setToggleMode(string blockId, string toggleName, bool value)
         {
             Block b = getBlock(blockId);
             b.setToggleMode(toggleName, value);
         }
 
+        /// <summary>
+        /// Sets the slider value of the block, specified by the slider display name.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="sliderName">Slider value to be set.</param>
+        /// <param name="value">Float value to be set.</param>
         public void setSliderValue(string blockId, string sliderName, float value)
         {
             Block b = getBlock(blockId);
@@ -111,12 +178,24 @@ namespace LenchScripterMod
             // TODO!
         }
 
+        /// <summary>
+        /// Returns the toggle mode of the block, specified by the toggle display name.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="toggleName">Toggle property to be returned.</param>
+        /// <returns>Boolean value.</returns>
         public bool getToggleMode(string blockId, string toggleName)
         {
             Block b = getBlock(blockId);
             return b.getToggleMode(toggleName);
         }
 
+        /// <summary>
+        /// Returns the slider value of the block, specified by the slider display name.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="sliderName">Toggle property to be returned.</param>
+        /// <returns>Float value.</returns>
         public float getSliderValue(string blockId, string sliderName)
         {
             Block b = getBlock(blockId);
@@ -130,78 +209,151 @@ namespace LenchScripterMod
             return 0;
         }
 
+        /// <summary>
+        /// Returns the key mapper's minimum slider value, specified by the slider display name.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="sliderName">Minimum slider value to be returned.</param>
+        /// <returns>Float value.</returns>
         public float getSliderMin(string blockId, string sliderName)
         {
             Block b = getBlock(blockId);
             return b.getSliderMin(sliderName);
         }
 
+        /// <summary>
+        /// Returns the key mapper's maximum slider value, specified by the slider display name.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="sliderName">Maximum slider value to be returned.</param>
+        /// <returns>Float value.</returns>
         public float getSliderMax(string blockId, string sliderName)
         {
             Block b = getBlock(blockId);
             return b.getSliderMax(sliderName);
         }
 
+        /// <summary>
+        /// Adds key to the specified key bind.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="keyName">Key bind to add the key to.</param>
+        /// <param name="keyValue">Key value to be added.</param>
         public void addKey(string blockId, string keyName, int keyValue)
         {
             Block b = getBlock(blockId);
             b.addKey(keyName, keyValue);
         }
 
+        /// <summary>
+        /// Replaces the first key bound to the specified key bind.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="keyName">Key bind to be replaced.</param>
+        /// <param name="keyValue">Key value to be replaced with.</param>
         public void replaceKey(string blockId, string keyName, int keyValue)
         {
             Block b = getBlock(blockId);
             b.replaceKey(keyName, keyValue);
         }
 
+        /// <summary>
+        /// Returns the first key value bound of the specified key bind.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="keyName">Key bind to be returned.</param>
+        /// <returns>Integer value.</returns>
         public int getKey(string blockId, string keyName)
         {
             Block b = getBlock(blockId);
             return b.getKey(keyName);
         }
 
+        /// <summary>
+        /// Clears all keys of the specified key bind.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <param name="keyName"></param>
         public void clearKeys(string blockId, string keyName)
         {
             Block b = getBlock(blockId);
             b.clearKeys(keyName);
         }
 
+        /// <summary>
+        /// Returns the block's forward vector.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>UnityEngine.Vector3 vector.</returns>
         public Vector3 getForward(string blockId = "STARTING BLOCK 1")
         {
             Block b = getBlock(blockId);
             return b.getForward();
         }
 
+        /// <summary>
+        /// Returns the block's up vector.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>UnityEngine.Vector3 vector.</returns>
         public Vector3 getUp(string blockId = "STARTING BLOCK 1")
         {
             Block b = getBlock(blockId);
             return b.getUp();
         }
 
+        /// <summary>
+        /// Returns the block's right vector.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>UnityEngine.Vector3 vector.</returns>
         public Vector3 getRight(string blockId = "STARTING BLOCK 1")
         {
             Block b = getBlock(blockId);
             return b.getRight();
         }
 
+        /// <summary>
+        /// Returns the block's position vector.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>UnityEngine.Vector3 vector.</returns>
         public Vector3 getPosition(string blockId = "STARTING BLOCK 1")
         {
             Block b = getBlock(blockId);
             return b.getPosition();
         }
 
+        /// <summary>
+        /// Returns the block's velocity vector.
+        /// Throws NoRigidBodyException if the block has no RigidBody.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>UnityEngine.Vector3 vector.</returns>
         public Vector3 getVelocity(string blockId = "STARTING BLOCK 1")
         {
             Block b = getBlock(blockId);
             return b.getVelocity();
         }
 
+        /// <summary>
+        /// Returns the block's mass.
+        /// Throws NoRigidBodyException if the block has no RigidBody.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>UnityEngine.Vector3 vector.</returns>
         public float getMass(string blockId = "STARTING BLOCK 1")
         {
             Block b = getBlock(blockId);
             return b.getMass();
         }
 
+        /// <summary>
+        /// Returns the center of mass of the block, relative to the block's position.
+        /// Throws NoRigidBodyException if the block has no RigidBody.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>UnityEngine.Vector3 vector.</returns>
         public Vector3 getCenterOfMass(string blockId = "STARTING BLOCK 1")
         {
             Block b = getBlock(blockId);
@@ -233,12 +385,23 @@ namespace LenchScripterMod
             return center / Machine.Active().Mass;
         }
 
+        /// <summary>
+        /// Returns the block's rotation in the form of it's Euler angles.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>UnityEngine.Vector3 vector.</returns>
         public Vector3 getEulerAngles(string blockId = "STARTING BLOCK 1")
         {
             Block b = getBlock(blockId);
             return b.getEulerAngles();
         }
 
+        /// <summary>
+        /// Returns the block's angular velocity.
+        /// Throws NoRigidBodyException if the block has no RigidBody.
+        /// </summary>
+        /// <param name="blockId">Block identifier string.</param>
+        /// <returns>UnityEngine.Vector3 vector.</returns>
         public Vector3 getAngularVelocity(string blockId = "STARTING BLOCK 1")
         {
             Block b = getBlock(blockId);

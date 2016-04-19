@@ -2,6 +2,9 @@
 
 namespace LenchScripterMod.Blocks
 {
+    /// <summary>
+    /// Handler for the Grabber block.
+    /// </summary>
     public class Grabber : Block
     {
         private GrabberBlock gb;
@@ -14,6 +17,11 @@ namespace LenchScripterMod.Blocks
             joint = joinFieldInfo.GetValue(gb) as JoinOnTriggerBlock;
         }
 
+        /// <summary>
+        /// Invokes the block's action.
+        /// Throws ActionNotFoundException if the block does not posess such action.
+        /// </summary>
+        /// <param name="actionName">Display name of the action.</param>
         public override void action(string actionName)
         {
             actionName = actionName.ToUpper();
@@ -25,6 +33,9 @@ namespace LenchScripterMod.Blocks
             throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
+        /// <summary>
+        /// Detach or grab with the Grabber.
+        /// </summary>
         public void Detach()
         {
             if (joint.isJoined)

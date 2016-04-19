@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace LenchScripterMod.Blocks
 {
+    /// <summary>
+    /// Handler for the Flying Spiral block.
+    /// </summary>
     public class FlyingSpiral : Block
     {
         private FlyingController fc;
@@ -37,6 +40,11 @@ namespace LenchScripterMod.Blocks
             lerpedSpeed = fc.GetType().GetField("lerpedSpeed", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
+        /// <summary>
+        /// Invokes the block's action.
+        /// Throws ActionNotFoundException if the block does not posess such action.
+        /// </summary>
+        /// <param name="actionName">Display name of the action.</param>
         public override void action(string actionName)
         {
             actionName = actionName.ToUpper();
@@ -48,6 +56,9 @@ namespace LenchScripterMod.Blocks
             throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
+        /// <summary>
+        /// Spin the Flying Spiral.
+        /// </summary>
         public void Spin()
         {
             if (!fc.canFly)

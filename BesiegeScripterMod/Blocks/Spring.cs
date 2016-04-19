@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace LenchScripterMod.Blocks
 {
+    /// <summary>
+    /// Handler for the Spring and Rope blocks.
+    /// </summary>
     public class Spring : Block
     {
         private SpringCode sc;
@@ -26,6 +29,11 @@ namespace LenchScripterMod.Blocks
             maxMgntd = sc.GetType().GetField("maxMgntd", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
+        /// <summary>
+        /// Invokes the block's action.
+        /// Throws ActionNotFoundException if the block does not posess such action.
+        /// </summary>
+        /// <param name="actionName">Display name of the action.</param>
         public override void action(string actionName)
         {
             actionName = actionName.ToUpper();
@@ -47,6 +55,9 @@ namespace LenchScripterMod.Blocks
             throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
+        /// <summary>
+        /// Contracts the spring.
+        /// </summary>
         public void Contract()
         {
             if (sc.winchMode || !this.toggleMode.IsActive)
@@ -61,6 +72,10 @@ namespace LenchScripterMod.Blocks
             }
         }
 
+        /// <summary>
+        /// Winds the winch.
+        /// </summary>
+        /// <param name="rate">Rate to be winded at.</param>
         public void Wind(float rate)
         {
             if (!sc.winchMode) return;
@@ -69,6 +84,10 @@ namespace LenchScripterMod.Blocks
             sc.AnimateWinch(1);
         }
 
+        /// <summary>
+        /// Unwinds the winch.
+        /// </summary>
+        /// <param name="rate">Rate to be unwinded at.</param>
         public void Unwind(float rate)
         {
             if (!sc.winchMode) return;

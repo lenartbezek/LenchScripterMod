@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace LenchScripterMod.Blocks
 {
+    /// <summary>
+    /// Handler for all wheel and cog blocks.
+    /// </summary>
     public class Cog : Block
     {
         private CogMotorController cmc;

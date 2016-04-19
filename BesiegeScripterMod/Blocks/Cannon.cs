@@ -2,6 +2,9 @@
 
 namespace LenchScripterMod.Blocks
 {
+    /// <summary>
+    /// Handler for cannon blocks; Cannon and Shrapnel Cannon.
+    /// </summary>
     public class Cannon : Block
     {
         private CanonBlock cb;
@@ -17,6 +20,11 @@ namespace LenchScripterMod.Blocks
             shrapnel = shrapnel_field.GetValue(cb) as ShrapnelCannon;
         }
 
+        /// <summary>
+        /// Invokes the block's action.
+        /// Throws ActionNotFoundException if the block does not posess such action.
+        /// </summary>
+        /// <param name="actionName">Display name of the action.</param>
         public override void action(string actionName)
         {
             actionName = actionName.ToUpper();
@@ -28,6 +36,9 @@ namespace LenchScripterMod.Blocks
             throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
+        /// <summary>
+        /// Shoots the cannon.
+        /// </summary>
         public void Shoot()
         {
             if (turret)

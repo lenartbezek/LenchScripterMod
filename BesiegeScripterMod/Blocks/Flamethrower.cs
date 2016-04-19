@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace LenchScripterMod.Blocks
 {
+    /// <summary>
+    /// Handler for the Flamethrower block.
+    /// </summary>
     public class Flamethrower : Block
     {
         private FlamethrowerController fc;
@@ -15,6 +18,11 @@ namespace LenchScripterMod.Blocks
             holdToFire = holdFieldInfo.GetValue(fc) as MToggle;
         }
 
+        /// <summary>
+        /// Invokes the block's action.
+        /// Throws ActionNotFoundException if the block does not posess such action.
+        /// </summary>
+        /// <param name="actionName">Display name of the action.</param>
         public override void action(string actionName)
         {
             actionName = actionName.ToUpper();
@@ -26,6 +34,9 @@ namespace LenchScripterMod.Blocks
             throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
+        /// <summary>
+        /// Ignite the flamethrower.
+        /// </summary>
         public void Ignite()
         {
             if (holdToFire.IsActive)

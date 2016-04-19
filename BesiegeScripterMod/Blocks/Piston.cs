@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace LenchScripterMod.Blocks
 {
+    /// <summary>
+    /// Handler for the Piston block.
+    /// </summary>
     public class Piston : Block
     {
         private SliderCompress sc;
@@ -23,6 +26,11 @@ namespace LenchScripterMod.Blocks
             extendKey = extendFieldInfo.GetValue(sc) as MKey;
         }
 
+        /// <summary>
+        /// Invokes the block's action.
+        /// Throws ActionNotFoundException if the block does not posess such action.
+        /// </summary>
+        /// <param name="actionName">Display name of the action.</param>
         public override void action(string actionName)
         {
             actionName = actionName.ToUpper();
@@ -34,6 +42,9 @@ namespace LenchScripterMod.Blocks
             throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
+        /// <summary>
+        /// Extend the piston.
+        /// </summary>
         public void Extend()
         {
             if (sc.myJoint == null || sc.myJoint.connectedBody == null) return;

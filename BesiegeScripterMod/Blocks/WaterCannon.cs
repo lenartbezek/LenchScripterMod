@@ -2,6 +2,9 @@
 
 namespace LenchScripterMod.Blocks
 {
+    /// <summary>
+    /// Handler for the Water Cannon block.
+    /// </summary>
     public class WaterCannon : Block
     {
         private WaterCannonController wcc;
@@ -14,6 +17,11 @@ namespace LenchScripterMod.Blocks
             holdToShootToggle = holdFieldInfo.GetValue(wcc) as MToggle;
         }
 
+        /// <summary>
+        /// Invokes the block's action.
+        /// Throws ActionNotFoundException if the block does not posess such action.
+        /// </summary>
+        /// <param name="actionName">Display name of the action.</param>
         public override void action(string actionName)
         {
             actionName = actionName.ToUpper();
@@ -25,6 +33,9 @@ namespace LenchScripterMod.Blocks
             throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
+        /// <summary>
+        /// Shoots the water cannon.
+        /// </summary>
         public void Shoot()
         {
             if (holdToShootToggle.IsActive)

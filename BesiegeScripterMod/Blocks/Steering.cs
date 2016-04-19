@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace LenchScripterMod.Blocks
 {
+    /// <summary>
+    /// Handler for steering blocks; Steering and Steering Hinge.
+    /// </summary>
     public class Steering : Block
     {
         private SteeringWheel sw;
@@ -24,6 +27,11 @@ namespace LenchScripterMod.Blocks
             limitsSlider = limitsFieldInfo.GetValue(sw) as MLimits;
         }
 
+        /// <summary>
+        /// Invokes the block's action.
+        /// Throws ActionNotFoundException if the block does not posess such action.
+        /// </summary>
+        /// <param name="actionName">Display name of the action.</param>
         public override void action(string actionName)
         {
             actionName = actionName.ToUpper();
