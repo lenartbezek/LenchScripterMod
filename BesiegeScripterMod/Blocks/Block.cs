@@ -1,4 +1,4 @@
-﻿using NLua.Exceptions;
+﻿using System;
 using UnityEngine;
 
 namespace LenchScripterMod.Blocks
@@ -8,7 +8,7 @@ namespace LenchScripterMod.Blocks
         private static float convertToDegrees = Mathf.Rad2Deg;
         private static float convertToRadians = 1;
 
-        public string blockName;
+        public string name;
         private BlockBehaviour bb;
         private System.Object bs;
 
@@ -16,10 +16,30 @@ namespace LenchScripterMod.Blocks
         {
             this.bb = bb;
             this.bs = bb.GetComponent(ScripterMod.blockScriptType);
-            this.blockName = bb.GetComponent<MyBlockInfo>().blockName;
+            this.name = bb.GetComponent<MyBlockInfo>().blockName.ToUpper();
+        }
+
+        /// <summary>
+        /// Makes any future calls to angle functions return degrees.
+        /// </summary>
+        internal static void useDegrees()
+        {
+            convertToDegrees = Mathf.Rad2Deg;
+            convertToRadians = 1;
+        }
+
+        /// <summary>
+        /// Makes any future calls to angle functions return radians.
+        /// </summary>
+        internal static void useRadians()
+        {
+            convertToDegrees = 1;
+            convertToRadians = Mathf.Deg2Rad;
         }
 
         public virtual void action(string actionName) {
+            actionName = actionName.ToUpper();
+            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
         public bool exists()
@@ -37,13 +57,13 @@ namespace LenchScripterMod.Blocks
                     return;
                 }
             }
-            throw new LuaException("Toggle " + toggleName + " not found.");
+            throw new PropertyNotFoundException("Toggle " + toggleName + " not found.");
         }
 
         public void setSliderValue(string sliderName, float value)
         {
             if (float.IsNaN(value))
-                throw new LuaException("Value is not a number (NaN).");
+                throw new ArgumentException("Value is not a number (NaN).");
             foreach (MSlider m in bb.Sliders)
             {
                 if (m.DisplayName.ToUpper() == sliderName.ToUpper())
@@ -52,7 +72,7 @@ namespace LenchScripterMod.Blocks
                     return;
                 }
             }
-            throw new LuaException("Slider " + sliderName + " not found.");
+            throw new PropertyNotFoundException("Slider " + sliderName + " not found.");
         }
 
         public bool getToggleMode(string toggleName)
@@ -64,7 +84,7 @@ namespace LenchScripterMod.Blocks
                     return m.IsActive;
                 }
             }
-            throw new LuaException("Toggle " + toggleName + " not found.");
+            throw new PropertyNotFoundException("Toggle " + toggleName + " not found.");
         }
 
         public float getSliderValue(string sliderName)
@@ -76,7 +96,7 @@ namespace LenchScripterMod.Blocks
                     return m.Value;
                 }
             }
-            throw new LuaException("Slider " + sliderName + " not found.");
+            throw new PropertyNotFoundException("Slider " + sliderName + " not found.");
         }
 
         public float getSliderMin(string sliderName)
@@ -88,7 +108,7 @@ namespace LenchScripterMod.Blocks
                     return m.Min;
                 }
             }
-            throw new LuaException("Slider " + sliderName + " not found.");
+            throw new PropertyNotFoundException("Slider " + sliderName + " not found.");
         }
 
         public float getSliderMax(string sliderName)
@@ -100,7 +120,7 @@ namespace LenchScripterMod.Blocks
                     return m.Max;
                 }
             }
-            throw new LuaException("Slider " + sliderName + " not found.");
+            throw new PropertyNotFoundException("Slider " + sliderName + " not found.");
         }
 
         public void addKey(string keyName, int keyValue)
@@ -120,7 +140,7 @@ namespace LenchScripterMod.Blocks
                     return;
                 }
             }
-            throw new LuaException("Key " + keyName + " not found.");
+            throw new PropertyNotFoundException("Key " + keyName + " not found.");
         }
 
         public void replaceKey(string keyName, int keyValue)
@@ -133,7 +153,7 @@ namespace LenchScripterMod.Blocks
                     m.AddOrReplaceKey(0, key);
                 }
             }
-            throw new LuaException("Key " + keyName + " not found.");
+            throw new PropertyNotFoundException("Key " + keyName + " not found.");
         }
 
         public int getKey(string keyName)
@@ -145,7 +165,7 @@ namespace LenchScripterMod.Blocks
                     return (int)m.KeyCode[0];
                 }
             }
-            throw new LuaException("Key " + keyName + " not found.");
+            throw new PropertyNotFoundException("Key " + keyName + " not found.");
         }
 
         public void clearKeys(string keyName)
@@ -159,7 +179,7 @@ namespace LenchScripterMod.Blocks
                     return;
                 }
             }
-            throw new LuaException("Key " + keyName + " not found.");
+            throw new PropertyNotFoundException("Key " + keyName + " not found.");
         }
 
         public Vector3 getForward()
@@ -187,7 +207,7 @@ namespace LenchScripterMod.Blocks
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
                 return body.velocity;
-            throw new LuaException("Block " + blockName + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + name + " has no rigid body.");
         }
 
         public float getMass()
@@ -195,7 +215,7 @@ namespace LenchScripterMod.Blocks
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
                 return body.mass;
-            throw new LuaException("Block " + blockName + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + name + " has no rigid body.");
         }
 
         public Vector3 getCenterOfMass()
@@ -203,7 +223,7 @@ namespace LenchScripterMod.Blocks
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
                 return body.centerOfMass;
-            throw new LuaException("Block " + blockName + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + name + " has no rigid body.");
         }
 
         public Vector3 getEulerAngles()
@@ -224,7 +244,22 @@ namespace LenchScripterMod.Blocks
                 angularVelocity.Scale(convertUnits);
                 return angularVelocity;
             }
-            throw new LuaException("Block " + blockName + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + name + " has no rigid body.");
         }
+    }
+
+    public class ActionNotFoundException : Exception
+    {
+        public ActionNotFoundException(string message) : base(message) { }
+    }
+
+    public class PropertyNotFoundException : Exception
+    {
+        public PropertyNotFoundException(string message) : base(message) { }
+    }
+
+    public class NoRigidBodyException : Exception
+    {
+        public NoRigidBodyException(string message) : base(message) { }
     }
 }

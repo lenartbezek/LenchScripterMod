@@ -45,6 +45,7 @@ namespace LenchScripterMod.Blocks
                 Spin();
                 return;
             }
+            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
         public void Spin()

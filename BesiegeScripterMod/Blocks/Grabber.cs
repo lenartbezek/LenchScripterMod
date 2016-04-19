@@ -22,6 +22,7 @@ namespace LenchScripterMod.Blocks
                 Detach();
                 return;
             }
+            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
         public void Detach()

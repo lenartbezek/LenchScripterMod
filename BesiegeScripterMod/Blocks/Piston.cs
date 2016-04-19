@@ -31,6 +31,7 @@ namespace LenchScripterMod.Blocks
                 Extend();
                 return;
             }
+            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
         public void Extend()
@@ -54,7 +55,7 @@ namespace LenchScripterMod.Blocks
             }
         }
 
-        internal static bool isSteering(BlockBehaviour bb)
+        internal static bool isPiston(BlockBehaviour bb)
         {
             return bb.GetComponent<SliderCompress>() != null;
         }

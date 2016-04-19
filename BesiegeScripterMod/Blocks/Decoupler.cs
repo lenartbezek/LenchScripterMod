@@ -17,6 +17,7 @@
                 Explode();
                 return;
             }
+            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
         public void Explode()

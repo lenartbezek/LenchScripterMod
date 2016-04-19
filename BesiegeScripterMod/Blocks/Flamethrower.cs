@@ -23,6 +23,7 @@ namespace LenchScripterMod.Blocks
                 Ignite();
                 return;
             }
+            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
         public void Ignite()

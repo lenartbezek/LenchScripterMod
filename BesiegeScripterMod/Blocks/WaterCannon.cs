@@ -22,6 +22,7 @@ namespace LenchScripterMod.Blocks
                 Shoot();
                 return;
             }
+            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
         public void Shoot()

@@ -13,7 +13,6 @@ namespace LenchScripterMod.Blocks
 
         internal Steering(BlockBehaviour bb) : base(bb)
         {
-            Debug.Log("got steering wheel");
             sw = bb.GetComponent<SteeringWheel>();
 
             angleyToBe = sw.GetType().GetField("angleyToBe", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -33,12 +32,12 @@ namespace LenchScripterMod.Blocks
                 SetInput(1);
                 return;
             }
-
             if (actionName == "RIGHT")
             {
                 SetInput(-1);
                 return;
             }
+            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
         public void SetInput(float input)

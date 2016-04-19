@@ -34,18 +34,17 @@ namespace LenchScripterMod.Blocks
                 Contract();
                 return;
             }
-
             if (sc.winchMode && actionName == "WIND")
             {
                 Wind(1);
                 return;
             }
-
             if (sc.winchMode && actionName == "UNWIND")
             {
                 Unwind(-1);
                 return;
             }
+            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
         }
 
         public void Contract()
