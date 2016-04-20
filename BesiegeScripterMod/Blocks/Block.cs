@@ -6,24 +6,29 @@ namespace LenchScripterMod.Blocks
     /// <summary>
     /// Base class for all block handlers.
     /// </summary>
-    public class Block
+    public class Block : MonoBehaviour
     {
-        private static float convertToDegrees = Mathf.Rad2Deg;
-        private static float convertToRadians = 1;
+        internal static float convertToDegrees = Mathf.Rad2Deg;
+        internal static float convertToRadians = 1;
 
         /// <summary>
         /// Name of the block.
         /// </summary>
-        public string name;
+        public string blockName;
+
+        /// <summary>
+        /// Name of the script.
+        /// </summary>
+        public new string name { get { return blockName + " script handler"; } }
 
         private BlockBehaviour bb;
         private System.Object bs;
 
-        internal Block(BlockBehaviour bb)
+        internal virtual void Initialize(BlockBehaviour bb)
         {
             this.bb = bb;
             this.bs = bb.GetComponent(ScripterMod.blockScriptType);
-            this.name = bb.GetComponent<MyBlockInfo>().blockName.ToUpper();
+            this.blockName = bb.GetComponent<MyBlockInfo>().blockName.ToUpper();
         }
 
         /// <summary>
@@ -52,18 +57,18 @@ namespace LenchScripterMod.Blocks
         public System.Object getBlockScript()
         {
             if (bs == null)
-                throw new NotSupportedException("Block " + name + "is not a mod.");
+                throw new NotSupportedException("Block " + blockName + "is not a mod.");
             return bs;
         }
 
         /// <summary>
         /// Invokes the block's action.
-        /// Throws ActionNotFoundException if the block does not posess such action.
+        /// Throws ActionNotFoundException if the block does not poses such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
         public virtual void action(string actionName) {
             actionName = actionName.ToUpper();
-            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -305,7 +310,7 @@ namespace LenchScripterMod.Blocks
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
                 return body.velocity;
-            throw new NoRigidBodyException("Block " + name + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + blockName + " has no rigid body.");
         }
 
         /// <summary>
@@ -317,7 +322,7 @@ namespace LenchScripterMod.Blocks
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
                 return body.mass;
-            throw new NoRigidBodyException("Block " + name + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + blockName + " has no rigid body.");
         }
 
         /// <summary>
@@ -329,7 +334,7 @@ namespace LenchScripterMod.Blocks
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
                 return body.centerOfMass;
-            throw new NoRigidBodyException("Block " + name + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + blockName + " has no rigid body.");
         }
 
         /// <summary>
@@ -359,7 +364,7 @@ namespace LenchScripterMod.Blocks
                 angularVelocity.Scale(convertUnits);
                 return angularVelocity;
             }
-            throw new NoRigidBodyException("Block " + name + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + blockName + " has no rigid body.");
         }
     }
 

@@ -7,8 +7,9 @@
     {
         private ControllableBomb cb;
 
-        internal Grenade(BlockBehaviour bb) : base(bb)
+        internal override void Initialize(BlockBehaviour bb)
         {
+            base.Initialize(bb);
             cb = bb.GetComponent<ControllableBomb>();
         }
 
@@ -25,7 +26,7 @@
                 Detonate();
                 return;
             }
-            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
         }
 
         /// <summary>

@@ -139,31 +139,36 @@ namespace LenchScripterMod
         /// <returns>LenchScripterMod.Block object.</returns>
         internal Block CreateBlock(BlockBehaviour bb)
         {
+            Block block;
             if (Cannon.isCannon(bb))
-                return new Cannon(bb);
-            if (Cog.isCog(bb))
-                return new Cog(bb);
-            if (Decoupler.isDecoupler(bb))
-                return new Decoupler(bb);
-            if (Flamethrower.isFlamethrower(bb))
-                return new Flamethrower(bb);
-            if (FlyingSpiral.isFlyingSpiral(bb))
-                return new FlyingSpiral(bb);
-            if (Grabber.isGrabber(bb))
-                return new Grabber(bb);
-            if (Grenade.isGrenade(bb))
-                return new Grenade(bb);
-            if (Piston.isPiston(bb))
-                return new Piston(bb);
-            if (Rocket.isRocket(bb))
-                return new Rocket(bb);
-            if (Spring.isSpring(bb))
-                return new Spring(bb);
-            if (Steering.isSteering(bb))
-                return new Steering(bb);
-            if (WaterCannon.isWaterCannon(bb))
-                return new WaterCannon(bb);
-            return new Block(bb);
+                block = gameObject.AddComponent<Cannon>();
+            else if (Cog.isCog(bb))
+                block = gameObject.AddComponent<Cog>();
+            else if (Decoupler.isDecoupler(bb))
+                block = gameObject.AddComponent<Decoupler>();
+            else if (Flamethrower.isFlamethrower(bb))
+                block = gameObject.AddComponent<Flamethrower>();
+            else if (FlyingSpiral.isFlyingSpiral(bb))
+                block = gameObject.AddComponent<FlyingSpiral>();
+            else if (Grabber.isGrabber(bb))
+                block = gameObject.AddComponent<Grabber>();
+            else if (Grenade.isGrenade(bb))
+                block = gameObject.AddComponent<Grenade>();
+            else if (Piston.isPiston(bb))
+                block = gameObject.AddComponent<Piston>();
+            else if (Rocket.isRocket(bb))
+                block = gameObject.AddComponent<Rocket>();
+            else if (Spring.isSpring(bb))
+                block = gameObject.AddComponent<Spring>();
+            else if (Steering.isSteering(bb))
+                block = gameObject.AddComponent<Steering>();
+            else if (WaterCannon.isWaterCannon(bb))
+                block = gameObject.AddComponent<WaterCannon>();
+            else
+                block = gameObject.AddComponent<Block>();
+            block.Initialize(bb);
+            block.enabled = true;
+            return block;
         }
 
         /// <summary>
@@ -175,7 +180,7 @@ namespace LenchScripterMod
         internal Block GetBlock(string blockId)
         {
             if (idToSimulationBlock == null)
-                InitializeSimulationBlockIDs();
+                InitializeSimulationBlockHandlers();
 
             if (idToSimulationBlock.ContainsKey(blockId.ToUpper()))
                 return idToSimulationBlock[blockId.ToUpper()];
@@ -213,7 +218,7 @@ namespace LenchScripterMod
         /// Used for accessing blocks with GetBlock(blockId) while simulating.
         /// Called at the start of simulation.
         /// </summary>
-        private void InitializeSimulationBlockIDs()
+        private void InitializeSimulationBlockHandlers()
         {
             idToSimulationBlock = new Dictionary<string, Block>();
             guidToSimulationBlock = new Dictionary<string, Block>();
@@ -224,8 +229,9 @@ namespace LenchScripterMod
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
                 string id = name + " " + typeCount[name];
                 string guid = Machine.Active().BuildingBlocks[i].Guid.ToString();
-                idToSimulationBlock[id] = CreateBlock(Machine.Active().Blocks[i]);
-                guidToSimulationBlock[guid] = CreateBlock(Machine.Active().Blocks[i]);
+                Block b = CreateBlock(Machine.Active().Blocks[i]);
+                idToSimulationBlock[id] = b;
+                guidToSimulationBlock[guid] = b;
             }
         }
 
@@ -293,6 +299,10 @@ namespace LenchScripterMod
             lua = null;
             wrapper.clearMarks();
             wrapper = null;
+            foreach (Block b in gameObject.GetComponents<Block>())
+            {
+                Destroy(b);
+            }
             Debug.Log("Script stopped");
         }
 
@@ -373,7 +383,7 @@ namespace LenchScripterMod
                 {
                     foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
                     {
-                        if (!Input.GetKey(key) || key == InputManager.actionKeyCode) continue;
+                        if (!Input.GetKey(key)) continue;
                         if (luaOnKeyHeld != null)
                             luaOnKeyHeld.Call((int)key);
                     }
@@ -383,7 +393,7 @@ namespace LenchScripterMod
                 {
                     foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
                     {
-                        if (!Input.GetKeyDown(key) || key == InputManager.actionKeyCode) continue;
+                        if (!Input.GetKeyDown(key)) continue;
                         if (luaOnKeyDown != null)
                             luaOnKeyDown.Call((int)key);
                     }

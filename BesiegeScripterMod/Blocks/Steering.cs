@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using UnityEngine;
+﻿using System;
+using System.Reflection;
 
 namespace LenchScripterMod.Blocks
 {
@@ -10,26 +10,22 @@ namespace LenchScripterMod.Blocks
     {
         private SteeringWheel sw;
         private FieldInfo angleyToBe;
-        private FieldInfo angleMultiplier;
-        private MSlider speedSlider;
-        private MLimits limitsSlider;
+        private FieldInfo input;
 
-        internal Steering(BlockBehaviour bb) : base(bb)
+        private float setInputValue;
+        private bool setInputFlag = false;
+
+        internal override void Initialize(BlockBehaviour bb)
         {
+            base.Initialize(bb);
             sw = bb.GetComponent<SteeringWheel>();
-
             angleyToBe = sw.GetType().GetField("angleyToBe", BindingFlags.NonPublic | BindingFlags.Instance);
-            angleMultiplier = sw.GetType().GetField("angleMultiplier", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            FieldInfo speedFieldInfo = sw.GetType().GetField("speedSlider", BindingFlags.NonPublic | BindingFlags.Instance);
-            FieldInfo limitsFieldInfo = sw.GetType().GetField("limitsSlider", BindingFlags.NonPublic | BindingFlags.Instance);
-            speedSlider = speedFieldInfo.GetValue(sw) as MSlider;
-            limitsSlider = limitsFieldInfo.GetValue(sw) as MLimits;
+            input = sw.GetType().GetField("input", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         /// <summary>
         /// Invokes the block's action.
-        /// Throws ActionNotFoundException if the block does not posess such action.
+        /// Throws ActionNotFoundException if the block does not poses such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
         public override void action(string actionName)
@@ -45,37 +41,37 @@ namespace LenchScripterMod.Blocks
                 SetInput(-1);
                 return;
             }
-            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
         }
 
-        public void SetInput(float input)
+        /// <summary>
+        /// Sets the input value on the next LateUpdate.
+        /// </summary>
+        /// <param name="value">Value to be set.</param>
+        public void SetInput(float value = 1)
         {
-            float value = input * Time.deltaTime * (float)angleMultiplier.GetValue(sw) * speedSlider.Value;
-            angleyToBe.SetValue(sw, (float)angleyToBe.GetValue(sw) + value);
-            if (sw.allowLimits && limitsSlider.IsActive)
+            if (float.IsNaN(value))
+                throw new ArgumentException("Value is not a number (NaN).");
+            setInputValue = value;
+            setInputFlag = true;
+        }
+
+        private void LateUpdate()
+        {
+            if (setInputFlag)
             {
-                if (!sw.flipped)
-                {
-                    angleyToBe.SetValue(sw, Mathf.Clamp((float)angleyToBe.GetValue(sw), - limitsSlider.Min, limitsSlider.Max));
-                }
-                else
-                {
-                    angleyToBe.SetValue(sw, Mathf.Clamp((float)angleyToBe.GetValue(sw), - limitsSlider.Max, limitsSlider.Min));
-                }
-            }
-            else if ((float)angleyToBe.GetValue(sw) > (float)180)
-            {
-                angleyToBe.SetValue(sw, (float)angleyToBe.GetValue(sw) - 360);
-            }
-            else if ((float)angleyToBe.GetValue(sw) < (float)-180)
-            {
-                angleyToBe.SetValue(sw, (float)angleyToBe.GetValue(sw) + 360);
+                setInputFlag = false;
+                input.SetValue(sw, setInputValue);
             }
         }
 
+        /// <summary>
+        /// Returns the angle of the joint.
+        /// </summary>
+        /// <returns>Float value in degrees or radians as specified.</returns>
         public float GetAngle()
         {
-            return (float)angleyToBe.GetValue(sw);
+            return (float)angleyToBe.GetValue(sw) * convertToRadians;
         }
 
         internal static bool isSteering(BlockBehaviour bb)

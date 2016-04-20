@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using UnityEngine;
 
 namespace LenchScripterMod.Blocks
 {
@@ -10,12 +9,17 @@ namespace LenchScripterMod.Blocks
     {
         private FlamethrowerController fc;
         private MToggle holdToFire;
+        private FieldInfo keyHeld;
 
-        internal Flamethrower(BlockBehaviour bb) : base(bb)
+        private bool setIgniteFlag = false;
+
+        internal override void Initialize(BlockBehaviour bb)
         {
+            base.Initialize(bb);
             fc = bb.GetComponent<FlamethrowerController>();
             FieldInfo holdFieldInfo = fc.GetType().GetField("holdToFire", BindingFlags.NonPublic | BindingFlags.Instance);
             holdToFire = holdFieldInfo.GetValue(fc) as MToggle;
+            keyHeld = fc.GetType().GetField("keyHeld", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         /// <summary>
@@ -31,7 +35,7 @@ namespace LenchScripterMod.Blocks
                 Ignite();
                 return;
             }
-            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -39,26 +43,24 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         public void Ignite()
         {
-            if (holdToFire.IsActive)
+            setIgniteFlag = true;
+        }
+
+        private void LateUpdate()
+        {
+            if (!fc.timeOut || STATLORD.infiniteAmmoMode)
             {
-                if (fc.timeOut || STATLORD.infiniteAmmoMode)
+                if (holdToFire.IsActive)
+                {
+                    keyHeld.SetValue(fc, true);
+                    fc.FlameOn();
+                }
+                else
                 {
                     fc.Flame();
                 }
             }
-            else if (fc || STATLORD.infiniteAmmoMode)
-            {
-                fc.FlameOn();
-            }
-
-            if (fc.isFlaming)
-            {
-                fc.timey = fc.timey + Time.deltaTime;
-            }
-            if (fc.timey >= 10)
-            {
-                fc.TimeOut();
-            }
+            setIgniteFlag = false;
         }
 
         internal static bool isFlamethrower(BlockBehaviour bb)

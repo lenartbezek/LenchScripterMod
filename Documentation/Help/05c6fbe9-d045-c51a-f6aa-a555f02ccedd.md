@@ -1,0 +1,17 @@
+# Grabber Fields
+ 
+
+The <a href="428b22ec-9e9e-9ee5-2ab1-c2809c5936cb">Grabber</a> type exposes the following members.
+
+
+## Fields
+&nbsp;<table><tr><th></th><th>Name</th><th>Description</th></tr><tr><td>![Public field](media/pubfield.gif "Public field")</td><td><a href="7b3f785e-1854-9ce2-de11-a3d9f818c444">name</a></td><td>
+Name of the block.
+ (Inherited from <a href="aac00e9a-37c0-2757-6409-8a72ddf80aff">Block</a>.)</td></tr></table>&nbsp;
+<a href="#grabber-fields">Back to Top</a>
+
+## See Also
+
+
+#### Reference
+<a href="428b22ec-9e9e-9ee5-2ab1-c2809c5936cb">Grabber Class</a><br /><a href="bfe8ba5f-eaee-19fd-8765-cab2e3e19e25">LenchScripterMod.Blocks Namespace</a><br />

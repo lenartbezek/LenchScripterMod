@@ -1,7 +1,4 @@
-﻿using System.Reflection;
-using UnityEngine;
-
-namespace LenchScripterMod.Blocks
+﻿namespace LenchScripterMod.Blocks
 {
     /// <summary>
     /// Handler for the Spring and Rope blocks.
@@ -9,24 +6,11 @@ namespace LenchScripterMod.Blocks
     public class Spring : Block
     {
         private SpringCode sc;
-        private MSlider speedSlider;
-        private MToggle toggleMode;
-        private FieldInfo isToggled;
-        private FieldInfo shouldContract;
-        private FieldInfo maxMgntd;
 
-        internal Spring(BlockBehaviour bb) : base(bb)
+        internal override void Initialize(BlockBehaviour bb)
         {
+            base.Initialize(bb);
             sc = bb.GetComponent<SpringCode>();
-            FieldInfo speedFieldInfo = sc.GetType().GetField("speedSlider", BindingFlags.NonPublic | BindingFlags.Instance);
-            FieldInfo toggleFieldInfo = sc.GetType().GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            speedSlider = speedFieldInfo.GetValue(sc) as MSlider;
-            toggleMode = toggleFieldInfo.GetValue(sc) as MToggle;
-
-            isToggled = sc.GetType().GetField("isToggled", BindingFlags.NonPublic | BindingFlags.Instance);
-            shouldContract = sc.GetType().GetField("shouldContract", BindingFlags.NonPublic | BindingFlags.Instance);
-            maxMgntd = sc.GetType().GetField("maxMgntd", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         /// <summary>
@@ -44,15 +28,15 @@ namespace LenchScripterMod.Blocks
             }
             if (sc.winchMode && actionName == "WIND")
             {
-                Wind(1);
+                Wind();
                 return;
             }
             if (sc.winchMode && actionName == "UNWIND")
             {
-                Unwind(-1);
+                Unwind();
                 return;
             }
-            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -60,39 +44,23 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         public void Contract()
         {
-            if (sc.winchMode || !this.toggleMode.IsActive)
-            {
-                shouldContract.SetValue(sc, true);
-            }
-            else
-            {
-                bool t = (bool)isToggled.GetValue(sc);
-                isToggled.SetValue(sc, t);
-                shouldContract.SetValue(sc, t);
-            }
+            sc.Contract(1);
         }
 
         /// <summary>
         /// Winds the winch.
         /// </summary>
-        /// <param name="rate">Rate to be winded at.</param>
-        public void Wind(float rate)
+        public void Wind()
         {
-            if (!sc.winchMode) return;
-            float m = (float)maxMgntd.GetValue(sc) - Time.fixedDeltaTime * rate * speedSlider.Value;
-            maxMgntd.SetValue(sc, Mathf.Max(m, 0.1f));
-            sc.AnimateWinch(1);
+            sc.WinchContract(1);
         }
 
         /// <summary>
         /// Unwinds the winch.
         /// </summary>
-        /// <param name="rate">Rate to be unwinded at.</param>
-        public void Unwind(float rate)
+        public void Unwind()
         {
-            if (!sc.winchMode) return;
-            maxMgntd.SetValue(sc, (float)maxMgntd.GetValue(sc) + Time.fixedDeltaTime * rate * speedSlider.Value);
-            sc.AnimateWinch(-1);
+            sc.WinchUnwind(1);
         }
 
         internal static bool isSpring(BlockBehaviour bb)

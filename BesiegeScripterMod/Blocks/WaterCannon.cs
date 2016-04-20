@@ -10,8 +10,9 @@ namespace LenchScripterMod.Blocks
         private WaterCannonController wcc;
         private MToggle holdToShootToggle;
 
-        internal WaterCannon(BlockBehaviour bb) : base(bb)
+        internal override void Initialize(BlockBehaviour bb)
         {
+            base.Initialize(bb);
             wcc = bb.GetComponent<WaterCannonController>();
             FieldInfo holdFieldInfo = wcc.GetType().GetField("holdToShootToggle", BindingFlags.NonPublic | BindingFlags.Instance);
             holdToShootToggle = holdFieldInfo.GetValue(wcc) as MToggle;
@@ -30,7 +31,7 @@ namespace LenchScripterMod.Blocks
                 Shoot();
                 return;
             }
-            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -38,14 +39,8 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         public void Shoot()
         {
-            if (holdToShootToggle.IsActive)
-            {
-                wcc.isActive = true;
-            }
-            else
-            {
-                wcc.isActive = !wcc.isActive;
-            }
+            wcc.isActive = holdToShootToggle.IsActive ? true : !wcc.isActive;
+
             if (wcc.prevActiveState != wcc.isActive)
             {
                 wcc.prevActiveState = wcc.isActive;

@@ -20,8 +20,9 @@ namespace LenchScripterMod.Blocks
         private FieldInfo lerpySpeed;
         private FieldInfo lerpedSpeed;
 
-        internal FlyingSpiral(BlockBehaviour bb) : base(bb)
+        internal override void Initialize(BlockBehaviour bb)
         {
+            base.Initialize(bb);
             fc = bb.GetComponent<FlyingController>();
 
             FieldInfo automaticFieldInfo = fc.GetType().GetField("automaticToggle", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -53,7 +54,7 @@ namespace LenchScripterMod.Blocks
                 Spin();
                 return;
             }
-            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace LenchScripterMod.Blocks
             }
             else
             {
-                if (automaticToggle.IsActive)
+                if (!automaticToggle.IsActive)
                 {
                     if (!(bool)flying.GetValue(fc))
                     {
@@ -77,7 +78,7 @@ namespace LenchScripterMod.Blocks
                         flying.SetValue(fc, true);
                     }
                 }
-                else if (!toggleMode.IsActive)
+                else if (toggleMode.IsActive)
                 {
                     if (!fc.isFrozen)
                     {

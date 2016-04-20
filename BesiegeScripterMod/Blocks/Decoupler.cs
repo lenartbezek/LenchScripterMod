@@ -7,8 +7,9 @@
     {
         private ExplosiveBolt eb;
 
-        internal Decoupler(BlockBehaviour bb) : base(bb)
+        internal override void Initialize(BlockBehaviour bb)
         {
+            base.Initialize(bb);
             eb = bb.GetComponent<ExplosiveBolt>();
         }
 
@@ -25,7 +26,7 @@
                 Explode();
                 return;
             }
-            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
         }
 
         /// <summary>

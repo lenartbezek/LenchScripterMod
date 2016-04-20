@@ -11,19 +11,17 @@ namespace LenchScripterMod.Blocks
         private SliderCompress sc;
         private MSlider speedSlider;
         private MToggle toggleMode;
-        private MKey extendKey;
 
-        internal Piston(BlockBehaviour bb) : base(bb)
+        internal override void Initialize(BlockBehaviour bb)
         {
+            base.Initialize(bb);
             sc = bb.GetComponent<SliderCompress>();
 
             FieldInfo speedFieldInfo = sc.GetType().GetField("speedSlider", BindingFlags.NonPublic | BindingFlags.Instance);
-            FieldInfo toggleFieldInfo = sc.GetType().GetField("extendKey", BindingFlags.NonPublic | BindingFlags.Instance);
-            FieldInfo extendFieldInfo = sc.GetType().GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo toggleFieldInfo = sc.GetType().GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
 
             speedSlider = speedFieldInfo.GetValue(sc) as MSlider;
             toggleMode = toggleFieldInfo.GetValue(sc) as MToggle;
-            extendKey = extendFieldInfo.GetValue(sc) as MKey;
         }
 
         /// <summary>
@@ -39,7 +37,7 @@ namespace LenchScripterMod.Blocks
                 Extend();
                 return;
             }
-            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
         }
 
         /// <summary>

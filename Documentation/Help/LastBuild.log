@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shfbBuild product="Sandcastle Help File Builder and Tools" version="2015.10.10.0" projectFile="E:\Workspace\LenchScripterMod\Documentation\LenchScripterMod.shfbproj" started="19-Apr-16 23:00:22">
+<buildStep step="Initializing">
+Finding tools...
+The Sandcastle tools are located in &#39;E:\Programs\EWSoftware\Sandcastle Help File Builder\&#39;
+Locating components in the following folder(s):
+    E:\Workspace\LenchScripterMod\Documentation
+    C:\ProgramData\EWSoftware\Sandcastle Help File Builder\Components and Plug-Ins\
+    E:\Programs\EWSoftware\Sandcastle Help File Builder\
+Framework reflection data location: E:\Programs\EWSoftware\Sandcastle Help File Builder\Data\.NETFramework
+Using presentation style &#39;Markdown&#39; located in &#39;E:\Programs\EWSoftware\Sandcastle Help File Builder\PresentationStyles\Markdown&#39;
+    Last step completed in 00:00:00.5633
+</buildStep>
+<buildStep step="Failed">
+
+SHFB: Error BE0074: The selected presentation style (Markdown) does not support one or more of the selected help file formats.  Supported formats: Markdown
+   at SandcastleBuilder.Utils.BuildEngine.BuildProcess.Build()
+
+</buildStep>
+</shfbBuild>

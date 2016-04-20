@@ -11,8 +11,9 @@ namespace LenchScripterMod.Blocks
         private ArrowTurret turret;
         private ShrapnelCannon shrapnel;
 
-        internal Cannon(BlockBehaviour bb) : base(bb)
+        internal override void Initialize(BlockBehaviour bb)
         {
+            base.Initialize(bb);
             cb = bb.GetComponent<CanonBlock>();
             FieldInfo turret_field = cb.GetType().GetField("turret", BindingFlags.NonPublic | BindingFlags.Instance);
             FieldInfo shrapnel_field = cb.GetType().GetField("shrapnel", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -33,7 +34,7 @@ namespace LenchScripterMod.Blocks
                 Shoot();
                 return;
             }
-            throw new ActionNotFoundException("Block " + name + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
