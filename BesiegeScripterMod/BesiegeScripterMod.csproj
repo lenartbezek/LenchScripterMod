@@ -84,7 +84,6 @@
     <Compile Include="Blocks\Spring.cs" />
     <Compile Include="Blocks\Steering.cs" />
     <Compile Include="Blocks\WaterCannon.cs" />
-    <Compile Include="InputManager.cs" />
     <Compile Include="LuaMethodWrapper.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

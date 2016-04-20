@@ -9,9 +9,11 @@ namespace LenchScripterMod.Blocks
     {
         private FlamethrowerController fc;
         private MToggle holdToFire;
+
         private FieldInfo keyHeld;
 
         private bool setIgniteFlag = false;
+        private bool lastIgniteFlag = false;
 
         internal override void Initialize(BlockBehaviour bb)
         {
@@ -19,6 +21,7 @@ namespace LenchScripterMod.Blocks
             fc = bb.GetComponent<FlamethrowerController>();
             FieldInfo holdFieldInfo = fc.GetType().GetField("holdToFire", BindingFlags.NonPublic | BindingFlags.Instance);
             holdToFire = holdFieldInfo.GetValue(fc) as MToggle;
+
             keyHeld = fc.GetType().GetField("keyHeld", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
@@ -46,21 +49,47 @@ namespace LenchScripterMod.Blocks
             setIgniteFlag = true;
         }
 
+        /// <summary>
+        /// Sets the remaining time of the flamethrower.
+        /// </summary>
+        /// <param name="t">Float value; time in seconds.</param>
+        public void setRemainingTime(float t)
+        {
+            fc.timey = 10 - t;
+        }
+
+        /// <summary>
+        /// Returns the remaining time of the flamethrower.
+        /// </summary>
+        /// <returns>Float value; time in seconds.</returns>
+        public float getRemainingTime()
+        {
+            return 10 - fc.timey;
+        }
+
         private void LateUpdate()
         {
-            if (!fc.timeOut || STATLORD.infiniteAmmoMode)
+            if (setIgniteFlag)
             {
-                if (holdToFire.IsActive)
+                if (!fc.timeOut || STATLORD.infiniteAmmoMode)
                 {
-                    keyHeld.SetValue(fc, true);
-                    fc.FlameOn();
+                    if (holdToFire.IsActive)
+                    {
+                        fc.FlameOn();
+                    }
+                    else
+                    {
+                        fc.Flame();
+                    }
                 }
-                else
-                {
-                    fc.Flame();
-                }
+                setIgniteFlag = false;
+                lastIgniteFlag = true;
             }
-            setIgniteFlag = false;
+            else if(lastIgniteFlag)
+            {
+                keyHeld.SetValue(fc, true);
+                lastIgniteFlag = false;
+            }
         }
 
         internal static bool isFlamethrower(BlockBehaviour bb)

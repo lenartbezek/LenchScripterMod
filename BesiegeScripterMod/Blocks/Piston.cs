@@ -11,17 +11,26 @@ namespace LenchScripterMod.Blocks
         private SliderCompress sc;
         private MSlider speedSlider;
         private MToggle toggleMode;
+        private MKey extendKey;
+
+        private bool setExtendFlag = false;
+        private bool lastExtendFlag = false;
+        private float defaultStartLimit;
+        private float defaultNewLimit;
 
         internal override void Initialize(BlockBehaviour bb)
         {
             base.Initialize(bb);
             sc = bb.GetComponent<SliderCompress>();
 
-            FieldInfo speedFieldInfo = sc.GetType().GetField("speedSlider", BindingFlags.NonPublic | BindingFlags.Instance);
             FieldInfo toggleFieldInfo = sc.GetType().GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo extendFieldInfo = sc.GetType().GetField("extendKey", BindingFlags.NonPublic | BindingFlags.Instance);
 
-            speedSlider = speedFieldInfo.GetValue(sc) as MSlider;
             toggleMode = toggleFieldInfo.GetValue(sc) as MToggle;
+            extendKey = extendFieldInfo.GetValue(sc) as MKey;
+
+            defaultStartLimit = sc.startLimit;
+            defaultNewLimit = sc.newLimit;
         }
 
         /// <summary>
@@ -45,22 +54,33 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         public void Extend()
         {
-            if (sc.myJoint == null || sc.myJoint.connectedBody == null) return;
             if (toggleMode.IsActive)
-            {
-                sc.posToBe = sc.newLimit;
-            }
-            else
             {
                 sc.posToBe = (sc.posToBe != sc.newLimit ? sc.newLimit : sc.startLimit);
             }
-            float joint_pos = sc.myJoint.targetPosition.x;
-            if (joint_pos != sc.posToBe)
+            else
             {
-                joint_pos = Mathf.Lerp(joint_pos, sc.posToBe, Time.deltaTime * sc.lerpSpeed * speedSlider.Value);
-                Vector3 target_pos = sc.myJoint.targetPosition;
-                target_pos.x = joint_pos;
-                sc.myJoint.targetPosition = target_pos;
+                setExtendFlag = true;
+            }
+        }
+
+        private void Update()
+        {
+            if (setExtendFlag)
+            {
+                if (!extendKey.IsDown)
+                {
+                    sc.startLimit = defaultNewLimit;
+                    sc.newLimit = defaultStartLimit;
+                }
+                setExtendFlag = false;
+                lastExtendFlag = true;
+            }
+            else if (lastExtendFlag)
+            {
+                sc.startLimit = defaultStartLimit;
+                sc.newLimit = defaultNewLimit;
+                lastExtendFlag = false;
             }
         }
 

@@ -133,7 +133,7 @@ namespace LenchScripterMod
         private Dictionary<string, Block> idToSimulationBlock;
 
         /// <summary>
-        /// Instantiates and returns new Block object.
+        /// Initializes and returns new Block object.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
         /// <returns>LenchScripterMod.Block object.</returns>

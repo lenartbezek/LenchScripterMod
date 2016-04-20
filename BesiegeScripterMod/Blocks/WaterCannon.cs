@@ -8,14 +8,14 @@ namespace LenchScripterMod.Blocks
     public class WaterCannon : Block
     {
         private WaterCannonController wcc;
-        private MToggle holdToShootToggle;
+
+        private bool setShootFlag = false;
+        private bool lastShootFlag = false;
 
         internal override void Initialize(BlockBehaviour bb)
         {
             base.Initialize(bb);
             wcc = bb.GetComponent<WaterCannonController>();
-            FieldInfo holdFieldInfo = wcc.GetType().GetField("holdToShootToggle", BindingFlags.NonPublic | BindingFlags.Instance);
-            holdToShootToggle = holdFieldInfo.GetValue(wcc) as MToggle;
         }
 
         /// <summary>
@@ -39,19 +39,21 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         public void Shoot()
         {
-            wcc.isActive = holdToShootToggle.IsActive ? true : !wcc.isActive;
+            setShootFlag = true;
+        }
 
-            if (wcc.prevActiveState != wcc.isActive)
+        private void Update()
+        {
+            if (setShootFlag)
             {
-                wcc.prevActiveState = wcc.isActive;
-                wcc.StartCoroutine_Auto(wcc.SetParticles());
+                wcc.isActive = true;
+                lastShootFlag = false;
             }
-            if (wcc.prevBoilingState != wcc.boiling)
+            else if (lastShootFlag)
             {
-                wcc.prevBoilingState = wcc.boiling;
-                wcc.StartCoroutine_Auto(wcc.SetParticles());
+                wcc.isActive = false;
+                lastShootFlag = false;
             }
-            wcc.boiling = wcc.glowCode.lerpedGlowAmount > 0.1f;
         }
 
         internal static bool isWaterCannon(BlockBehaviour bb)

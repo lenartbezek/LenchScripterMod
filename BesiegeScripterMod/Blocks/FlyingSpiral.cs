@@ -20,6 +20,9 @@ namespace LenchScripterMod.Blocks
         private FieldInfo lerpySpeed;
         private FieldInfo lerpedSpeed;
 
+        private bool setFlyingFlag = false;
+        private bool lastFlyingFlag = false;
+
         internal override void Initialize(BlockBehaviour bb)
         {
             base.Initialize(bb);
@@ -62,53 +65,44 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         public void Spin()
         {
-            if (!fc.canFly)
+            setFlyingFlag = true;
+        }
+
+        private void Fly(bool f)
+        {
+            if (f && !fc.isFrozen && fc.canFly)
             {
-                flying.SetValue(fc, false);
+                Debug.Log("Flying!");
+                speedToGo.SetValue(fc, fc.speed);
+                lerpySpeed.SetValue(fc, fc.lerpSpeed + Random.Range(-2, 3));
+                rigidbody.drag = 1.5f;
+                flying.SetValue(fc, true);
             }
             else
             {
-                if (!automaticToggle.IsActive)
-                {
-                    if (!(bool)flying.GetValue(fc))
-                    {
-                        speedToGo.SetValue(fc, fc.speed);
-                        lerpySpeed.SetValue(fc, fc.lerpSpeed + Random.Range(-2, 3));
-                        rigidbody.drag = 1.5f;
-                        flying.SetValue(fc, true);
-                    }
-                }
-                else if (toggleMode.IsActive)
-                {
-                    if (!fc.isFrozen)
-                    {
-                        speedToGo.SetValue(fc, fc.speed);
-                        lerpySpeed.SetValue(fc, fc.lerpSpeed + Random.Range(-2, 3));
-                        rigidbody.drag = 1.5f;
-                        flying.SetValue(fc, true);
-                    }
-                }
-                else if (!fc.isFrozen)
-                {
-                    if (!(bool)flying.GetValue(fc))
-                    {
-                        speedToGo.SetValue(fc, fc.speed);
-                        lerpySpeed.SetValue(fc, fc.lerpSpeed + Random.Range(-2, 3));
-                        rigidbody.drag = 1.5f;
-                        flying.SetValue(fc, true);
-                    }
-                    else
-                    {
-                        speedToGo.SetValue(fc, Vector3.zero);
-                        rigidbody.drag = 0.5f;
-                        flying.SetValue(fc, false);
-                    }
-                }
-                if ((Vector3)speedToGo.GetValue(fc) != Vector3.zero || (Vector3)lerpedSpeed.GetValue(fc) != Vector3.zero)
-                {
-                    lerpedSpeed.SetValue(fc, Vector3.Lerp((Vector3)lerpedSpeed.GetValue(fc), (Vector3)speedToGo.GetValue(fc), Time.deltaTime * (float)lerpySpeed.GetValue(fc)));
-                    fc.spinObj.Rotate((((Vector3)lerpedSpeed.GetValue(fc) * Time.deltaTime) * -1) * (!reverseToggle.IsActive ? 1f : -1f));
-                }
+                Debug.Log("Not flying!");
+                speedToGo.SetValue(fc, Vector3.zero);
+                rigidbody.drag = 0.5f;
+                flying.SetValue(fc, false);
+            }
+        }
+
+        private void Update()
+        {
+            if (setFlyingFlag)
+            {
+                if (toggleMode.IsActive)
+                    Fly(!(bool)flying.GetValue(fc));
+                else
+                    Fly(true);
+                setFlyingFlag = false;
+                lastFlyingFlag = true;
+            }
+            else if (lastFlyingFlag)
+            {
+                if (!toggleMode.IsActive)
+                    Fly(false);
+                lastFlyingFlag = false;
             }
         }
 
