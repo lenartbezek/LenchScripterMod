@@ -369,6 +369,14 @@ namespace LenchScripterMod.Blocks
     }
 
     /// <summary>
+    /// Exception to be thrown when a block is not found.
+    /// </summary>
+    public class BlockNotFoundException : Exception
+    {
+        public BlockNotFoundException(string message) : base(message) { }
+    }
+
+    /// <summary>
     /// Exception to be thrown when trying to call an action that does not exist for the current block.
     /// </summary>
     public class ActionNotFoundException : Exception

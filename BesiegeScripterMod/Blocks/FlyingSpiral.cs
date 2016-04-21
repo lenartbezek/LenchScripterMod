@@ -72,7 +72,6 @@ namespace LenchScripterMod.Blocks
         {
             if (f && !fc.isFrozen && fc.canFly)
             {
-                Debug.Log("Flying!");
                 speedToGo.SetValue(fc, fc.speed);
                 lerpySpeed.SetValue(fc, fc.lerpSpeed + Random.Range(-2, 3));
                 rigidbody.drag = 1.5f;
@@ -80,7 +79,6 @@ namespace LenchScripterMod.Blocks
             }
             else
             {
-                Debug.Log("Not flying!");
                 speedToGo.SetValue(fc, Vector3.zero);
                 rigidbody.drag = 0.5f;
                 flying.SetValue(fc, false);

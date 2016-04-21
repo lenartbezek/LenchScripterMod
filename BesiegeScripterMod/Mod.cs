@@ -235,13 +235,21 @@ namespace LenchScripterMod
             }
         }
 
-        private void InitializeLuaScript()
+        private void LoadLuaScript()
         {
-            lua.DoFile(scriptFile);
-            luaOnUpdate = lua["onUpdate"] as LuaFunction;
-            luaOnFixedUpdate = lua["onFixedUpdate"] as LuaFunction;
-            luaOnKeyDown = lua["onKeyDown"] as LuaFunction;
-            luaOnKeyHeld = lua["onKeyHeld"] as LuaFunction;
+            try
+            {
+                lua.DoFile(scriptFile);
+                luaOnUpdate = lua["onUpdate"] as LuaFunction;
+                luaOnFixedUpdate = lua["onFixedUpdate"] as LuaFunction;
+                luaOnKeyDown = lua["onKeyDown"] as LuaFunction;
+                luaOnKeyHeld = lua["onKeyHeld"] as LuaFunction;
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                ScriptStop();
+            }
         }
 
         /// <summary>
@@ -259,8 +267,7 @@ namespace LenchScripterMod
             lua = new Lua();
             lua.LoadCLRPackage();
             lua.DoString(@" import 'System'
-                            import 'UnityEngine'
-                            import 'Assembly-CSharp'  ");
+                            import 'UnityEngine' ");
             lua.DoString(@"package.path = package.path .. ';"+ Application.dataPath + "/Scripts/?.lua'");
 
             wrapper = new LuaMethodWrapper();
@@ -349,7 +356,7 @@ namespace LenchScripterMod
             // Initialize Lua script
             if (scriptFile != null)
             {
-                InitializeLuaScript();
+                LoadLuaScript();
                 scriptFile = null;
             }
 
@@ -409,7 +416,7 @@ namespace LenchScripterMod
             // Initialize Lua script
             if (scriptFile != null)
             {
-                InitializeLuaScript();
+                LoadLuaScript();
                 scriptFile = null;
             }
 
@@ -438,14 +445,10 @@ namespace LenchScripterMod
         {
             this.isSimulating = isSimulating;
             if (isSimulating)
-                this.ScriptStart();
-            else if (this.lua != null)
-                this.ScriptStop();
+                ScriptStart();
+            else if (lua != null)
+                ScriptStop();
         }
     }
 
-    public class BlockNotFoundException : Exception
-    {
-        public BlockNotFoundException(string message) : base(message) { }
-    }
 }

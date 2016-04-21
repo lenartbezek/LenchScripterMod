@@ -34,8 +34,11 @@
         /// </summary>
         public void Launch()
         {
-            tr.hasFired = true;
-            tr.StartCoroutine(tr.Fire(0));
+            if (!tr.hasFired)
+            {
+                tr.hasFired = true;
+                tr.StartCoroutine(tr.Fire(0));
+            }
         }
 
         /// <summary>
