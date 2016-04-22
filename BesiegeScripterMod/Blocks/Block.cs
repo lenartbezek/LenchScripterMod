@@ -77,7 +77,7 @@ namespace LenchScripterMod.Blocks
         /// <returns>Boolean value.</returns>
         public bool exists()
         {
-            return bb.GetComponent<Rigidbody>() != null;
+            return bb != null && bb.GetComponent<Rigidbody>() != null;
         }
 
         /// <summary>
