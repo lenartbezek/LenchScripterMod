@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using UnityEngine;
 
 namespace LenchScripterMod.Blocks
 {
@@ -8,8 +7,10 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Piston : Block
     {
+        private static FieldInfo toggleFieldInfo = typeof(SliderCompress).GetType().GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo extendFieldInfo = typeof(SliderCompress).GetType().GetField("extendKey", BindingFlags.NonPublic | BindingFlags.Instance);
+
         private SliderCompress sc;
-        private MSlider speedSlider;
         private MToggle toggleMode;
         private MKey extendKey;
 
@@ -22,9 +23,6 @@ namespace LenchScripterMod.Blocks
         {
             base.Initialize(bb);
             sc = bb.GetComponent<SliderCompress>();
-
-            FieldInfo toggleFieldInfo = sc.GetType().GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
-            FieldInfo extendFieldInfo = sc.GetType().GetField("extendKey", BindingFlags.NonPublic | BindingFlags.Instance);
 
             toggleMode = toggleFieldInfo.GetValue(sc) as MToggle;
             extendKey = extendFieldInfo.GetValue(sc) as MKey;

@@ -7,10 +7,12 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Flamethrower : Block
     {
-        private FlamethrowerController fc;
-        private MToggle holdToFire;
+        private static FieldInfo holdFieldInfo = typeof(FlamethrowerController).GetType().GetField("holdToFire", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo keyHeld = typeof(FlamethrowerController).GetType().GetField("keyHeld", BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private FieldInfo keyHeld;
+        private FlamethrowerController fc;
+
+        private MToggle holdToFire;
 
         private bool setIgniteFlag = false;
         private bool lastIgniteFlag = false;
@@ -19,10 +21,7 @@ namespace LenchScripterMod.Blocks
         {
             base.Initialize(bb);
             fc = bb.GetComponent<FlamethrowerController>();
-            FieldInfo holdFieldInfo = fc.GetType().GetField("holdToFire", BindingFlags.NonPublic | BindingFlags.Instance);
             holdToFire = holdFieldInfo.GetValue(fc) as MToggle;
-
-            keyHeld = fc.GetType().GetField("keyHeld", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         /// <summary>

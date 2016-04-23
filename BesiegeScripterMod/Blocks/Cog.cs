@@ -8,17 +8,17 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Cog : Block
     {
-        private CogMotorController cmc;
-        private FieldInfo input;
+        private static FieldInfo input = typeof(CogMotorController).GetType().GetField("input", BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private float setInputValue;
+        private CogMotorController cmc;
+
+        private float desired_input;
         private bool setInputFlag = false;
 
         internal override void Initialize(BlockBehaviour bb)
         {
             base.Initialize(bb);
             cmc = bb.GetComponent<CogMotorController>();
-            input = cmc.GetType().GetField("input", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace LenchScripterMod.Blocks
         {
             if (float.IsNaN(value))
                 throw new ArgumentException("Value is not a number (NaN).");
-            setInputValue = value;
+            desired_input = value;
             setInputFlag = true;
         }
 
@@ -59,7 +59,7 @@ namespace LenchScripterMod.Blocks
             if (setInputFlag)
             {
                 setInputFlag = false;
-                input.SetValue(cmc, setInputValue);
+                input.SetValue(cmc, desired_input);
             }
         }
 

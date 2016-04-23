@@ -7,6 +7,8 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Grabber : Block
     {
+        private static FieldInfo joinFieldInfo = typeof(GrabberBlock).GetType().GetField("joinOnTriggerBlock", BindingFlags.NonPublic | BindingFlags.Instance);
+
         private GrabberBlock gb;
         private JoinOnTriggerBlock joint;
 
@@ -14,7 +16,6 @@ namespace LenchScripterMod.Blocks
         {
             base.Initialize(bb);
             gb = bb.GetComponent<GrabberBlock>();
-            FieldInfo joinFieldInfo = gb.GetType().GetField("joinOnTriggerBlock", BindingFlags.NonPublic | BindingFlags.Instance);
             joint = joinFieldInfo.GetValue(gb) as JoinOnTriggerBlock;
         }
 

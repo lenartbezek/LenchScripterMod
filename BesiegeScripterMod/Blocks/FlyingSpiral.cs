@@ -8,17 +8,21 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class FlyingSpiral : Block
     {
+        private static FieldInfo flying = typeof(FlyingController).GetField("flying", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo speedToGo = typeof(FlyingController).GetField("speedToGo", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo lerpySpeed = typeof(FlyingController).GetField("lerpySpeed", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo lerpedSpeed = typeof(FlyingController).GetField("lerpedSpeed", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo automaticFieldInfo = typeof(FlyingController).GetType().GetField("automaticToggle", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo toggleFieldInfo = typeof(FlyingController).GetType().GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo reverseFieldInfo = typeof(FlyingController).GetType().GetField("reverseToggle", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo rigidbodyFieldInfo = typeof(FlyingController).GetType().GetField("myRigidbody", BindingFlags.NonPublic | BindingFlags.Instance);
+
         private FlyingController fc;
 
         private MToggle automaticToggle;
         private MToggle toggleMode;
         private MToggle reverseToggle;
         private Rigidbody rigidbody;
-
-        private FieldInfo flying;
-        private FieldInfo speedToGo;
-        private FieldInfo lerpySpeed;
-        private FieldInfo lerpedSpeed;
 
         private bool setFlyingFlag = false;
         private bool lastFlyingFlag = false;
@@ -27,21 +31,10 @@ namespace LenchScripterMod.Blocks
         {
             base.Initialize(bb);
             fc = bb.GetComponent<FlyingController>();
-
-            FieldInfo automaticFieldInfo = fc.GetType().GetField("automaticToggle", BindingFlags.NonPublic | BindingFlags.Instance);
-            FieldInfo toggleFieldInfo = fc.GetType().GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
-            FieldInfo reverseFieldInfo = fc.GetType().GetField("reverseToggle", BindingFlags.NonPublic | BindingFlags.Instance);
-            FieldInfo rigidbodyFieldInfo = fc.GetType().GetField("myRigidbody", BindingFlags.NonPublic | BindingFlags.Instance);
-
             automaticToggle = automaticFieldInfo.GetValue(fc) as MToggle;
             toggleMode = toggleFieldInfo.GetValue(fc) as MToggle;
             reverseToggle = reverseFieldInfo.GetValue(fc) as MToggle;
             rigidbody = rigidbodyFieldInfo.GetValue(fc) as Rigidbody;
-
-            flying = fc.GetType().GetField("flying", BindingFlags.NonPublic | BindingFlags.Instance);
-            speedToGo = fc.GetType().GetField("speedToGo", BindingFlags.NonPublic | BindingFlags.Instance);
-            lerpySpeed = fc.GetType().GetField("lerpySpeed", BindingFlags.NonPublic | BindingFlags.Instance);
-            lerpedSpeed = fc.GetType().GetField("lerpedSpeed", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         /// <summary>

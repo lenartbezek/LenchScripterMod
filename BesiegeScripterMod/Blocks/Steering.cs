@@ -9,13 +9,15 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Steering : Block
     {
+        private static FieldInfo angleyToBeField = typeof(SteeringWheel).GetField("angleyToBe", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo angleMultiplierField = typeof(SteeringWheel).GetField("angleMultiplier", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo speedSliderField = typeof(SteeringWheel).GetField("speedSlider", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo limitsSliderField = typeof(SteeringWheel).GetField("limitsSlider", BindingFlags.NonPublic | BindingFlags.Instance);
+
         private SteeringWheel sw;
 
         private MSlider speedSlider;
         private MLimits limitsSlider;
-
-        private FieldInfo angleyToBe;
-        private FieldInfo angleMultiplier;
 
         private float desired_input;
         private bool setInputFlag = false;
@@ -27,10 +29,8 @@ namespace LenchScripterMod.Blocks
         {
             base.Initialize(bb);
             sw = bb.GetComponent<SteeringWheel>();
-            speedSlider = sw.GetType().GetField("speedSlider", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(sw) as MSlider;
-            limitsSlider = sw.GetType().GetField("limitsSlider", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(sw) as MLimits;
-            angleyToBe = sw.GetType().GetField("angleyToBe", BindingFlags.NonPublic | BindingFlags.Instance);
-            angleMultiplier = sw.GetType().GetField("angleMultiplier", BindingFlags.NonPublic | BindingFlags.Instance);
+            speedSlider = speedSliderField.GetValue(sw) as MSlider;
+            limitsSlider = limitsSliderField.GetValue(sw) as MLimits;
         }
 
         /// <summary>
@@ -73,7 +73,12 @@ namespace LenchScripterMod.Blocks
         /// <param name="angle">Float value in degrees.</param>
         public void SetAngle(float angle)
         {
-            desired_angle = angle;
+            if (float.IsNaN(angle))
+                throw new ArgumentException("Value is not a number (NaN).");
+            if (!sw.flipped)
+                desired_angle = Mathf.Clamp(angle, -limitsSlider.Min, limitsSlider.Max);
+            else
+                desired_angle = Mathf.Clamp(angle, -limitsSlider.Max, limitsSlider.Min);
             setAngleFlag = true;
         }
 
@@ -83,14 +88,14 @@ namespace LenchScripterMod.Blocks
         /// <returns>Float value in degrees or radians as specified.</returns>
         public float GetAngle()
         {
-            return (float)angleyToBe.GetValue(sw) * convertToRadians;
+            return (float)angleyToBeField.GetValue(sw) * convertToRadians;
         }
 
         private void LateUpdate()
         {
             if (setAngleFlag)
             {
-                float current_angle = (float)angleyToBe.GetValue(sw);
+                float current_angle = (float)angleyToBeField.GetValue(sw);
                 if (Mathf.Abs(Mathf.DeltaAngle(current_angle, desired_angle)) < 0.1)
                 {
                     setAngleFlag = false;
@@ -106,8 +111,8 @@ namespace LenchScripterMod.Blocks
             {
                 if (speedSlider.Value != 0)
                 {
-                    float speed = desired_input * (float)angleMultiplier.GetValue(sw) * speedSlider.Value;
-                    float current_angle = (float)angleyToBe.GetValue(sw);
+                    float speed = desired_input * (float)angleMultiplierField.GetValue(sw) * speedSlider.Value;
+                    float current_angle = (float)angleyToBeField.GetValue(sw);
                     float new_angle = current_angle + speed * Time.deltaTime;
                     if (sw.allowLimits && limitsSlider.IsActive)
                     {
@@ -120,7 +125,7 @@ namespace LenchScripterMod.Blocks
                         new_angle = new_angle - 360;
                     else if (new_angle < -180)
                         new_angle = new_angle + 360;
-                    angleyToBe.SetValue(sw, new_angle);
+                    angleyToBeField.SetValue(sw, new_angle);
                 }
                 setInputFlag = false;
             }
