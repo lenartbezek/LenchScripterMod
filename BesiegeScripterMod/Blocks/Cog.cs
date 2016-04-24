@@ -8,7 +8,7 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Cog : Block
     {
-        private static FieldInfo input = typeof(CogMotorController).GetType().GetField("input", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo input = typeof(CogMotorController).GetField("input", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private CogMotorController cmc;
 

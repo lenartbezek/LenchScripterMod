@@ -7,8 +7,8 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Flamethrower : Block
     {
-        private static FieldInfo holdFieldInfo = typeof(FlamethrowerController).GetType().GetField("holdToFire", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo keyHeld = typeof(FlamethrowerController).GetType().GetField("keyHeld", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo holdFieldInfo = typeof(FlamethrowerController).GetField("holdToFire", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo keyHeld = typeof(FlamethrowerController).GetField("keyHeld", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private FlamethrowerController fc;
 

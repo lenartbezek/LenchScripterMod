@@ -7,6 +7,9 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Cannon : Block
     {
+        private static FieldInfo turret_field = typeof(CanonBlock).GetField("turret", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo shrapnel_field = typeof(CanonBlock).GetField("shrapnel", BindingFlags.NonPublic | BindingFlags.Instance);
+
         private CanonBlock cb;
         private ArrowTurret turret;
         private ShrapnelCannon shrapnel;
@@ -15,8 +18,6 @@ namespace LenchScripterMod.Blocks
         {
             base.Initialize(bb);
             cb = bb.GetComponent<CanonBlock>();
-            FieldInfo turret_field = cb.GetType().GetField("turret", BindingFlags.NonPublic | BindingFlags.Instance);
-            FieldInfo shrapnel_field = cb.GetType().GetField("shrapnel", BindingFlags.NonPublic | BindingFlags.Instance);
             turret = turret_field.GetValue(cb) as ArrowTurret;
             shrapnel = shrapnel_field.GetValue(cb) as ShrapnelCannon;
         }

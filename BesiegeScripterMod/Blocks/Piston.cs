@@ -7,8 +7,8 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Piston : Block
     {
-        private static FieldInfo toggleFieldInfo = typeof(SliderCompress).GetType().GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo extendFieldInfo = typeof(SliderCompress).GetType().GetField("extendKey", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo toggleFieldInfo = typeof(SliderCompress).GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo extendFieldInfo = typeof(SliderCompress).GetField("extendKey", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private SliderCompress sc;
         private MToggle toggleMode;

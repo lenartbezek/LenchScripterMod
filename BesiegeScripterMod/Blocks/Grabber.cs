@@ -7,16 +7,16 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Grabber : Block
     {
-        private static FieldInfo joinFieldInfo = typeof(GrabberBlock).GetType().GetField("joinOnTriggerBlock", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo joinFieldInfo = typeof(GrabberBlock).GetField("joinOnTriggerBlock", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private GrabberBlock gb;
-        private JoinOnTriggerBlock joint;
+        private JoinOnTriggerBlock join;
 
         internal override void Initialize(BlockBehaviour bb)
         {
             base.Initialize(bb);
             gb = bb.GetComponent<GrabberBlock>();
-            joint = joinFieldInfo.GetValue(gb) as JoinOnTriggerBlock;
+            join = joinFieldInfo.GetValue(gb) as JoinOnTriggerBlock;
         }
 
         /// <summary>
@@ -40,14 +40,7 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         public void Detach()
         {
-            if (joint.isJoined)
-            {
-                joint.BreakJoint();
-            }
-            else
-            {
-                joint.canGrabTimer = 0.05f;
-            }
+            join.OnKeyPressed();
         }
 
         internal static bool isGrabber(BlockBehaviour bb)

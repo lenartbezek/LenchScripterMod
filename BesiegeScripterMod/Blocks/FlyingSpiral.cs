@@ -12,10 +12,10 @@ namespace LenchScripterMod.Blocks
         private static FieldInfo speedToGo = typeof(FlyingController).GetField("speedToGo", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo lerpySpeed = typeof(FlyingController).GetField("lerpySpeed", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo lerpedSpeed = typeof(FlyingController).GetField("lerpedSpeed", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo automaticFieldInfo = typeof(FlyingController).GetType().GetField("automaticToggle", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo toggleFieldInfo = typeof(FlyingController).GetType().GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo reverseFieldInfo = typeof(FlyingController).GetType().GetField("reverseToggle", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo rigidbodyFieldInfo = typeof(FlyingController).GetType().GetField("myRigidbody", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo automaticFieldInfo = typeof(FlyingController).GetField("automaticToggle", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo toggleFieldInfo = typeof(FlyingController).GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo reverseFieldInfo = typeof(FlyingController).GetField("reverseToggle", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo rigidbodyFieldInfo = typeof(FlyingController).GetField("myRigidbody", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private FlyingController fc;
 
