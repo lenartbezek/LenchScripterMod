@@ -75,10 +75,17 @@ namespace LenchScripterMod.Blocks
         {
             if (float.IsNaN(angle))
                 throw new ArgumentException("Value is not a number (NaN).");
-            if (!sw.flipped)
-                desired_angle = Mathf.Clamp(angle, -limitsSlider.Min, limitsSlider.Max);
+            if (sw.allowLimits && limitsSlider.IsActive)
+            {
+                if (!sw.flipped)
+                    desired_angle = Mathf.Clamp(angle, -limitsSlider.Min, limitsSlider.Max);
+                else
+                    desired_angle = Mathf.Clamp(angle, -limitsSlider.Max, limitsSlider.Min);
+            }
             else
-                desired_angle = Mathf.Clamp(angle, -limitsSlider.Max, limitsSlider.Min);
+            {
+                desired_angle = angle;
+            }
             setAngleFlag = true;
         }
 

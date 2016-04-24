@@ -19,7 +19,7 @@ namespace LenchScripterMod.Blocks
         /// <summary>
         /// Name of the script.
         /// </summary>
-        public new string name { get { return blockName + " script handler"; } }
+        public new string name { get { return blockName + " script handle"; } }
 
         private BlockBehaviour bb;
         private System.Object bs;
@@ -27,7 +27,8 @@ namespace LenchScripterMod.Blocks
         internal virtual void Initialize(BlockBehaviour bb)
         {
             this.bb = bb;
-            this.bs = bb.GetComponent(ScripterMod.blockScriptType);
+            if (ScripterMod.blockScriptType != null)
+                this.bs = bb.GetComponent(ScripterMod.blockScriptType);
             this.blockName = bb.GetComponent<MyBlockInfo>().blockName.ToUpper();
         }
 
