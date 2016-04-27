@@ -217,7 +217,8 @@ namespace LenchScripterMod
             {
                 this.value = value;
                 if (!global)
-                { // Check if global
+                { 
+                    // Check if global
                     if (ScripterMod.scripter.lua[name] != null)
                     {
                         System.Object globalValue = ScripterMod.scripter.lua[name];
@@ -244,9 +245,15 @@ namespace LenchScripterMod
                 if(ScripterMod.scripter.lua[name] != null)
                     value = ScripterMod.scripter.lua[name];
             }    
-            if (value == null || name == "")
+            try
+            {
+                return value.ToString();
+            }
+            catch
+            {
                 return "";
-            return value.ToString();
+            }
+            
         }
 
         /// <summary>

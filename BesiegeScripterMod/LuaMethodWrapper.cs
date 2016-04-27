@@ -172,12 +172,6 @@ namespace LenchScripterMod
             b.setSliderValue(sliderName, value);
         }
 
-        public void setLimitValue(string blockId, string limitName, float value)
-        {
-            Block b = getBlock(blockId);
-            // TODO!
-        }
-
         /// <summary>
         /// Returns the toggle mode of the block, specified by the toggle display name.
         /// </summary>
@@ -200,13 +194,6 @@ namespace LenchScripterMod
         {
             Block b = getBlock(blockId);
             return b.getSliderValue(sliderName);
-        }
-
-        public float getLimitValue(string blockId, string limitName)
-        {
-            Block b = getBlock(blockId);
-            // TODO!
-            return 0;
         }
 
         /// <summary>
@@ -410,7 +397,6 @@ namespace LenchScripterMod
 
         /// <summary>
         /// Uses raycast to find out where mouse cursor is pointing.
-        /// If not sucessfull, returns zero vector.
         /// </summary>
         /// <returns>Returns an x, y, z positional vector of the hit.</returns>
         public Vector3 getRaycastHit()
@@ -422,6 +408,79 @@ namespace LenchScripterMod
                 return hit.point;
             }
             throw new LuaException("Your raycast does not intersect with a collider.");
+        }
+
+        /// <summary>
+        /// Uses raycast to find out what collider the mouse cursor is pointing at.
+        /// If not sucessfull, returns zero vector.
+        /// </summary>
+        /// <returns>Returns an x, y, z positional vector of the hit.</returns>
+        public TrackedCollider getRaycastCollider()
+        {
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out hit))
+            {
+                return new TrackedCollider(hit.collider, hit.point);
+            }
+            throw new LuaException("Your raycast does not intersect with a collider.");
+        }
+
+        /// <summary>
+        /// Tracked collider and hit offset.
+        /// </summary>
+        public class TrackedCollider
+        {
+            private Collider c;
+            private Vector3 offset;
+            private Vector3 lastPosition;
+
+            internal TrackedCollider(Collider hitCollider, Vector3 hitPoint)
+            {
+                c = hitCollider;
+                offset = c.transform.InverseTransformPoint(hitPoint);
+                lastPosition = getPosition();
+            }
+
+            /// <summary>
+            /// Implicit conversion to Vector3.
+            /// </summary>
+            /// <param name="tc"></param>
+            static public implicit operator Vector3(TrackedCollider tc)
+            {
+                return tc.getPosition();
+            }
+
+            /// <summary>
+            /// Explicit conversion to string.
+            /// </summary>
+            public override string ToString()
+            {
+                return getPosition().ToString();
+            }
+
+            /// <summary>
+            /// Returns true if the collider still exists.
+            /// </summary>
+            /// <returns></returns>
+            public bool exists()
+            {
+                return c != null;
+            }
+
+            /// <summary>
+            /// Returns the position of the tracked collider with it's offset.
+            /// If the collider no longer exists, returns it's last position.
+            /// </summary>
+            /// <returns>Vector3 position.</returns>
+            public Vector3 getPosition()
+            {
+                if (exists())
+                {
+                    lastPosition = c.transform.TransformPoint(offset);
+                }   
+                return lastPosition;
+            }
         }
 
         /// <summary>
@@ -450,47 +509,62 @@ namespace LenchScripterMod
             }
             marks.Clear();
         }
+
+        /// <summary>
+        /// Mark script attached to primitive sphere objects.
+        /// Used to mark locations through Lua script.
+        /// </summary>
+        public class Mark : MonoBehaviour
+        {
+            void Awake()
+            {
+                GetComponent<Renderer>().material.color = Color.red;
+                Destroy(GetComponent<SphereCollider>());
+            }
+
+            /// <summary>
+            /// Implicit conversion to Vector3.
+            /// </summary>
+            /// <param name="m"></param>
+            static public implicit operator Vector3(Mark m)
+            {
+                return m.transform.position;
+            }
+
+            /// <summary>
+            /// Explicit conversion to string.
+            /// </summary>
+            public override string ToString()
+            {
+                return transform.position.ToString();
+            }
+
+            /// <summary>
+            /// Moves the mark to the target position.
+            /// </summary>
+            /// <param name="target">Vector3 target position.</param>
+            public void move(Vector3 target)
+            {
+                transform.position = target;
+            }
+
+            /// <summary>
+            /// Sets the color of the mark.
+            /// </summary>
+            /// <param name="c">UnityEngine.Color object.</param>
+            public void setColor(Color c)
+            {
+                GetComponent<Renderer>().material.color = c;
+            }
+
+            /// <summary>
+            /// Clears the mark.
+            /// </summary>
+            public void clear()
+            {
+                Destroy(gameObject);
+                Destroy(this);
+            }
+        }
     }
-
-    /// <summary>
-    /// Mark script attached to primitive sphere objects.
-    /// Used to mark locations through Lua script.
-    /// </summary>
-    public class Mark : MonoBehaviour
-    {
-
-        void Start()
-        {
-            GetComponent<Renderer>().material.color = Color.red;
-            Destroy(GetComponent<SphereCollider>());
-        }
-
-        /// <summary>
-        /// Moves the mark to the target position.
-        /// </summary>
-        /// <param name="target">Vector3 target position.</param>
-        public void move(Vector3 target)
-        {
-            transform.position = target;
-        }
-
-        /// <summary>
-        /// Sets the color of the mark.
-        /// </summary>
-        /// <param name="c">UnityEngine.Color object.</param>
-        public void setColor(Color c)
-        {
-            GetComponent<Renderer>().material.color = c;
-        }
-
-        /// <summary>
-        /// Clears the mark.
-        /// </summary>
-        public void clear()
-        {
-            Destroy(gameObject);
-            Destroy(this);
-        }
-    }
-
 }

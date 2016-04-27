@@ -14,7 +14,7 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 9, 2);
+        public override Version Version { get; } = new Version(0, 9, 3);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
@@ -46,6 +46,7 @@ namespace LenchScripterMod
             }
 
             addKeybinds();
+            addCommands();
         }
 
         /// <summary>
@@ -89,6 +90,12 @@ namespace LenchScripterMod
         {
             Keybindings.AddKeybinding("Dump Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
             Keybindings.AddKeybinding("Lua Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
+        }
+
+        private void addCommands()
+        {
+            CommandCallback c = scripter.InteractiveCommand;
+            Commands.RegisterCommand("lua", c, "Executes Lua Expression.");
         }
     }
 
@@ -250,6 +257,38 @@ namespace LenchScripterMod
                 Debug.LogException(e);
                 ScriptStop();
             }
+        }
+
+        /// <summary>
+        /// Called on lua console command.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="namedArgs"></param>
+        /// <returns></returns>
+        internal string InteractiveCommand(string[] args, IDictionary<string, string> namedArgs)
+        {
+            if (args.Length == 0)
+                return "Executes a Lua expression.";
+            if (!isSimulating || lua == null)
+                return "Can only be called while script is running.";
+
+            string expression = "";
+            for (int i = 0; i < args.Length; i++)
+                expression += args[i] + " ";
+
+            System.Object[] result = lua.DoString(expression);
+
+            if (result != null)
+            {
+                string result_string = "";
+                for (int i = 0; i < result.Length; i++)
+                {
+                    result_string += result[i].ToString() + " ";
+                }
+                return result_string;
+            }
+                
+            return "";
         }
 
         /// <summary>
