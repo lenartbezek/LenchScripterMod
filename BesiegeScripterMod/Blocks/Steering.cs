@@ -86,6 +86,7 @@ namespace LenchScripterMod.Blocks
             {
                 desired_angle = angle;
             }
+
             setAngleFlag = true;
         }
 
@@ -109,7 +110,9 @@ namespace LenchScripterMod.Blocks
                 }
                 else
                 {
-                    desired_input = Mathf.Clamp(Mathf.DeltaAngle(current_angle, desired_angle), -1, 1);
+                    desired_input = Mathf.DeltaAngle(current_angle, desired_angle) / 
+                        ((float)angleMultiplierField.GetValue(sw) * speedSlider.Value * Time.deltaTime);
+                    desired_input = Mathf.Clamp(desired_input, -1, 1);
                     setInputFlag = true;
                 }
             }
