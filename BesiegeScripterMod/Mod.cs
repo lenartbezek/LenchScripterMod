@@ -94,8 +94,8 @@ namespace LenchScripterMod
 
         private void addCommands()
         {
-            CommandCallback c = scripter.InteractiveCommand;
-            Commands.RegisterCommand("lua", c, "Executes Lua Expression.");
+            Commands.RegisterCommand("lua", scripter.InteractiveCommand, "Executes Lua expression.");
+            Commands.RegisterCommand("loadscript", scripter.LoadScriptCommand, "Loads Lua script.");
         }
     }
 
@@ -114,13 +114,14 @@ namespace LenchScripterMod
 
         // Lua environment
         internal Lua lua;
-        private string scriptFile;
+        private string scriptFile; 
 
         // Lua functions
         private static LuaFunction luaOnUpdate;
         private static LuaFunction luaOnFixedUpdate;
+        private static LuaFunction luaOnKey;
         private static LuaFunction luaOnKeyDown;
-        private static LuaFunction luaOnKeyHeld;
+        private static LuaFunction luaOnKeyUp;
 
         internal bool isSimulating;
 
@@ -249,13 +250,13 @@ namespace LenchScripterMod
                 lua.DoFile(scriptFile);
                 luaOnUpdate = lua["onUpdate"] as LuaFunction;
                 luaOnFixedUpdate = lua["onFixedUpdate"] as LuaFunction;
+                luaOnKey = lua["onKeyHeld"] as LuaFunction;
                 luaOnKeyDown = lua["onKeyDown"] as LuaFunction;
-                luaOnKeyHeld = lua["onKeyHeld"] as LuaFunction;
+                luaOnKeyUp = lua["onKeyUp"] as LuaFunction;
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
-                ScriptStop();
             }
         }
 
@@ -270,7 +271,7 @@ namespace LenchScripterMod
             if (args.Length == 0)
                 return "Executes a Lua expression.";
             if (!isSimulating || lua == null)
-                return "Can only be called while script is running.";
+                return "Can only be called while simulating.";
 
             string expression = "";
             for (int i = 0; i < args.Length; i++)
@@ -292,15 +293,73 @@ namespace LenchScripterMod
         }
 
         /// <summary>
-        /// Called to start script.
+        /// Called on loadscript console command.
         /// </summary>
-        private void ScriptStart()
+        /// <param name="args"></param>
+        /// <param name="namedArgs"></param>
+        /// <returns></returns>
+        internal string LoadScriptCommand(string[] args, IDictionary<string, string> namedArgs)
+        {
+            if (!isSimulating || lua == null)
+                return "Can only be called while simulating.";
+
+            string path;
+            if (args.Length == 0)
+            {
+                path = string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua");
+            }
+            else
+            {
+                path = args[0];
+            }
+
+            string found = FindScript(path);
+            if (found == null)
+            {
+                return "Script file not found: " + path;
+            }
+            else
+            {
+                scriptFile = found;
+                return "Script file: " + found;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to find the script file.
+        /// Returns null if file is not found.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        private string FindScript(string path)
+        {
+            List<string> possibleFiles = new List<string>()
+            {
+                string.Concat(Application.dataPath, "/Scripts/", path, ".lua"),
+                string.Concat(Application.dataPath, "/Scripts/", path),
+                string.Concat(path, ".lua"),
+                path
+            };
+
+            foreach (string p in possibleFiles)
+            {
+                if (File.Exists(p))
+                    return p;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Creates Lua environment. Looks for script to load.
+        /// </summary>
+        private void CreateLuaEnvironment()
         {
             idToSimulationBlock = null;
             luaOnUpdate = null;
             luaOnFixedUpdate = null;
+            luaOnKey = null;
             luaOnKeyDown = null;
-            luaOnKeyHeld = null;
+            luaOnKeyUp = null;
 
             // Lua Environment
             lua = new Lua();
@@ -312,33 +371,24 @@ namespace LenchScripterMod
             wrapper = new LuaMethodWrapper();
             lua["besiege"] = wrapper;
 
-            // Populate keycode table
-            lua.NewTable("KeyCode");
-            foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
-            {
-                string str = key.ToString();
-                object[] objArray = new object[] { "KeyCode[\"", str, "\"] = ", (int)key };
-                lua.DoString(string.Concat(objArray), "chunk");
-            }
-
             // Find script file
-            string luaFile = string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua");
-            if (File.Exists(luaFile))
+            string path = string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua");
+            string found = FindScript(path);
+            if (found == null)
             {
-                Debug.Log("Script file: " + luaFile);
-                scriptFile = luaFile;
+                Debug.Log("Script file not found: " + path);
             }
             else
             {
-                Debug.Log("Script file not found: " + luaFile);
-                ScriptStop();
+                scriptFile = found;
+                Debug.Log("Script file: " + found);
             }
         }
 
         /// <summary>
         /// Called to stop script.
         /// </summary>
-        private void ScriptStop()
+        private void DestroyLuaEnvironment()
         {
             lua.Close();
             lua.Dispose();
@@ -423,26 +473,22 @@ namespace LenchScripterMod
                 luaOnUpdate.Call();
 
             // Call Lua onKey
-            if (Input.anyKey)
+            foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
             {
-                if ((string)lua.DoString("return type(onKeyHeld)", "chunk")[0] == "function")
+                if (luaOnKey != null)
                 {
-                    foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
-                    {
-                        if (!Input.GetKey(key)) continue;
-                        if (luaOnKeyHeld != null)
-                            luaOnKeyHeld.Call((int)key);
-                    }
+                    if (!Input.GetKey(key)) continue;
+                        luaOnKey.Call(key);
                 }
-
-                if ((string)lua.DoString("return type(onKeyDown)", "chunk")[0] == "function")
+                if (luaOnKeyDown != null)
                 {
-                    foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
-                    {
-                        if (!Input.GetKeyDown(key)) continue;
-                        if (luaOnKeyDown != null)
-                            luaOnKeyDown.Call((int)key);
-                    }
+                    if (!Input.GetKeyDown(key)) continue;
+                        luaOnKeyDown.Call(key);
+                }
+                if (luaOnKeyUp != null)
+                {
+                    if (!Input.GetKeyUp(key)) continue;
+                    luaOnKeyUp.Call(key);
                 }
             }
         }
@@ -484,9 +530,9 @@ namespace LenchScripterMod
         {
             this.isSimulating = isSimulating;
             if (isSimulating)
-                ScriptStart();
+                CreateLuaEnvironment();
             else if (lua != null)
-                ScriptStop();
+                DestroyLuaEnvironment();
         }
     }
 
