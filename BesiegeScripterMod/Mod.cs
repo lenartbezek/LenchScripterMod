@@ -20,11 +20,7 @@ namespace LenchScripterMod
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
 
-        /// <summary>
-        /// SingleInstance of scripter mod.
-        /// </summary>
-        public static Scripter scripter;
-
+        internal static Scripter scripter;
         internal static LuaWatchlist watchlist;
         internal static Type blockScriptType;
 
@@ -34,19 +30,19 @@ namespace LenchScripterMod
         /// </summary>
         public override void OnLoad()
         {
-            UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
             scripter = Scripter.Instance;
+            UnityEngine.Object.DontDestroyOnLoad(scripter);
             Game.OnSimulationToggle += scripter.OnSimulationToggle;
 
-            watchlist = new LuaWatchlist();
+            watchlist = scripter.gameObject.AddComponent<LuaWatchlist>();
 
-            if (LoadBlockLoaderAssembly())
-            {
-                Debug.Log("[Lench Scripter Mod]: Found TGYD's BlockLoader");
-            }
+            LoadBlockLoaderAssembly();
 
-            addKeybinds();
-            addCommands();
+            Keybindings.AddKeybinding("Dump Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
+            Keybindings.AddKeybinding("Lua Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
+
+            Commands.RegisterCommand("lua", scripter.InteractiveCommand, "Executes Lua expression.");
+            Commands.RegisterCommand("loadscript", scripter.LoadScriptCommand, "Loads Lua script.");
         }
 
         /// <summary>
@@ -56,6 +52,7 @@ namespace LenchScripterMod
         {
             Game.OnSimulationToggle -= scripter.OnSimulationToggle;
             scripter.OnSimulationToggle(false);
+            UnityEngine.Object.Destroy(scripter);
         }
 
         /// <summary>
@@ -85,24 +82,12 @@ namespace LenchScripterMod
 
             return true;
         }
-
-        private void addKeybinds()
-        {
-            Keybindings.AddKeybinding("Dump Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
-            Keybindings.AddKeybinding("Lua Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
-        }
-
-        private void addCommands()
-        {
-            Commands.RegisterCommand("lua", scripter.InteractiveCommand, "Executes Lua expression.");
-            Commands.RegisterCommand("loadscript", scripter.LoadScriptCommand, "Loads Lua script.");
-        }
     }
 
     /// <summary>
     /// Class representing an instance of the mod.
     /// </summary>
-    public class Scripter : SingleInstance<Scripter>
+    internal class Scripter : SingleInstance<Scripter>
     {
         /// <summary>
         /// Name in the Unity hierarchy.
@@ -313,21 +298,20 @@ namespace LenchScripterMod
                 path = args[0];
             }
 
-            string found = FindScript(path);
-            if (found == null)
+            try
             {
-                return "Script file not found: " + path;
-            }
-            else
-            {
+                string found = FindScript(path);
                 scriptFile = found;
                 return "Script file: " + found;
+            }
+            catch (FileNotFoundException e)
+            {
+                return e.Message;
             }
         }
 
         /// <summary>
         /// Attempts to find the script file.
-        /// Returns null if file is not found.
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
@@ -335,10 +319,10 @@ namespace LenchScripterMod
         {
             List<string> possibleFiles = new List<string>()
             {
+                path,
                 string.Concat(Application.dataPath, "/Scripts/", path, ".lua"),
                 string.Concat(Application.dataPath, "/Scripts/", path),
-                string.Concat(path, ".lua"),
-                path
+                string.Concat(path, ".lua")
             };
 
             foreach (string p in possibleFiles)
@@ -346,7 +330,7 @@ namespace LenchScripterMod
                 if (File.Exists(p))
                     return p;
             }
-            return null;
+            throw new FileNotFoundException("Script file not found: " + path);
         }
 
         /// <summary>
@@ -372,16 +356,13 @@ namespace LenchScripterMod
             lua["besiege"] = wrapper;
 
             // Find script file
-            string path = string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua");
-            string found = FindScript(path);
-            if (found == null)
+            try
             {
-                Debug.Log("Script file not found: " + path);
+                scriptFile = FindScript(string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua"));
             }
-            else
+            catch (FileNotFoundException e)
             {
-                scriptFile = found;
-                Debug.Log("Script file: " + found);
+                Debug.Log(e.Message);
             }
         }
 
@@ -399,7 +380,6 @@ namespace LenchScripterMod
             {
                 Destroy(b);
             }
-            Debug.Log("Script stopped");
         }
 
         /// <summary>
@@ -505,21 +485,11 @@ namespace LenchScripterMod
                 scriptFile = null;
             }
 
-            if (!isSimulating) return;
-
-            if (lua == null) return;
+            if (!isSimulating || lua == null) return;
 
             // Call Lua onFixedUpdate
             if (luaOnFixedUpdate != null)
                 luaOnFixedUpdate.Call();
-        }
-
-        /// <summary>
-        /// Calls the editor GUI to render.
-        /// </summary>
-        private void OnGUI()
-        {
-            ScripterMod.watchlist.Render();
         }
 
         /// <summary>

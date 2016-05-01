@@ -10,7 +10,7 @@ namespace LenchScripterMod
     /// Used as a wrapper for all Lua accessible functions.
     /// Instantiated at the start of the simulation.
     /// </summary>
-    public class LuaMethodWrapper
+    internal class LuaMethodWrapper
     {
         // Using radians or degrees
         private float convertToDegrees;
@@ -491,6 +491,8 @@ namespace LenchScripterMod
         public Mark createMark(Vector3 pos)
         {
             GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            obj.name = "Mark";
+            obj.transform.parent = ScripterMod.scripter.transform;
             Mark m = obj.AddComponent<Mark>();
             m.move(pos);
             marks.Add(m);

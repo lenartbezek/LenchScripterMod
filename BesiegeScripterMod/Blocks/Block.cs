@@ -28,8 +28,8 @@ namespace LenchScripterMod.Blocks
         {
             this.bb = bb;
             if (ScripterMod.blockScriptType != null)
-                this.bs = bb.GetComponent(ScripterMod.blockScriptType);
-            this.blockName = bb.GetComponent<MyBlockInfo>().blockName.ToUpper();
+                bs = bb.GetComponent(ScripterMod.blockScriptType);
+            blockName = bb.GetComponent<MyBlockInfo>().blockName.ToUpper();
         }
 
         /// <summary>

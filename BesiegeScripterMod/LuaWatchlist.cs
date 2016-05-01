@@ -11,8 +11,12 @@ namespace LenchScripterMod
     /// <summary>
     /// Displays global Lua variables in a GUI.
     /// </summary>
-    internal class LuaWatchlist
+    internal class LuaWatchlist : MonoBehaviour
     {
+        /// <summary>
+        /// Name in the Unity Hierarchy.
+        /// </summary>
+        public new string name { get { return "Lua Watchlist"; } }
 
         private static float mainWindowWidth = 320;
         private static float mainWindowHeight = 500;
@@ -32,15 +36,31 @@ namespace LenchScripterMod
 
         internal List<VariableWatch> watched;
 
-        internal bool visible { get; set; } = false;
-        internal bool autoadd { get; set; } = false;
+        internal bool visible = false;
+        internal bool autoadd = false;
 
         private bool editing = false;
         private VariableWatch editingVariable;
 
-        internal LuaWatchlist()
+        private void Awake()
         {
             watched = new List<VariableWatch>();
+        }
+
+        /// <summary>
+        /// Render windows.
+        /// </summary>
+        private void OnGUI()
+        {
+            if (visible)
+            {
+                GUI.skin = ModGUI.Skin;
+                mainWindowRect = GUI.Window(mainWindowID, mainWindowRect, DoMainWindow, "Lua Watchlist");
+                if (editing)
+                {
+                    editWindowRect = GUI.Window(editWindowID, editWindowRect, DoEditWindow, "Edit " + editingVariable.GetName());
+                }
+            }
         }
 
         /// <summary>
@@ -70,22 +90,6 @@ namespace LenchScripterMod
         internal void ClearWatchlist()
         {
             watched.Clear();
-        }
-
-        /// <summary>
-        /// Called by OnGUI() for rendering.
-        /// </summary>
-        internal void Render()
-        {
-            if (visible)
-            {
-                GUI.skin = ModGUI.Skin;
-                mainWindowRect = GUI.Window(mainWindowID, mainWindowRect, DoMainWindow, "Lua Watchlist");
-                if (editing)
-                {
-                    editWindowRect = GUI.Window(editWindowID, editWindowRect, DoEditWindow, "Edit "+editingVariable.GetName());
-                }
-            }
         }
 
         /// <summary>
