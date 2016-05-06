@@ -43,18 +43,7 @@ namespace LenchScripterMod
         /// <returns>Block object.</returns>
         public Block getBlock(string blockId)
         {
-            return ScripterMod.scripter.GetBlock(blockId);
-        }
-
-        /// <summary>
-        /// Returns the block mod's BlockScript object.
-        /// Throws a NotSupportedException if the block's not a mod.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <returns>BlockScript object.</returns>
-        public System.Object getBlockScript(string blockId)
-        {
-            return ScripterMod.scripter.GetBlock(blockId).getBlockScript();
+            return Scripter.Instance.GetBlock(blockId);
         }
 
         /// <summary>
@@ -106,7 +95,7 @@ namespace LenchScripterMod
         /// <param name="value">Variable value to be reported.</param>
         public void watch(string name, System.Object value)
         {
-            ScripterMod.watchlist.AddToWatchlist(name, value, false);
+            ScripterMod.Watchlist.AddToWatchlist(name, value, false);
         }
 
         /// <summary>
@@ -114,7 +103,7 @@ namespace LenchScripterMod
         /// </summary>
         public void clearWatchlist()
         {
-            ScripterMod.watchlist.ClearWatchlist();
+            ScripterMod.Watchlist.ClearWatchlist();
         }
 
         /// <summary>
@@ -492,7 +481,7 @@ namespace LenchScripterMod
         {
             GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             obj.name = "Mark";
-            obj.transform.parent = ScripterMod.scripter.transform;
+            obj.transform.parent = Scripter.Instance.transform;
             Mark m = obj.AddComponent<Mark>();
             m.move(pos);
             marks.Add(m);

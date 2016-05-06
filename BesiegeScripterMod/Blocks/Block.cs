@@ -17,6 +17,11 @@ namespace LenchScripterMod.Blocks
         public string blockName;
 
         /// <summary>
+        /// Type of the block.
+        /// </summary>
+        public BlockType blockType;
+
+        /// <summary>
         /// Name of the script.
         /// </summary>
         public new string name { get { return blockName + " script handle"; } }
@@ -30,6 +35,7 @@ namespace LenchScripterMod.Blocks
             if (ScripterMod.blockScriptType != null)
                 bs = bb.GetComponent(ScripterMod.blockScriptType);
             blockName = bb.GetComponent<MyBlockInfo>().blockName.ToUpper();
+            blockType = (BlockType)bb.GetBlockID();
         }
 
         /// <summary>

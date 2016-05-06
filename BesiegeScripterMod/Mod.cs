@@ -14,14 +14,13 @@ namespace LenchScripterMod
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(0, 9, 4);
+        public override Version Version { get; } = new Version(1, 0, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
 
-        internal static Scripter scripter;
-        internal static LuaWatchlist watchlist;
+        public static LuaWatchlist Watchlist;
         internal static Type blockScriptType;
 
         /// <summary>
@@ -30,19 +29,18 @@ namespace LenchScripterMod
         /// </summary>
         public override void OnLoad()
         {
-            scripter = Scripter.Instance;
-            UnityEngine.Object.DontDestroyOnLoad(scripter);
-            Game.OnSimulationToggle += scripter.OnSimulationToggle;
+            UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
+            Game.OnSimulationToggle += Scripter.Instance.OnSimulationToggle;
 
-            watchlist = scripter.gameObject.AddComponent<LuaWatchlist>();
+            Watchlist = Scripter.Instance.gameObject.AddComponent<LuaWatchlist>();
 
             LoadBlockLoaderAssembly();
 
             Keybindings.AddKeybinding("Dump Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
             Keybindings.AddKeybinding("Lua Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
 
-            Commands.RegisterCommand("lua", scripter.InteractiveCommand, "Executes Lua expression.");
-            Commands.RegisterCommand("loadscript", scripter.LoadScriptCommand, "Loads Lua script.");
+            Commands.RegisterCommand("lua", Scripter.Instance.InteractiveCommand, "Executes Lua expression.");
+            Commands.RegisterCommand("loadscript", Scripter.Instance.LoadScriptCommand, "Loads Lua script.");
         }
 
         /// <summary>
@@ -50,9 +48,9 @@ namespace LenchScripterMod
         /// </summary>
         public override void OnUnload()
         {
-            Game.OnSimulationToggle -= scripter.OnSimulationToggle;
-            scripter.OnSimulationToggle(false);
-            UnityEngine.Object.Destroy(scripter);
+            Game.OnSimulationToggle -= Scripter.Instance.OnSimulationToggle;
+            Scripter.Instance.OnSimulationToggle(false);
+            UnityEngine.Object.Destroy(Scripter.Instance);
         }
 
         /// <summary>
@@ -87,7 +85,7 @@ namespace LenchScripterMod
     /// <summary>
     /// Class representing an instance of the mod.
     /// </summary>
-    internal class Scripter : SingleInstance<Scripter>
+    public class Scripter : SingleInstance<Scripter>
     {
         /// <summary>
         /// Name in the Unity hierarchy.
@@ -168,9 +166,9 @@ namespace LenchScripterMod
         /// Finds blockId string in dictionary of simulation blocks.
         /// On first call of the simulation, it also initializes the dictionary.
         /// </summary>
-        /// <param name="blockId">Blocks unique identifier.</param>
-        /// <returns>Returns reference to blocks BlockBehaviour object.</returns>
-        internal Block GetBlock(string blockId)
+        /// <param name="blockId">Block's unique identifier.</param>
+        /// <returns>Returns reference to blocks Block handler object.</returns>
+        public Block GetBlock(string blockId)
         {
             if (idToSimulationBlock == null)
                 InitializeSimulationBlockHandlers();
@@ -432,7 +430,7 @@ namespace LenchScripterMod
             // Toggle watchlist visibility
             if (Keybindings.Get("Lua Watchlist").Pressed())
             {
-                ScripterMod.watchlist.visible = !ScripterMod.watchlist.visible;
+                ScripterMod.Watchlist.visible = !ScripterMod.Watchlist.visible;
             }
                 
             if (!isSimulating)

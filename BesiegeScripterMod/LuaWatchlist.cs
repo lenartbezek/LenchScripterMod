@@ -11,7 +11,7 @@ namespace LenchScripterMod
     /// <summary>
     /// Displays global Lua variables in a GUI.
     /// </summary>
-    internal class LuaWatchlist : MonoBehaviour
+    public class LuaWatchlist : MonoBehaviour
     {
         /// <summary>
         /// Name in the Unity Hierarchy.
@@ -67,27 +67,30 @@ namespace LenchScripterMod
         /// Adds a variable to the watchlist.
         /// If it's already added, it only updates the value.
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        /// <param name="global"></param>
-        internal void AddToWatchlist(string name, System.Object value, bool global = false)
+        /// <param name="name">variable name</param>
+        /// <param name="value">reported value</param>
+        /// <param name="global">is global</param>
+        public void AddToWatchlist(string name, System.Object value, bool global = false)
         {
             var newVar = new VariableWatch(name);
             newVar.global = global;
-            newVar.Reportvalue(value);
+            newVar.ReportValue(value);
             foreach (VariableWatch v in watched)
             {
                 if (v.Equals(newVar))
                 {
                     if(value != null)
-                        v.Reportvalue(value);
+                        v.ReportValue(value);
                     return;
                 }
             }
             watched.Add(newVar);
         }
 
-        internal void ClearWatchlist()
+        /// <summary>
+        /// Removes all variables from the watchlist.
+        /// </summary>
+        public void ClearWatchlist()
         {
             watched.Clear();
         }
@@ -199,7 +202,7 @@ namespace LenchScripterMod
     /// <summary>
     /// Represents a single variable.
     /// </summary>
-    class VariableWatch : IEquatable<VariableWatch>
+    public class VariableWatch : IEquatable<VariableWatch>
     {
         private string name;
         private System.Object value;
@@ -215,7 +218,7 @@ namespace LenchScripterMod
         /// Checks if the variable is global.
         /// </summary>
         /// <param name="value"></param>
-        internal void Reportvalue(System.Object value)
+        public void ReportValue(System.Object value)
         {
             if (value != null)
             {
@@ -223,16 +226,19 @@ namespace LenchScripterMod
                 if (!global)
                 { 
                     // Check if global
-                    if (ScripterMod.scripter.lua[name] != null)
+                    if (Scripter.Instance.lua[name] != null)
                     {
-                        System.Object globalValue = ScripterMod.scripter.lua[name];
+                        System.Object globalValue = Scripter.Instance.lua[name];
                         global = value.Equals(globalValue);
                     }
                 }  
             }
         }
 
-        internal string GetName()
+        /// <summary>
+        /// Returns the variable's display name.
+        /// </summary>
+        public string GetName()
         {
             return name;
         }
@@ -242,12 +248,12 @@ namespace LenchScripterMod
         /// returns the last reported value.
         /// </summary>
         /// <returns></returns>
-        internal string GetValue()
+        public string GetValue()
         {
-            if (global && ScripterMod.scripter.isSimulating)
+            if (global && Scripter.Instance.isSimulating)
             {
-                if(ScripterMod.scripter.lua[name] != null)
-                    value = ScripterMod.scripter.lua[name];
+                if(Scripter.Instance.lua[name] != null)
+                    value = Scripter.Instance.lua[name];
             }    
             try
             {
@@ -265,7 +271,7 @@ namespace LenchScripterMod
         /// Supposed to be a Lua expression to initialize the edited variable.
         /// </summary>
         /// <returns></returns>
-        internal string GetEditString()
+        public string GetEditString()
         {
             if (value != null)
             {
@@ -285,11 +291,11 @@ namespace LenchScripterMod
         /// Executes Lua statement to set the value.
         /// </summary>
         /// <param name="value"></param>
-        internal void SetValue(string value)
+        public void SetValue(string value)
         {
-            if (global && ScripterMod.scripter.lua != null)
+            if (global && Scripter.Instance.lua != null)
             {
-                ScripterMod.scripter.lua.DoString(name+" = "+value);
+                Scripter.Instance.lua.DoString(name+" = "+value);
             }
         }
 
