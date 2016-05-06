@@ -41,6 +41,8 @@ namespace LenchScripterMod
 
             Commands.RegisterCommand("lua", Scripter.Instance.InteractiveCommand, "Executes Lua expression.");
             Commands.RegisterCommand("loadscript", Scripter.Instance.LoadScriptCommand, "Loads Lua script.");
+
+            SettingsMenu.RegisterSettingsButton("LUA", Scripter.Instance.RunScriptSettingToggle, true, 12);
         }
 
         /// <summary>
@@ -107,6 +109,7 @@ namespace LenchScripterMod
         private static LuaFunction luaOnKeyUp;
 
         internal bool isSimulating;
+        internal bool enableLua = true;
 
         // Hovered block for ID dumping
         private GenericBlock hoveredBlock;
@@ -251,6 +254,19 @@ namespace LenchScripterMod
             {
                 Debug.LogException(e);
             }
+        }
+
+        /// <summary>
+        /// Called on setting toggle.
+        /// </summary>
+        /// <param name="active"></param>
+        internal void RunScriptSettingToggle(bool active)
+        {
+            enableLua = active;
+            if (isSimulating && enableLua)
+                CreateLuaEnvironment();
+            else if (lua != null)
+                DestroyLuaEnvironment();
         }
 
         /// <summary>
@@ -515,7 +531,7 @@ namespace LenchScripterMod
         internal void OnSimulationToggle(bool isSimulating)
         {
             this.isSimulating = isSimulating;
-            if (isSimulating)
+            if (isSimulating && enableLua)
                 CreateLuaEnvironment();
             else if (lua != null)
                 DestroyLuaEnvironment();
