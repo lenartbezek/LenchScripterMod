@@ -89,6 +89,15 @@ namespace LenchScripterMod
         }
 
         /// <summary>
+        /// Adds a global variable to the watchlist.
+        /// </summary>
+        /// <param name="name">Name of the global variable.</param>
+        public void watch(string name)
+        {
+            ScripterMod.Watchlist.AddToWatchlist(name, null, true);
+        }
+
+        /// <summary>
         /// Adds a value to watchlist under the specified display name.
         /// </summary>
         /// <param name="name">Display name of the variable.</param>
@@ -214,11 +223,11 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="keyName">Key bind to add the key to.</param>
-        /// <param name="keyValue">Key value to be added.</param>
-        public void addKey(string blockId, string keyName, int keyValue)
+        /// <param name="key">Key value to be added.</param>
+        public void addKey(string blockId, string keyName, KeyCode key)
         {
             Block b = getBlock(blockId);
-            b.addKey(keyName, keyValue);
+            b.addKey(keyName, key);
         }
 
         /// <summary>
@@ -226,11 +235,11 @@ namespace LenchScripterMod
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="keyName">Key bind to be replaced.</param>
-        /// <param name="keyValue">Key value to be replaced with.</param>
-        public void replaceKey(string blockId, string keyName, int keyValue)
+        /// <param name="key">Key value to be replaced with.</param>
+        public void replaceKey(string blockId, string keyName, KeyCode key)
         {
             Block b = getBlock(blockId);
-            b.replaceKey(keyName, keyValue);
+            b.replaceKey(keyName, key);
         }
 
         /// <summary>

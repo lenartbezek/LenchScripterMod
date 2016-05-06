@@ -12,9 +12,12 @@ namespace LenchScripterMod.Blocks
         private bool setShootFlag = false;
         private bool lastShootFlag = false;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public WaterCannon(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             wcc = bb.GetComponent<WaterCannonController>();
         }
 
@@ -31,7 +34,7 @@ namespace LenchScripterMod.Blocks
                 Shoot();
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -42,7 +45,7 @@ namespace LenchScripterMod.Blocks
             setShootFlag = true;
         }
 
-        private void Update()
+        internal override void Update()
         {
             if (setShootFlag)
             {
@@ -54,11 +57,6 @@ namespace LenchScripterMod.Blocks
                 wcc.isActive = false;
                 lastShootFlag = false;
             }
-        }
-
-        internal static bool isWaterCannon(BlockBehaviour bb)
-        {
-            return bb.GetComponent<WaterCannonController>() != null;
         }
     }
 }

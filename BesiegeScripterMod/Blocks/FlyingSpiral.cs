@@ -27,9 +27,12 @@ namespace LenchScripterMod.Blocks
         private bool setFlyingFlag = false;
         private bool lastFlyingFlag = false;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public FlyingSpiral(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             fc = bb.GetComponent<FlyingController>();
             automaticToggle = automaticFieldInfo.GetValue(fc) as MToggle;
             toggleMode = toggleFieldInfo.GetValue(fc) as MToggle;
@@ -50,7 +53,7 @@ namespace LenchScripterMod.Blocks
                 Spin();
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -78,7 +81,7 @@ namespace LenchScripterMod.Blocks
             }
         }
 
-        private void Update()
+        internal override void Update()
         {
             if (setFlyingFlag)
             {
@@ -95,11 +98,6 @@ namespace LenchScripterMod.Blocks
                     Fly(false);
                 lastFlyingFlag = false;
             }
-        }
-
-        internal static bool isFlyingSpiral(BlockBehaviour bb)
-        {
-            return bb.GetComponent<FlyingController>() != null;
         }
     }
 

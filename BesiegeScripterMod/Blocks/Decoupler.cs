@@ -7,9 +7,12 @@
     {
         private ExplosiveBolt eb;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public Decoupler(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             eb = bb.GetComponent<ExplosiveBolt>();
         }
 
@@ -26,7 +29,7 @@
                 Explode();
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -35,11 +38,6 @@
         public void Explode()
         {
             eb.Explode();
-        }
-
-        internal static bool isDecoupler(BlockBehaviour bb)
-        {
-            return bb.GetComponent<ExplosiveBolt>() != null;
         }
     }
 }

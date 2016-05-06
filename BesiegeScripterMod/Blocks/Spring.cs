@@ -7,9 +7,12 @@
     {
         private SpringCode sc;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public Spring(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             sc = bb.GetComponent<SpringCode>();
         }
 
@@ -36,7 +39,7 @@
                 Unwind();
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -61,11 +64,6 @@
         public void Unwind()
         {
             sc.WinchUnwind(1);
-        }
-
-        internal static bool isSpring(BlockBehaviour bb)
-        {
-            return bb.GetComponent<SpringCode>() != null;
         }
     }
 }

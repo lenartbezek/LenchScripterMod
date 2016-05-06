@@ -15,9 +15,12 @@ namespace LenchScripterMod.Blocks
         private float desired_input;
         private bool setInputFlag = false;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public Cog(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             cmc = bb.GetComponent<CogMotorController>();
         }
 
@@ -39,7 +42,7 @@ namespace LenchScripterMod.Blocks
                 SetInput(-1);
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -54,18 +57,13 @@ namespace LenchScripterMod.Blocks
             setInputFlag = true;
         }
 
-        private void LateUpdate()
+        internal override void LateUpdate()
         {
             if (setInputFlag)
             {
                 setInputFlag = false;
                 input.SetValue(cmc, desired_input);
             }
-        }
-
-        internal static bool isCog(BlockBehaviour bb)
-        {
-            return bb.GetComponent<CogMotorController>() != null;
         }
     }
 }

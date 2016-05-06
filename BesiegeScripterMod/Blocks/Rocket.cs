@@ -7,9 +7,12 @@
     {
         private TimedRocket tr;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public Rocket(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             tr = bb.GetComponent<TimedRocket>();
         }
 
@@ -26,7 +29,7 @@
                 Launch();
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -48,11 +51,6 @@
         public bool hasFired()
         {
             return tr.hasFired;
-        }
-
-        internal static bool isRocket(BlockBehaviour bb)
-        {
-            return bb.GetComponent<TimedRocket>() != null;
         }
     }
 }

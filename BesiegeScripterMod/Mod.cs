@@ -123,42 +123,52 @@ namespace LenchScripterMod
         // Map: ID -> Simulation Block
         private Dictionary<string, Block> idToSimulationBlock;
 
+        // Map: BlockType -> BlockHandler type
+        internal static Dictionary<int, Type> HandlerTypes = new Dictionary<int, Type>
+        {
+            {(int)BlockType.Cannon, typeof(Cannon) },
+            {(int)BlockType.ShrapnelCannon, typeof(Cannon) },
+            {(int)BlockType.CogMediumPowered, typeof(Cog) },
+            {(int)BlockType.Wheel, typeof(Cog) },
+            {(int)BlockType.LargeWheel, typeof(Cog) },
+            {(int)BlockType.Decoupler, typeof(Decoupler) },
+            {(int)BlockType.Flamethrower, typeof(Flamethrower) },
+            {(int)BlockType.FlyingBlock, typeof(FlyingSpiral) },
+            {(int)BlockType.Grabber, typeof(Grabber) },
+            {(int)BlockType.Grenade, typeof(Grenade) },
+            {(int)BlockType.Piston, typeof(Rocket) },
+            {59, typeof(Rocket) },
+            {(int)BlockType.Spring, typeof(Spring) },
+            {(int)BlockType.RopeWinch, typeof(Spring) },
+            {(int)BlockType.SteeringHinge, typeof(Steering) },
+            {(int)BlockType.SteeringBlock, typeof(Steering) },
+            {(int)BlockType.WaterCannon, typeof(WaterCannon) }
+        };
+
+        /// <summary>
+        /// Events invoked on updates.
+        /// </summary>
+        internal delegate void UpdateEventHandler();
+        internal event UpdateEventHandler OnUpdate;
+
+        internal delegate void LateUpdateEventHandler();
+        internal event LateUpdateEventHandler OnLateUpdate;
+
+        internal delegate void FixedUpdateEventHandler();
+        internal event FixedUpdateEventHandler OnFixedUpdate;
+
         /// <summary>
         /// Initializes and returns new Block object.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
         /// <returns>LenchScripterMod.Block object.</returns>
-        internal Block CreateBlock(BlockBehaviour bb)
+        private Block CreateBlock(BlockBehaviour bb)
         {
             Block block;
-            if (Cannon.isCannon(bb))
-                block = gameObject.AddComponent<Cannon>();
-            else if (Cog.isCog(bb))
-                block = gameObject.AddComponent<Cog>();
-            else if (Decoupler.isDecoupler(bb))
-                block = gameObject.AddComponent<Decoupler>();
-            else if (Flamethrower.isFlamethrower(bb))
-                block = gameObject.AddComponent<Flamethrower>();
-            else if (FlyingSpiral.isFlyingSpiral(bb))
-                block = gameObject.AddComponent<FlyingSpiral>();
-            else if (Grabber.isGrabber(bb))
-                block = gameObject.AddComponent<Grabber>();
-            else if (Grenade.isGrenade(bb))
-                block = gameObject.AddComponent<Grenade>();
-            else if (Piston.isPiston(bb))
-                block = gameObject.AddComponent<Piston>();
-            else if (Rocket.isRocket(bb))
-                block = gameObject.AddComponent<Rocket>();
-            else if (Spring.isSpring(bb))
-                block = gameObject.AddComponent<Spring>();
-            else if (Steering.isSteering(bb))
-                block = gameObject.AddComponent<Steering>();
-            else if (WaterCannon.isWaterCannon(bb))
-                block = gameObject.AddComponent<WaterCannon>();
+            if (HandlerTypes.ContainsKey(bb.GetBlockID()))
+                block = (Block)Activator.CreateInstance(HandlerTypes[bb.GetBlockID()], new object[] { bb });
             else
-                block = gameObject.AddComponent<Block>();
-            block.Initialize(bb);
-            block.enabled = true;
+                block = new Block(bb);
             return block;
         }
 
@@ -374,10 +384,6 @@ namespace LenchScripterMod
             lua = null;
             wrapper.clearMarks();
             wrapper = null;
-            foreach (Block b in gameObject.GetComponents<Block>())
-            {
-                Destroy(b);
-            }
         }
 
         /// <summary>
@@ -469,6 +475,15 @@ namespace LenchScripterMod
                     luaOnKeyUp.Call(key);
                 }
             }
+
+            // Call OnUpdate event for Block handlers.
+            OnUpdate?.Invoke();
+        }
+
+        private void LateUpdate()
+        {
+            // Call OnLateUpdate event for Block handlers.
+            OnLateUpdate?.Invoke();
         }
 
         /// <summary>
@@ -488,6 +503,9 @@ namespace LenchScripterMod
             // Call Lua onFixedUpdate
             if (luaOnFixedUpdate != null)
                 luaOnFixedUpdate.Call();
+
+            // Call OnLateUpdate event for Block handlers.
+            OnFixedUpdate?.Invoke();
         }
 
         /// <summary>

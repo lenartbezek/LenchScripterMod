@@ -7,9 +7,12 @@
     {
         private ControllableBomb cb;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public Grenade(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             cb = bb.GetComponent<ControllableBomb>();
         }
 
@@ -26,7 +29,7 @@
                 Detonate();
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -35,11 +38,6 @@
         public void Detonate()
         {
             cb.StartCoroutine_Auto(cb.Explode());
-        }
-
-        internal static bool isGrenade(BlockBehaviour bb)
-        {
-            return bb.GetComponent<ControllableBomb>() != null;
         }
     }
 }

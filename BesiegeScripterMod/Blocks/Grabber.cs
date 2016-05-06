@@ -12,9 +12,12 @@ namespace LenchScripterMod.Blocks
         private GrabberBlock gb;
         private JoinOnTriggerBlock join;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public Grabber(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             gb = bb.GetComponent<GrabberBlock>();
             join = joinFieldInfo.GetValue(gb) as JoinOnTriggerBlock;
         }
@@ -32,7 +35,7 @@ namespace LenchScripterMod.Blocks
                 Detach();
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -41,11 +44,6 @@ namespace LenchScripterMod.Blocks
         public void Detach()
         {
             join.OnKeyPressed();
-        }
-
-        internal static bool isGrabber(BlockBehaviour bb)
-        {
-            return bb.GetComponent<GrabberBlock>() != null;
         }
     }
 }

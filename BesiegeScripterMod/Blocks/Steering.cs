@@ -25,9 +25,12 @@ namespace LenchScripterMod.Blocks
         private float desired_angle;
         private bool setAngleFlag = false;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public Steering(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             sw = bb.GetComponent<SteeringWheel>();
             speedSlider = speedSliderField.GetValue(sw) as MSlider;
             limitsSlider = limitsSliderField.GetValue(sw) as MLimits;
@@ -51,7 +54,7 @@ namespace LenchScripterMod.Blocks
                 SetInput(-1);
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -99,7 +102,7 @@ namespace LenchScripterMod.Blocks
             return (float)angleyToBeField.GetValue(sw) * convertToRadians;
         }
 
-        private void LateUpdate()
+        internal override void LateUpdate()
         {
             if (setAngleFlag)
             {
@@ -139,11 +142,6 @@ namespace LenchScripterMod.Blocks
                 }
                 setInputFlag = false;
             }
-        }
-
-        internal static bool isSteering(BlockBehaviour bb)
-        {
-            return bb.GetComponent<SteeringWheel>() != null;
         }
     }
 }

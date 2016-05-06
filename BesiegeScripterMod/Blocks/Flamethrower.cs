@@ -11,15 +11,17 @@ namespace LenchScripterMod.Blocks
         private static FieldInfo keyHeld = typeof(FlamethrowerController).GetField("keyHeld", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private FlamethrowerController fc;
-
         private MToggle holdToFire;
 
         private bool setIgniteFlag = false;
         private bool lastIgniteFlag = false;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public Flamethrower(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             fc = bb.GetComponent<FlamethrowerController>();
             holdToFire = holdFieldInfo.GetValue(fc) as MToggle;
         }
@@ -37,7 +39,7 @@ namespace LenchScripterMod.Blocks
                 Ignite();
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -66,7 +68,7 @@ namespace LenchScripterMod.Blocks
             return 10 - fc.timey;
         }
 
-        private void LateUpdate()
+        internal override void LateUpdate()
         {
             if (setIgniteFlag)
             {
@@ -89,11 +91,6 @@ namespace LenchScripterMod.Blocks
                 keyHeld.SetValue(fc, true);
                 lastIgniteFlag = false;
             }
-        }
-
-        internal static bool isFlamethrower(BlockBehaviour bb)
-        {
-            return bb.GetComponent<FlamethrowerController>() != null;
         }
     }
 }

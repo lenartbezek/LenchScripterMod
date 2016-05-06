@@ -19,9 +19,12 @@ namespace LenchScripterMod.Blocks
         private float defaultStartLimit;
         private float defaultNewLimit;
 
-        internal override void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public Piston(BlockBehaviour bb) : base(bb)
         {
-            base.Initialize(bb);
             sc = bb.GetComponent<SliderCompress>();
 
             toggleMode = toggleFieldInfo.GetValue(sc) as MToggle;
@@ -44,7 +47,7 @@ namespace LenchScripterMod.Blocks
                 Extend();
                 return;
             }
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -62,7 +65,7 @@ namespace LenchScripterMod.Blocks
             }
         }
 
-        private void Update()
+        internal override void Update()
         {
             if (setExtendFlag)
             {

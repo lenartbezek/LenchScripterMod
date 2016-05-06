@@ -88,6 +88,20 @@ namespace LenchScripterMod
         }
 
         /// <summary>
+        /// Returns a variable from the watchlist.
+        /// </summary>
+        /// <param name="name">Name of the variable.</param>
+        /// <returns>VariableWatch class</returns>
+        public VariableWatch GetVariable(string name)
+        {
+            foreach (VariableWatch v in watched)
+            {
+                if (v.GetName() == name) return v;
+            }
+            return new VariableWatch(name);
+        }
+
+        /// <summary>
         /// Removes all variables from the watchlist.
         /// </summary>
         public void ClearWatchlist()

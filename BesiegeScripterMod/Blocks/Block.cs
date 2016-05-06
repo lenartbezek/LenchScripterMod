@@ -3,10 +3,11 @@ using UnityEngine;
 
 namespace LenchScripterMod.Blocks
 {
+
     /// <summary>
     /// Base class for all block handlers.
     /// </summary>
-    public class Block : MonoBehaviour
+    public class Block
     {
         internal static float convertToDegrees = Mathf.Rad2Deg;
         internal static float convertToRadians = 1;
@@ -14,29 +15,52 @@ namespace LenchScripterMod.Blocks
         /// <summary>
         /// Name of the block.
         /// </summary>
-        public string blockName;
+        public string BlockName
+        {
+            get
+            {
+                return bb.GetComponent<MyBlockInfo>().blockName;
+            }
+            set
+            {
+                bb.GetComponent<MyBlockInfo>().blockName = value;
+            }
+        }
 
         /// <summary>
         /// Type of the block.
         /// </summary>
-        public BlockType blockType;
-
-        /// <summary>
-        /// Name of the script.
-        /// </summary>
-        public new string name { get { return blockName + " script handle"; } }
+        public BlockType BlockType {
+            get
+            {
+                return (BlockType)bb.GetBlockID();
+            }
+        }
 
         private BlockBehaviour bb;
         private System.Object bs;
 
-        internal virtual void Initialize(BlockBehaviour bb)
+        /// <summary>
+        /// Creates a Block handler.
+        /// </summary>
+        /// <param name="bb">BlockBehaviour object.</param>
+        public Block(BlockBehaviour bb)
         {
             this.bb = bb;
             if (ScripterMod.blockScriptType != null)
                 bs = bb.GetComponent(ScripterMod.blockScriptType);
-            blockName = bb.GetComponent<MyBlockInfo>().blockName.ToUpper();
-            blockType = (BlockType)bb.GetBlockID();
+
+            Scripter.Instance.OnUpdate += Update;
+            Scripter.Instance.OnUpdate += LateUpdate;
+            Scripter.Instance.OnUpdate += FixedUpdate;
         }
+
+        /// <summary>
+        /// Empty update methods, intended to be overriden by derived classes.
+        /// </summary>
+        internal virtual void Update() { }
+        internal virtual void LateUpdate() { }
+        internal virtual void FixedUpdate() { }
 
         /// <summary>
         /// Makes any future calls to angle functions return degrees.
@@ -57,25 +81,13 @@ namespace LenchScripterMod.Blocks
         }
 
         /// <summary>
-        /// Returns this block's BlockScript object or
-        /// throws an exception if the blocks' not a mod.
-        /// </summary>
-        /// <returns></returns>
-        public System.Object getBlockScript()
-        {
-            if (bs == null)
-                throw new NotSupportedException("Block " + blockName + "is not a mod.");
-            return bs;
-        }
-
-        /// <summary>
         /// Invokes the block's action.
         /// Throws ActionNotFoundException if the block does not poses such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
         public virtual void action(string actionName) {
             actionName = actionName.ToUpper();
-            throw new ActionNotFoundException("Block " + blockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
@@ -197,10 +209,9 @@ namespace LenchScripterMod.Blocks
         /// Adds key to the specified key bind.
         /// </summary>
         /// <param name="keyName">Key bind to add the key to.</param>
-        /// <param name="keyValue">Key value to be added.</param>
-        public void addKey(string keyName, int keyValue)
+        /// <param name="key">Key value to be added.</param>
+        public void addKey(string keyName, KeyCode key)
         {
-            KeyCode key = (KeyCode)keyValue;
             foreach (MKey m in bb.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -222,10 +233,9 @@ namespace LenchScripterMod.Blocks
         /// Replaces the first key bound to the specified key bind.
         /// </summary>
         /// <param name="keyName">Key bind to be replaced.</param>
-        /// <param name="keyValue">Key value to be replaced with.</param>
-        public void replaceKey(string keyName, int keyValue)
+        /// <param name="key">Key value to be replaced with.</param>
+        public void replaceKey(string keyName, KeyCode key)
         {
-            KeyCode key = (KeyCode)keyValue;
             foreach (MKey m in bb.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
@@ -317,7 +327,7 @@ namespace LenchScripterMod.Blocks
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
                 return body.velocity;
-            throw new NoRigidBodyException("Block " + blockName + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
         }
 
         /// <summary>
@@ -329,7 +339,7 @@ namespace LenchScripterMod.Blocks
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
                 return body.mass;
-            throw new NoRigidBodyException("Block " + blockName + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
         }
 
         /// <summary>
@@ -341,7 +351,7 @@ namespace LenchScripterMod.Blocks
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
                 return body.centerOfMass;
-            throw new NoRigidBodyException("Block " + blockName + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
         }
 
         /// <summary>
@@ -371,7 +381,7 @@ namespace LenchScripterMod.Blocks
                 angularVelocity.Scale(convertUnits);
                 return angularVelocity;
             }
-            throw new NoRigidBodyException("Block " + blockName + " has no rigid body.");
+            throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
         }
     }
 
