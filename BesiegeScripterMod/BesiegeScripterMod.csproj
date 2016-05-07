@@ -69,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\Automatron.cs" />
     <Compile Include="Blocks\Block.cs" />
     <Compile Include="Blocks\Cannon.cs" />
     <Compile Include="Blocks\Cog.cs" />

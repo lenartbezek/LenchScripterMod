@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using UnityEngine;
 
 namespace LenchScripterMod.Blocks
 {
@@ -16,6 +17,9 @@ namespace LenchScripterMod.Blocks
 
         private bool setExtendFlag = false;
         private bool lastExtendFlag = false;
+        private bool setPositionFlag = false;
+        private float targetPosition;
+
         private float defaultStartLimit;
         private float defaultNewLimit;
 
@@ -65,6 +69,16 @@ namespace LenchScripterMod.Blocks
             }
         }
 
+        /// <summary>
+        /// Set the position between compressed and extended position.
+        /// </summary>
+        /// <param name="t"></param>
+        public void SetPosition(float t)
+        {
+            targetPosition = Mathf.Lerp(defaultStartLimit, defaultNewLimit, t);
+            setPositionFlag = true;
+        }
+
         internal override void Update()
         {
             if (setExtendFlag)
@@ -76,6 +90,21 @@ namespace LenchScripterMod.Blocks
                 }
                 setExtendFlag = false;
                 lastExtendFlag = true;
+                setPositionFlag = false;
+            }
+            else if (setPositionFlag)
+            {
+                if (toggleMode.IsActive)
+                {
+                    sc.posToBe = targetPosition;
+                }
+                else
+                {
+                    sc.startLimit = targetPosition;
+                    sc.newLimit = targetPosition;
+                }
+                lastExtendFlag = true;
+                setPositionFlag = false;
             }
             else if (lastExtendFlag)
             {

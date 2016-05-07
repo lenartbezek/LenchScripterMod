@@ -129,23 +129,24 @@ namespace LenchScripterMod
         // Map: BlockType -> BlockHandler type
         internal static Dictionary<int, Type> HandlerTypes = new Dictionary<int, Type>
         {
-            {(int)BlockType.Cannon, typeof(Cannon) },
-            {(int)BlockType.ShrapnelCannon, typeof(Cannon) },
-            {(int)BlockType.CogMediumPowered, typeof(Cog) },
-            {(int)BlockType.Wheel, typeof(Cog) },
-            {(int)BlockType.LargeWheel, typeof(Cog) },
-            {(int)BlockType.Decoupler, typeof(Decoupler) },
-            {(int)BlockType.Flamethrower, typeof(Flamethrower) },
-            {(int)BlockType.FlyingBlock, typeof(FlyingSpiral) },
-            {(int)BlockType.Grabber, typeof(Grabber) },
-            {(int)BlockType.Grenade, typeof(Grenade) },
-            {(int)BlockType.Piston, typeof(Rocket) },
+            {(int)BlockType.Cannon, typeof(Cannon)},
+            {(int)BlockType.ShrapnelCannon, typeof(Cannon)},
+            {(int)BlockType.CogMediumPowered, typeof(Cog)},
+            {(int)BlockType.Wheel, typeof(Cog)},
+            {(int)BlockType.LargeWheel, typeof(Cog)},
+            {(int)BlockType.Decoupler, typeof(Decoupler)},
+            {(int)BlockType.Flamethrower, typeof(Flamethrower)},
+            {(int)BlockType.FlyingBlock, typeof(FlyingSpiral)},
+            {(int)BlockType.Grabber, typeof(Grabber)},
+            {(int)BlockType.Grenade, typeof(Grenade)},
+            {(int)BlockType.Piston, typeof(Piston)},
             {59, typeof(Rocket) },
-            {(int)BlockType.Spring, typeof(Spring) },
-            {(int)BlockType.RopeWinch, typeof(Spring) },
-            {(int)BlockType.SteeringHinge, typeof(Steering) },
-            {(int)BlockType.SteeringBlock, typeof(Steering) },
-            {(int)BlockType.WaterCannon, typeof(WaterCannon) }
+            {(int)BlockType.Spring, typeof(Spring)},
+            {(int)BlockType.RopeWinch, typeof(Spring)},
+            {(int)BlockType.SteeringHinge, typeof(Steering)},
+            {(int)BlockType.SteeringBlock, typeof(Steering)},
+            {(int)BlockType.WaterCannon, typeof(WaterCannon)},
+            {410, typeof(Automatron)}
         };
 
         /// <summary>

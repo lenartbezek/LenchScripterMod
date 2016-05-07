@@ -37,8 +37,15 @@ namespace LenchScripterMod.Blocks
             }
         }
 
-        private BlockBehaviour bb;
-        private System.Object bs;
+        /// <summary>
+        /// BlockBehaviour object of this handler.
+        /// </summary>
+        protected readonly BlockBehaviour bb;
+
+        /// <summary>
+        /// BlockLoaders BlockScript object.
+        /// </summary>
+        protected readonly MonoBehaviour bs;
 
         /// <summary>
         /// Creates a Block handler.
@@ -48,7 +55,7 @@ namespace LenchScripterMod.Blocks
         {
             this.bb = bb;
             if (ScripterMod.blockScriptType != null)
-                bs = bb.GetComponent(ScripterMod.blockScriptType);
+                bs = bb.GetComponent(ScripterMod.blockScriptType) as MonoBehaviour;
 
             Scripter.Instance.OnUpdate += Update;
             Scripter.Instance.OnUpdate += LateUpdate;
