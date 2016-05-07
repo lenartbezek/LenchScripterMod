@@ -1,16 +1,20 @@
 ﻿using System.Reflection;
 
-namespace LenchScripterMod.Blocks
+namespace LenchScripter.Blocks
 {
     /// <summary>
     /// Handler for the Water Cannon block.
     /// </summary>
     public class WaterCannon : Block
     {
+        private static FieldInfo holdFieldInfo = typeof(WaterCannonController).GetField("holdToShootToggle", BindingFlags.NonPublic | BindingFlags.Instance);
+
         private WaterCannonController wcc;
 
         private bool setShootFlag = false;
         private bool lastShootFlag = false;
+        private MToggle holdToShootToggle;
+        private bool realHoldToShootToggle;
 
         /// <summary>
         /// Creates a Block handler.
@@ -19,6 +23,8 @@ namespace LenchScripterMod.Blocks
         public WaterCannon(BlockBehaviour bb) : base(bb)
         {
             wcc = bb.GetComponent<WaterCannonController>();
+
+            holdToShootToggle = holdFieldInfo.GetValue(wcc) as MToggle;
         }
 
         /// <summary>
@@ -45,15 +51,22 @@ namespace LenchScripterMod.Blocks
             setShootFlag = true;
         }
 
-        internal override void Update()
+        /// <summary>
+        /// Handles shooting the water cannon.
+        /// </summary>
+        protected override void Update()
         {
             if (setShootFlag)
             {
-                wcc.isActive = true;
-                lastShootFlag = false;
+                realHoldToShootToggle = realHoldToShootToggle ? realHoldToShootToggle : wcc.isActive;
+                holdToShootToggle.IsActive = false;
+                wcc.isActive = realHoldToShootToggle ? true : !wcc.isActive;
+                lastShootFlag = realHoldToShootToggle;
+                setShootFlag = false;
             }
             else if (lastShootFlag)
             {
+                holdToShootToggle.IsActive = realHoldToShootToggle;
                 wcc.isActive = false;
                 lastShootFlag = false;
             }

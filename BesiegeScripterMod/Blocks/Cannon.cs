@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace LenchScripterMod.Blocks
+namespace LenchScripter.Blocks
 {
     /// <summary>
     /// Handler for cannon blocks; Cannon and Shrapnel Cannon.

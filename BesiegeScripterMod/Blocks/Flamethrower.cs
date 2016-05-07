@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace LenchScripterMod.Blocks
+namespace LenchScripter.Blocks
 {
     /// <summary>
     /// Handler for the Flamethrower block.
@@ -68,7 +68,10 @@ namespace LenchScripterMod.Blocks
             return 10 - fc.timey;
         }
 
-        internal override void LateUpdate()
+        /// <summary>
+        /// Handles igniting the Flamethrower.
+        /// </summary>
+        protected override void LateUpdate()
         {
             if (setIgniteFlag)
             {

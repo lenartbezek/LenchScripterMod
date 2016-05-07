@@ -1,7 +1,8 @@
 ﻿using System;
 using UnityEngine;
+using LenchScripter.Internal;
 
-namespace LenchScripterMod.Blocks
+namespace LenchScripter.Blocks
 {
 
     /// <summary>
@@ -9,11 +10,20 @@ namespace LenchScripterMod.Blocks
     /// </summary>
     public class Block
     {
-        internal static float convertToDegrees = Mathf.Rad2Deg;
-        internal static float convertToRadians = 1;
+        /// <summary>
+        /// Used to convert radians to degrees in all functions returning radians.
+        /// If radians are the desired angle unit, it will be set to 1, otherwise Mathf.Rad2Deg.
+        /// </summary>
+        protected static float convertToDegrees = Mathf.Rad2Deg;
 
         /// <summary>
-        /// Name of the block.
+        /// Used to convert degrees to radians in all functions returning degrees.
+        /// If degrees are the desired angle unit, it will be set to 1, otherwise Mathf.Deg2Rad.
+        /// </summary>
+        protected static float convertToRadians = 1;
+
+        /// <summary>
+        /// Name of the block. Corresponds to MyBlockInfo.BlockName.
         /// </summary>
         public string BlockName
         {
@@ -47,6 +57,11 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         protected readonly MonoBehaviour bs;
 
+        internal BlockBehaviour GetBlockBehaviour()
+        {
+            return bb;
+        }
+
         /// <summary>
         /// Creates a Block handler.
         /// </summary>
@@ -63,16 +78,24 @@ namespace LenchScripterMod.Blocks
         }
 
         /// <summary>
-        /// Empty update methods, intended to be overriden by derived classes.
+        /// Is called at every Update.
         /// </summary>
-        internal virtual void Update() { }
-        internal virtual void LateUpdate() { }
-        internal virtual void FixedUpdate() { }
+        protected virtual void Update() { }
+
+        /// <summary>
+        /// Is called at every LateUpdate.
+        /// </summary>
+        protected virtual void LateUpdate() { }
+
+        /// <summary>
+        /// Is called at every FixedUpdate.
+        /// </summary>
+        protected virtual void FixedUpdate() { }
 
         /// <summary>
         /// Makes any future calls to angle functions return degrees.
         /// </summary>
-        internal static void useDegrees()
+        public static void UseDegrees()
         {
             convertToDegrees = Mathf.Rad2Deg;
             convertToRadians = 1;
@@ -81,7 +104,7 @@ namespace LenchScripterMod.Blocks
         /// <summary>
         /// Makes any future calls to angle functions return radians.
         /// </summary>
-        internal static void useRadians()
+        public static void UseRadians()
         {
             convertToDegrees = 1;
             convertToRadians = Mathf.Deg2Rad;
@@ -101,7 +124,7 @@ namespace LenchScripterMod.Blocks
         /// Returns true if the block has RigidBody.
         /// </summary>
         /// <returns>Boolean value.</returns>
-        public bool exists()
+        public virtual bool exists()
         {
             return bb != null && bb.GetComponent<Rigidbody>() != null;
         }
@@ -111,7 +134,7 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         /// <param name="toggleName">Toggle property to be set.</param>
         /// <param name="value">Boolean value to be set.</param>
-        public void setToggleMode(string toggleName, bool value)
+        public virtual void setToggleMode(string toggleName, bool value)
         {
             foreach (MToggle m in bb.Toggles)
             {
@@ -129,7 +152,7 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         /// <param name="sliderName">Slider value to be set.</param>
         /// <param name="value">Float value to be set.</param>
-        public void setSliderValue(string sliderName, float value)
+        public virtual void setSliderValue(string sliderName, float value)
         {
             if (float.IsNaN(value))
                 throw new ArgumentException("Value is not a number (NaN).");
@@ -149,7 +172,7 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         /// <param name="toggleName">Toggle property to be returned.</param>
         /// <returns>Boolean value.</returns>
-        public bool getToggleMode(string toggleName)
+        public virtual bool getToggleMode(string toggleName)
         {
             foreach (MToggle m in bb.Toggles)
             {
@@ -166,7 +189,7 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         /// <param name="sliderName">Toggle property to be returned.</param>
         /// <returns>Float value.</returns>
-        public float getSliderValue(string sliderName)
+        public virtual float getSliderValue(string sliderName)
         {
             foreach (MSlider m in bb.Sliders)
             {
@@ -183,7 +206,7 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         /// <param name="sliderName">Minimum slider value to be returned.</param>
         /// <returns>Float value.</returns>
-        public float getSliderMin(string sliderName)
+        public virtual float getSliderMin(string sliderName)
         {
             foreach (MSlider m in bb.Sliders)
             {
@@ -200,7 +223,7 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         /// <param name="sliderName">Maximum slider value to be returned.</param>
         /// <returns>Float value.</returns>
-        public float getSliderMax(string sliderName)
+        public virtual float getSliderMax(string sliderName)
         {
             foreach (MSlider m in bb.Sliders)
             {
@@ -217,7 +240,7 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         /// <param name="keyName">Key bind to add the key to.</param>
         /// <param name="key">Key value to be added.</param>
-        public void addKey(string keyName, KeyCode key)
+        public virtual void addKey(string keyName, KeyCode key)
         {
             foreach (MKey m in bb.Keys)
             {
@@ -241,7 +264,7 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         /// <param name="keyName">Key bind to be replaced.</param>
         /// <param name="key">Key value to be replaced with.</param>
-        public void replaceKey(string keyName, KeyCode key)
+        public virtual void replaceKey(string keyName, KeyCode key)
         {
             foreach (MKey m in bb.Keys)
             {
@@ -258,13 +281,13 @@ namespace LenchScripterMod.Blocks
         /// </summary>
         /// <param name="keyName">Key bind to be returned.</param>
         /// <returns>Integer value.</returns>
-        public int getKey(string keyName)
+        public virtual KeyCode getKey(string keyName)
         {
             foreach (MKey m in bb.Keys)
             {
                 if (m.DisplayName.ToUpper() == keyName.ToUpper())
                 {
-                    return (int)m.KeyCode[0];
+                    return m.KeyCode[0];
                 }
             }
             throw new PropertyNotFoundException("Key " + keyName + " not found.");
@@ -274,7 +297,7 @@ namespace LenchScripterMod.Blocks
         /// Clears all keys of the specified key bind.
         /// </summary>
         /// <param name="keyName"></param>
-        public void clearKeys(string keyName)
+        public virtual void clearKeys(string keyName)
         {
             foreach (MKey m in bb.Keys)
             {
@@ -292,7 +315,7 @@ namespace LenchScripterMod.Blocks
         /// Returns the block's forward vector.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getForward()
+        public virtual Vector3 getForward()
         {
             return bb.transform.forward;
         }
@@ -301,7 +324,7 @@ namespace LenchScripterMod.Blocks
         /// Returns the block's up vector.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getUp()
+        public virtual Vector3 getUp()
         {
             return bb.transform.up;
         }
@@ -310,7 +333,7 @@ namespace LenchScripterMod.Blocks
         /// Returns the block's right vector.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getRight()
+        public virtual Vector3 getRight()
         {
             return bb.transform.right;
         }
@@ -319,7 +342,7 @@ namespace LenchScripterMod.Blocks
         /// Returns the position of the block.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getPosition()
+        public virtual Vector3 getPosition()
         {
             return bb.transform.position;
         }
@@ -329,7 +352,7 @@ namespace LenchScripterMod.Blocks
         /// Throws NoRigidBodyException if the block has no RigidBody.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getVelocity()
+        public virtual Vector3 getVelocity()
         {
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
@@ -341,7 +364,7 @@ namespace LenchScripterMod.Blocks
         /// Returns the mass of the block.
         /// </summary>
         /// <returns>Float value.</returns>
-        public float getMass()
+        public virtual float getMass()
         {
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
@@ -353,7 +376,7 @@ namespace LenchScripterMod.Blocks
         /// Returns the center of mass of the block, relative to the block's position.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getCenterOfMass()
+        public virtual Vector3 getCenterOfMass()
         {
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)
@@ -365,7 +388,7 @@ namespace LenchScripterMod.Blocks
         /// Returns the block's rotation in the form of it's Euler angles.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getEulerAngles()
+        public virtual Vector3 getEulerAngles()
         {
             Vector3 d2r = new Vector3(convertToRadians, convertToRadians, convertToRadians);
             Vector3 euler = bb.transform.eulerAngles;
@@ -378,7 +401,7 @@ namespace LenchScripterMod.Blocks
         /// Throws NoRigidBodyException if the block has no RigidBody.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getAngularVelocity()
+        public virtual Vector3 getAngularVelocity()
         {
             Rigidbody body = bb.GetComponent<Rigidbody>();
             if (body != null)

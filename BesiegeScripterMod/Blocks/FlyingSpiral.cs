@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using UnityEngine;
 
-namespace LenchScripterMod.Blocks
+namespace LenchScripter.Blocks
 {
     /// <summary>
     /// Handler for the Flying Spiral block.
@@ -81,7 +81,10 @@ namespace LenchScripterMod.Blocks
             }
         }
 
-        internal override void Update()
+        /// <summary>
+        /// Sets the speed and drag of the block to make it fly.
+        /// </summary>
+        protected override void Update()
         {
             if (setFlyingFlag)
             {

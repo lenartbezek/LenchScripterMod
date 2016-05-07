@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace LenchScripterMod.Blocks
+namespace LenchScripter.Blocks
 {
     /// <summary>
     /// Handler for all wheel and cog blocks.
@@ -57,7 +57,10 @@ namespace LenchScripterMod.Blocks
             setInputFlag = true;
         }
 
-        internal override void LateUpdate()
+        /// <summary>
+        /// Sets the desired input value to be read at the next FixedUpdate of the BlockBehaviour script.
+        /// </summary>
+        protected override void LateUpdate()
         {
             if (setInputFlag)
             {

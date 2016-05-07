@@ -1,4 +1,4 @@
-﻿namespace LenchScripterMod.Blocks
+﻿namespace LenchScripter.Blocks
 {
     /// <summary>
     /// Handler for spaar's Automatron block.

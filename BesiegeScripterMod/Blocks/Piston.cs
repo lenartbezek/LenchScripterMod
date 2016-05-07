@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using UnityEngine;
 
-namespace LenchScripterMod.Blocks
+namespace LenchScripter.Blocks
 {
     /// <summary>
     /// Handler for the Piston block.
@@ -79,7 +79,10 @@ namespace LenchScripterMod.Blocks
             setPositionFlag = true;
         }
 
-        internal override void Update()
+        /// <summary>
+        /// Handles extending and compressing the piston.
+        /// </summary>
+        protected override void Update()
         {
             if (setExtendFlag)
             {

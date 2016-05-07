@@ -2,7 +2,7 @@
 using System.Reflection;
 using UnityEngine;
 
-namespace LenchScripterMod.Blocks
+namespace LenchScripter.Blocks
 {
     /// <summary>
     /// Handler for steering blocks; Steering and Steering Hinge.
@@ -76,6 +76,7 @@ namespace LenchScripterMod.Blocks
         /// <param name="angle">Float value in degrees.</param>
         public void SetAngle(float angle)
         {
+            angle /= convertToRadians;
             if (float.IsNaN(angle))
                 throw new ArgumentException("Value is not a number (NaN).");
             if (sw.allowLimits && limitsSlider.IsActive)
@@ -102,7 +103,10 @@ namespace LenchScripterMod.Blocks
             return (float)angleyToBeField.GetValue(sw) * convertToRadians;
         }
 
-        internal override void LateUpdate()
+        /// <summary>
+        /// Handles the movement of the joint.
+        /// </summary>
+        protected override void LateUpdate()
         {
             if (setAngleFlag)
             {
