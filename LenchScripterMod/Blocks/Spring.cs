@@ -43,6 +43,26 @@
         }
 
         /// <summary>
+        /// Controls the spring / winch. Contracts if rate is positive and unwinds if negative.
+        /// Springs cannot be unwound.
+        /// </summary>
+        /// <param name="rate">Rate of movement.</param>
+        public void SetInput(float rate = 1)
+        {
+            if (sc.winchMode)
+            {
+                if (rate > 0)
+                    sc.WinchContract(rate);
+                else
+                    sc.WinchUnwind(rate);
+            }
+            else
+            {
+                sc.Contract(rate);
+            }
+        }
+
+        /// <summary>
         /// Contracts the spring.
         /// </summary>
         public void Contract()
