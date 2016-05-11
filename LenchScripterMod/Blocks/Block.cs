@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using LenchScripter.Internal;
 
@@ -127,6 +128,34 @@ namespace LenchScripter.Blocks
         public virtual bool exists()
         {
             return bb != null && bb.GetComponent<Rigidbody>() != null;
+        }
+
+        /// <summary>
+        /// Returns a list of all available toggles.
+        /// </summary>
+        /// <returns></returns>
+        public virtual List<string> getToggles()
+        {
+            List<string> toggles = new List<string>();
+            foreach (MToggle m in bb.Toggles)
+            {
+                toggles.Add(m.DisplayName.ToUpper());
+            }
+            return toggles;
+        }
+
+        /// <summary>
+        /// Returns a list of all available sliders.
+        /// </summary>
+        /// <returns></returns>
+        public virtual List<string> getSliders()
+        {
+            List<string> sliders = new List<string>();
+            foreach (MSlider m in bb.Sliders)
+            {
+                sliders.Add(m.DisplayName.ToUpper());
+            }
+            return sliders;
         }
 
         /// <summary>

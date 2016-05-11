@@ -54,7 +54,7 @@
                 if (rate > 0)
                     sc.WinchContract(rate);
                 else
-                    sc.WinchUnwind(rate);
+                    sc.WinchUnwind(-rate);
             }
             else
             {
