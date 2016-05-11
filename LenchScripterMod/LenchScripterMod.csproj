@@ -84,6 +84,7 @@
     <Compile Include="Blocks\Spring.cs" />
     <Compile Include="Blocks\Steering.cs" />
     <Compile Include="Blocks\WaterCannon.cs" />
+    <Compile Include="Internal\IdentifierDisplay.cs" />
     <Compile Include="Internal\LuaMethodWrapper.cs" />
     <Compile Include="Internal\Mark.cs" />
     <Compile Include="Internal\Mod.cs" />

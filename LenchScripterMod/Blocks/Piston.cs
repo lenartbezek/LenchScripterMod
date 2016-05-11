@@ -116,10 +116,5 @@ namespace LenchScripter.Blocks
                 lastExtendFlag = false;
             }
         }
-
-        internal static bool isPiston(BlockBehaviour bb)
-        {
-            return bb.GetComponent<SliderCompress>() != null;
-        }
     }
 }

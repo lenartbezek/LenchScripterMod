@@ -55,6 +55,10 @@ namespace LenchScripter.Internal
             if (visible)
             {
                 GUI.skin = ModGUI.Skin;
+                GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
+                GUI.skin.window.padding.left = 8;
+                GUI.skin.window.padding.right = 8;
+                GUI.skin.window.padding.bottom = 8;
                 mainWindowRect = GUI.Window(mainWindowID, mainWindowRect, DoMainWindow, "Lua Watchlist");
                 if (editing)
                 {
@@ -115,6 +119,11 @@ namespace LenchScripter.Internal
         /// <param name="id"></param>
         private void DoMainWindow(int id)
         {
+            // Draw close button
+            if (GUI.Button(new Rect(mainWindowRect.width - 28, 8, 20, 20),
+                "×", Elements.Buttons.Red))
+                visible = false;
+
             List<VariableWatch> toBeRemoved = new List<VariableWatch>();
 
             var oldColor = GUI.backgroundColor;

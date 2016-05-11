@@ -24,6 +24,7 @@ namespace LenchScripter.Internal
         public override bool Preload { get; } = false;
 
         internal static LuaWatchlist Watchlist;
+        internal static IdentifierDisplay IdentifierDisplay;
         internal static Type blockScriptType;
 
         /// <summary>
@@ -36,6 +37,7 @@ namespace LenchScripter.Internal
             Game.OnSimulationToggle += Scripter.Instance.OnSimulationToggle;
 
             Watchlist = Scripter.Instance.gameObject.AddComponent<LuaWatchlist>();
+            IdentifierDisplay = Scripter.Instance.gameObject.AddComponent<IdentifierDisplay>();
 
             LoadBlockLoaderAssembly();
 
@@ -413,16 +415,13 @@ namespace LenchScripter.Internal
         /// Finds hovered block in buildingBlocks dictionary and dumps its ID string
         /// if LeftShift is pressed.
         /// </summary>
-        private void DumpHoveredBlock()
+        private void ShowBlockIdentifiers()
         {
             if (Game.AddPiece.HoveredBlock == null)
             {
                 hoveredBlock = null;
                 return;
             }
-
-            if (hoveredBlock != null && Game.AddPiece.HoveredBlock == hoveredBlock)
-                return;
 
             hoveredBlock = Game.AddPiece.HoveredBlock;
 
@@ -440,7 +439,7 @@ namespace LenchScripter.Internal
                 key = buildingBlocks[hoveredBlock];
             }
             string guid = hoveredBlock.GetComponent<BlockBehaviour>().Guid.ToString();
-            Debug.Log(key + "  -  " + guid);
+            ScripterMod.IdentifierDisplay.ShowBlock(hoveredBlock);
         }
 
         /// <summary>
@@ -467,7 +466,7 @@ namespace LenchScripter.Internal
                 // Dump block identifiers
                 if (Keybindings.Get("Dump Blocks ID").IsDown())
                 {
-                    DumpHoveredBlock();
+                    ShowBlockIdentifiers();
                 }
             }
 
@@ -539,9 +538,14 @@ namespace LenchScripter.Internal
         {
             this.isSimulating = isSimulating;
             if (isSimulating && enableLua)
+            {
+                ScripterMod.IdentifierDisplay.Visible = false;
                 CreateLuaEnvironment();
+            }
             else if (lua != null)
+            {
                 DestroyLuaEnvironment();
+            }
         }
     }
 
