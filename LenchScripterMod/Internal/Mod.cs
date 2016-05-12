@@ -196,9 +196,6 @@ namespace LenchScripter.Internal
         /// <returns>Returns reference to blocks Block handler object.</returns>
         internal Block GetBlock(string blockId)
         {
-            if (idToSimulationBlock == null)
-                InitializeSimulationBlockHandlers();
-
             if (idToSimulationBlock.ContainsKey(blockId.ToUpper()))
                 return idToSimulationBlock[blockId.ToUpper()];
             if (guidToSimulationBlock.ContainsKey(blockId))
@@ -251,6 +248,7 @@ namespace LenchScripter.Internal
                 idToSimulationBlock[id] = b;
                 guidToSimulationBlock[guid] = b;
             }
+
             BlockHandlers.OnInitialisation?.Invoke();
         }
 
@@ -418,6 +416,12 @@ namespace LenchScripter.Internal
             lua = null;
             wrapper.clearMarks(false);
             wrapper = null;
+            idToSimulationBlock = null;
+            luaOnUpdate = null;
+            luaOnFixedUpdate = null;
+            luaOnKey = null;
+            luaOnKeyDown = null;
+            luaOnKeyUp = null;
         }
 
         /// <summary>
@@ -481,8 +485,6 @@ namespace LenchScripter.Internal
 
             if (!isSimulating) return;
 
-            if (lua == null) return;
-
             // Call Lua onUpdate
             if (luaOnUpdate != null)
                 luaOnUpdate.Call();
@@ -522,14 +524,7 @@ namespace LenchScripter.Internal
         /// </summary>
         private void FixedUpdate()
         {
-            // Initialize Lua script
-            if (scriptFile != null)
-            {
-                LoadLuaScript();
-                scriptFile = null;
-            }
-
-            if (!isSimulating || lua == null) return;
+            if (!isSimulating) return;
 
             // Call Lua onFixedUpdate
             if (luaOnFixedUpdate != null)
@@ -546,9 +541,10 @@ namespace LenchScripter.Internal
         internal void OnSimulationToggle(bool isSimulating)
         {
             this.isSimulating = isSimulating;
-            if (isSimulating && enableLua)
+            if (isSimulating)
             {
-                CreateLuaEnvironment();
+                if (enableLua) CreateLuaEnvironment();
+                InitializeSimulationBlockHandlers();
             }
             else if (lua != null)
             {
