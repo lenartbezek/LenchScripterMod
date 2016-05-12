@@ -35,6 +35,8 @@ namespace LenchScripter.Internal
         {
             UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
             Game.OnSimulationToggle += Scripter.Instance.OnSimulationToggle;
+            Game.OnBlockPlaced += (Transform block) => Scripter.Instance.rebuildDict = true;
+            Game.OnBlockRemoved += () => Scripter.Instance.rebuildDict = true;
 
             Watchlist = Scripter.Instance.gameObject.AddComponent<LuaWatchlist>();
             IdentifierDisplay = Scripter.Instance.gameObject.AddComponent<IdentifierDisplay>();
@@ -56,8 +58,12 @@ namespace LenchScripter.Internal
         public override void OnUnload()
         {
             Game.OnSimulationToggle -= Scripter.Instance.OnSimulationToggle;
+            Game.OnBlockPlaced -= (Transform block) => Scripter.Instance.rebuildDict = true;
+            Game.OnBlockRemoved -= () => Scripter.Instance.rebuildDict = true;
+
             Scripter.Instance.OnSimulationToggle(false);
 
+            UnityEngine.Object.Destroy(IdentifierDisplay);
             UnityEngine.Object.Destroy(Watchlist);
             UnityEngine.Object.Destroy(Scripter.Instance);
         }
@@ -117,12 +123,13 @@ namespace LenchScripter.Internal
 
         internal bool isSimulating;
         internal bool enableLua = true;
+        internal bool handlersInitialised = false;
 
         // Hovered block for ID dumping
         private GenericBlock hoveredBlock;
 
         // Machine changed - flag for rebuild
-        private bool rebuildDict = false;
+        internal bool rebuildDict = false;
 
         // Map: Building Block -> ID
         internal Dictionary<GenericBlock, string> buildingBlocks;
@@ -196,6 +203,9 @@ namespace LenchScripter.Internal
         /// <returns>Returns reference to blocks Block handler object.</returns>
         internal Block GetBlock(string blockId)
         {
+            if (!handlersInitialised)
+                InitializeSimulationBlockHandlers();
+
             if (idToSimulationBlock.ContainsKey(blockId.ToUpper()))
                 return idToSimulationBlock[blockId.ToUpper()];
             if (guidToSimulationBlock.ContainsKey(blockId))
@@ -211,11 +221,6 @@ namespace LenchScripter.Internal
         internal void InitializeBuildingBlockIDs()
         {
             var typeCount = new Dictionary<string, int>();
-            if (buildingBlocks == null)
-            {
-                Game.OnBlockPlaced += (Transform block) => rebuildDict = true;
-                Game.OnBlockRemoved += () => rebuildDict = true;
-            }
             buildingBlocks = new Dictionary<GenericBlock, string>();
             for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
             {
@@ -249,6 +254,7 @@ namespace LenchScripter.Internal
                 guidToSimulationBlock[guid] = b;
             }
 
+            handlersInitialised = true;
             BlockHandlers.OnInitialisation?.Invoke();
         }
 
@@ -328,9 +334,10 @@ namespace LenchScripter.Internal
             string path;
             if (args.Length == 0)
             {
-                if (MyTextField.lastNameUsed == "")
+                var machine_name = Machine.Active().Name;
+                if (machine_name == null)
                     return "Save the machine first or specify a script name.";
-                path = string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua");
+                path = string.Concat(Application.dataPath, "/Scripts/", machine_name, ".lua");
             }
             else
             {
@@ -397,12 +404,14 @@ namespace LenchScripter.Internal
             // Find script file
             try
             {
-                if (scriptFile == null && MyTextField.lastNameUsed != "")
-                    scriptFile = FindScript(string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua"));
+                if (scriptFile == null)
+                    scriptFile = FindScript(string.Concat(Application.dataPath, "/Scripts/", Machine.Active().Name, ".lua"));
             }
             catch (FileNotFoundException e)
             {
-                Debug.Log(e.Message);
+                // Don't print exceptions for default machine name
+                if(Machine.Active().Name != "Machine")
+                    Debug.Log(e.Message);
             }
         }
 
@@ -461,6 +470,10 @@ namespace LenchScripter.Internal
         /// </summary>
         private void Update()
         {
+            // Initialize 
+            if (isSimulating && !handlersInitialised)
+                InitializeSimulationBlockHandlers();
+
             // Initialize Lua script
             if (scriptFile != null)
             {
@@ -476,7 +489,7 @@ namespace LenchScripter.Internal
                 
             if (!isSimulating)
             {
-                // Dump block identifiers
+                // Show block identifiers
                 if (Keybindings.Get("Dump Blocks ID").IsDown())
                 {
                     ShowBlockIdentifiers();
@@ -540,15 +553,15 @@ namespace LenchScripter.Internal
         /// <param name="isSimulating"></param>
         internal void OnSimulationToggle(bool isSimulating)
         {
+            handlersInitialised = false;
             this.isSimulating = isSimulating;
             if (isSimulating)
             {
                 if (enableLua) CreateLuaEnvironment();
-                InitializeSimulationBlockHandlers();
             }
-            else if (lua != null)
+            else
             {
-                DestroyLuaEnvironment();
+                if (lua != null) DestroyLuaEnvironment();
             }
         }
     }
