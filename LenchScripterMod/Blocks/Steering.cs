@@ -84,11 +84,11 @@ namespace LenchScripter.Blocks
                 if (!sw.flipped)
                     desired_angle = Mathf.Clamp(angle, -limitsSlider.Min, limitsSlider.Max);
                 else
-                    desired_angle = Mathf.Clamp(angle, -limitsSlider.Max, limitsSlider.Min);
+                    desired_angle = Mathf.Clamp(angle * -1, -limitsSlider.Max, limitsSlider.Min);
             }
             else
             {
-                desired_angle = angle;
+                desired_angle = angle * (sw.flipped ? -1 : 1);
             }
 
             setAngleFlag = true;
