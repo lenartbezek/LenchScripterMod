@@ -8,6 +8,8 @@ namespace LenchScripter.Internal
     /// </summary>
     public class Mark : MonoBehaviour
     {
+        private Renderer renderer;
+
         /// <summary>
         /// Should the mark be destroyed at the end of the simulation.
         /// </summary>
@@ -15,7 +17,12 @@ namespace LenchScripter.Internal
 
         private void Awake()
         {
-            GetComponent<Renderer>().material.color = Color.red;
+            renderer = GetComponent<Renderer>();
+            Color color = Color.red;
+            color.a = 0.5f;
+            renderer.material.color = color;
+            renderer.material.shader = Shader.Find("Transparent/Diffuse");
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             Destroy(GetComponent<SphereCollider>());
         }
 
@@ -51,7 +58,8 @@ namespace LenchScripter.Internal
         /// <param name="c">UnityEngine.Color</param>
         public void setColor(Color c)
         {
-            GetComponent<Renderer>().material.color = c;
+            c.a = 0.6f;
+            renderer.material.color = c;
         }
 
         /// <summary>
