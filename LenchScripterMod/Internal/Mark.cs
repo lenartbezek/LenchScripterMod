@@ -22,7 +22,6 @@ namespace LenchScripter.Internal
             color.a = 0.5f;
             renderer.material.color = color;
             renderer.material.shader = Shader.Find("Transparent/Diffuse");
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             Destroy(GetComponent<SphereCollider>());
         }
 

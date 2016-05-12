@@ -169,6 +169,11 @@ namespace LenchScripter.Internal
         internal event FixedUpdateEventHandler OnFixedUpdate;
 
         /// <summary>
+        /// Event invoked when simulation block handlers are initialised.
+        /// </summary>
+        public delegate void InitialisationEventHandler();
+
+        /// <summary>
         /// Initializes and returns new Block object.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
@@ -229,6 +234,7 @@ namespace LenchScripter.Internal
         /// Populates dictionary with references to simulation blocks.
         /// Used for accessing blocks with GetBlock(blockId) while simulating.
         /// Called at the start of simulation.
+        /// Invokes OnInitialisation event.
         /// </summary>
         internal void InitializeSimulationBlockHandlers()
         {
@@ -245,6 +251,7 @@ namespace LenchScripter.Internal
                 idToSimulationBlock[id] = b;
                 guidToSimulationBlock[guid] = b;
             }
+            BlockHandlers.OnInitialisation?.Invoke();
         }
 
         private void LoadLuaScript()
@@ -323,6 +330,8 @@ namespace LenchScripter.Internal
             string path;
             if (args.Length == 0)
             {
+                if (MyTextField.lastNameUsed == "")
+                    return "Save the machine first or specify a script name.";
                 path = string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua");
             }
             else
@@ -390,7 +399,7 @@ namespace LenchScripter.Internal
             // Find script file
             try
             {
-                if (scriptFile == null)
+                if (scriptFile == null && MyTextField.lastNameUsed != "")
                     scriptFile = FindScript(string.Concat(Application.dataPath, "/Scripts/", MyTextField.lastNameUsed, ".lua"));
             }
             catch (FileNotFoundException e)
@@ -539,7 +548,6 @@ namespace LenchScripter.Internal
             this.isSimulating = isSimulating;
             if (isSimulating && enableLua)
             {
-                ScripterMod.IdentifierDisplay.Visible = false;
                 CreateLuaEnvironment();
             }
             else if (lua != null)

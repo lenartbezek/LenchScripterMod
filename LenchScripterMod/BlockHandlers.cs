@@ -11,6 +11,12 @@ namespace LenchScripter
     public static class BlockHandlers
     {
         /// <summary>
+        /// Event invoked when simulation block handlers are initialised.
+        /// Use this instead of OnSimulation if you're relying on block handlers.
+        /// </summary>
+        public static Scripter.InitialisationEventHandler OnInitialisation;
+
+        /// <summary>
         /// Retrieve the Block handler for the block with given identifier.
         /// </summary>
         /// <param name="BlockID">GUID or sequential identifier string.</param>

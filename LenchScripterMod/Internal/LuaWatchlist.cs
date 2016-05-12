@@ -127,7 +127,7 @@ namespace LenchScripter.Internal
             List<VariableWatch> toBeRemoved = new List<VariableWatch>();
 
             var oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 1);
+            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.5f);
             newVariableName = GUI.TextField(new Rect(68, 48, 248, 20), newVariableName, Elements.InputFields.ComponentField);
             GUI.backgroundColor = oldColor;
             if (GUI.Button(new Rect(4, 48, 60, 20), "Add", Elements.Buttons.Default) && Regex.Replace(newVariableName, @"\s+", "") != "")

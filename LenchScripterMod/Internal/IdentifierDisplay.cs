@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Collections.Generic;
 using spaar.ModLoader;
 using spaar.ModLoader.UI;
 using UnityEngine;
@@ -26,7 +27,7 @@ namespace LenchScripter.Internal
         /// </summary>
         private void OnGUI()
         {
-            if (Visible)
+            if (Visible && !Scripter.Instance.isSimulating)
             {
                 GUI.skin = ModGUI.Skin;
                 GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
@@ -44,21 +45,36 @@ namespace LenchScripter.Internal
                 "×", Elements.Buttons.Red))
                 Visible = false;
 
+            string sequential_id;
+            string guid;
+
+            try
+            {
+
+                sequential_id = Scripter.Instance.buildingBlocks[block];
+                guid = block.Guid.ToString();
+
+            }
+            catch (KeyNotFoundException)
+            {
+                Visible = false;
+                return;
+            }
             // Sequential identifier field
             GUILayout.BeginHorizontal();
 
-            GUILayout.TextField(Scripter.Instance.buildingBlocks[block]);
+            GUILayout.TextField(sequential_id);
             if (GUILayout.Button("✄", Elements.Buttons.Red, GUILayout.Width(30)))
-                ClipboardHelper.clipBoard = Scripter.Instance.buildingBlocks[block];
+                ClipboardHelper.clipBoard = sequential_id;
 
             GUILayout.EndHorizontal();
 
             // GUID field
             GUILayout.BeginHorizontal();
 
-            GUILayout.TextField(block.Guid.ToString());
+            GUILayout.TextField(guid);
             if (GUILayout.Button("✄", Elements.Buttons.Red, GUILayout.Width(30)))
-                ClipboardHelper.clipBoard = block.Guid.ToString();
+                ClipboardHelper.clipBoard = guid;
 
             GUILayout.EndHorizontal();
 
