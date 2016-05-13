@@ -9,12 +9,15 @@ namespace LenchScripter.Internal
 {
     internal class IdentifierDisplay : MonoBehaviour
     {
+        internal Vector2 ConfigurationPosition;
 
         private GenericBlock block;
         internal bool Visible { get; set; }
 
+        private bool init = false;
+
         private int windowID = Util.GetWindowID();
-        private Rect windowRect = new Rect(Screen.width / 2 - 350 / 2, Screen.height - 300, 350, 140);
+        private Rect windowRect;
 
         internal void ShowBlock(GenericBlock block)
         {
@@ -29,13 +32,43 @@ namespace LenchScripter.Internal
         {
             if (Visible && !Scripter.Instance.isSimulating)
             {
+                InitialiseWindowRect();
+
                 GUI.skin = ModGUI.Skin;
                 GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
                 GUI.skin.window.padding.left = 8;
                 GUI.skin.window.padding.right = 8;
                 GUI.skin.window.padding.bottom = 8;
                 windowRect = GUI.Window(windowID, windowRect, DoWindow, "Block Info");
+
+                ConfigurationPosition.x = windowRect.x < Screen.width/2 ? windowRect.x : windowRect.x - Screen.width;
+                ConfigurationPosition.y = windowRect.y < Screen.height/2 ? windowRect.y : windowRect.y - Screen.height;
             }
+        }
+
+        /// <summary>
+        /// Initialises main window Rect on first call.
+        /// Intended to set the position from the configuration.
+        /// </summary>
+        private void InitialiseWindowRect()
+        {
+            if (init) return;
+
+            windowRect = new Rect();
+            windowRect.width = 350;
+            windowRect.height = 140;
+            if (ConfigurationPosition != null)
+            {
+                windowRect.x = ConfigurationPosition.x >= 0 ? ConfigurationPosition.x : Screen.width + ConfigurationPosition.x;
+                windowRect.y = ConfigurationPosition.y >= 0 ? ConfigurationPosition.y : Screen.height + ConfigurationPosition.y;
+            }
+            else
+            {
+                windowRect.x = Screen.width - windowRect.width - 60;
+                windowRect.y = 200;
+            }
+
+            init = true;
         }
 
         private void DoWindow(int id)

@@ -42,6 +42,7 @@ namespace LenchScripter.Internal
             IdentifierDisplay = Scripter.Instance.gameObject.AddComponent<IdentifierDisplay>();
 
             LoadBlockLoaderAssembly();
+            LoadConfiguration();
 
             Keybindings.AddKeybinding("Dump Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
             Keybindings.AddKeybinding("Lua Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
@@ -54,6 +55,7 @@ namespace LenchScripter.Internal
 
         /// <summary>
         /// Disables the mod from executing scripts.
+        /// Destroys GameObjects.
         /// </summary>
         public override void OnUnload()
         {
@@ -63,9 +65,31 @@ namespace LenchScripter.Internal
 
             Scripter.Instance.OnSimulationToggle(false);
 
+            SaveConfiguration();
+
             UnityEngine.Object.Destroy(IdentifierDisplay);
             UnityEngine.Object.Destroy(Watchlist);
             UnityEngine.Object.Destroy(Scripter.Instance);
+        }
+
+        private void LoadConfiguration()
+        {
+            Watchlist.ConfigurationPosition = new Vector2();
+            Watchlist.ConfigurationPosition.x = Configuration.GetFloat("WatchlistXPos", -380);
+            Watchlist.ConfigurationPosition.y = Configuration.GetFloat("WatchlistYPos", 200);
+
+            IdentifierDisplay.ConfigurationPosition = new Vector2();
+            IdentifierDisplay.ConfigurationPosition.x = Configuration.GetFloat("IdentifierDisplayXPos", 900);
+            IdentifierDisplay.ConfigurationPosition.y = Configuration.GetFloat("IdentifierDisplayYPos", -240);
+        }
+
+        private void SaveConfiguration()
+        {
+            Configuration.SetFloat("WatchlistXPos", Watchlist.ConfigurationPosition.x);
+            Configuration.SetFloat("WatchlistYPos", Watchlist.ConfigurationPosition.y);
+            Configuration.SetFloat("IdentifierDisplayXPos", IdentifierDisplay.ConfigurationPosition.x);
+            Configuration.SetFloat("IdentifierDisplayYPos", IdentifierDisplay.ConfigurationPosition.y);
+            Configuration.Save();
         }
 
         /// <summary>
@@ -484,7 +508,7 @@ namespace LenchScripter.Internal
             // Toggle watchlist visibility
             if (Keybindings.Get("Lua Watchlist").Pressed())
             {
-                ScripterMod.Watchlist.visible = !ScripterMod.Watchlist.visible;
+                ScripterMod.Watchlist.Visible = !ScripterMod.Watchlist.Visible;
             }
                 
             if (!isSimulating)

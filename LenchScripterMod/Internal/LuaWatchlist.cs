@@ -18,14 +18,13 @@ namespace LenchScripter.Internal
         /// </summary>
         public new string name { get { return "Lua Watchlist"; } }
 
-        private static float mainWindowWidth = 320;
-        private static float mainWindowHeight = 500;
+        internal Vector2 ConfigurationPosition;
 
         private static float editWindowWidth = 240;
         private static float editWindowHeight = 124;
 
         private int mainWindowID = Util.GetWindowID();
-        private Rect mainWindowRect = new Rect(Screen.width - mainWindowWidth - 50, 50, mainWindowWidth, mainWindowHeight);
+        private Rect mainWindowRect;
         private int editWindowID = Util.GetWindowID();
         private Rect editWindowRect;
 
@@ -36,9 +35,9 @@ namespace LenchScripter.Internal
 
         internal List<VariableWatch> watched;
 
-        internal bool visible = false;
-        internal bool autoadd = false;
+        internal bool Visible { get; set; } = false;
 
+        private bool init = false;
         private bool editing = false;
         private VariableWatch editingVariable;
 
@@ -52,8 +51,10 @@ namespace LenchScripter.Internal
         /// </summary>
         private void OnGUI()
         {
-            if (visible)
+            if (Visible)
             {
+                InitialiseWindowRect();
+
                 GUI.skin = ModGUI.Skin;
                 GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
                 GUI.skin.window.padding.left = 8;
@@ -64,7 +65,35 @@ namespace LenchScripter.Internal
                 {
                     editWindowRect = GUI.Window(editWindowID, editWindowRect, DoEditWindow, "Edit " + editingVariable.GetName());
                 }
+
+                ConfigurationPosition.x = mainWindowRect.x < Screen.width/2 ? mainWindowRect.x : mainWindowRect.x - Screen.width;
+                ConfigurationPosition.y = mainWindowRect.y < Screen.height/2 ? mainWindowRect.y : mainWindowRect.y - Screen.height;
             }
+        }
+
+        /// <summary>
+        /// Initialises main window Rect on first call.
+        /// Intended to set the position from the configuration.
+        /// </summary>
+        private void InitialiseWindowRect()
+        {
+            if (init) return;
+
+            mainWindowRect = new Rect();
+            mainWindowRect.width = 320;
+            mainWindowRect.height = 500;
+            if (ConfigurationPosition != null)
+            {
+                mainWindowRect.x = ConfigurationPosition.x >= 0 ? ConfigurationPosition.x : Screen.width + ConfigurationPosition.x; 
+                mainWindowRect.y = ConfigurationPosition.y >= 0 ? ConfigurationPosition.y : Screen.height + ConfigurationPosition.y;
+            }
+            else
+            {
+                mainWindowRect.x = Screen.width - mainWindowRect.width - 60;
+                mainWindowRect.y = 200;
+            }
+
+            init = true;
         }
 
         /// <summary>
@@ -122,7 +151,7 @@ namespace LenchScripter.Internal
             // Draw close button
             if (GUI.Button(new Rect(mainWindowRect.width - 28, 8, 20, 20),
                 "×", Elements.Buttons.Red))
-                visible = false;
+                Visible = false;
 
             List<VariableWatch> toBeRemoved = new List<VariableWatch>();
 

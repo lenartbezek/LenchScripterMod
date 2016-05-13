@@ -17,6 +17,17 @@ namespace LenchScripter
         public static Scripter.InitialisationEventHandler OnInitialisation;
 
         /// <summary>
+        /// Returns True if block handlers are initialised.
+        /// </summary>
+        public static bool Initialised
+        {
+            get
+            {
+                return Scripter.Instance.handlersInitialised;
+            }
+        }
+
+        /// <summary>
         /// Retrieve the Block handler for the block with given identifier.
         /// </summary>
         /// <param name="BlockID">GUID or sequential identifier string.</param>
