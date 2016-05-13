@@ -32,7 +32,7 @@ namespace LenchScripter
         /// </summary>
         /// <param name="BlockID">GUID or sequential identifier string.</param>
         /// <returns>Block object.</returns>
-        public static Block GetBlock(string BlockID)
+        public static Block GetBlock(Guid BlockID)
         {
             if (Scripter.Instance.isSimulating)
             {

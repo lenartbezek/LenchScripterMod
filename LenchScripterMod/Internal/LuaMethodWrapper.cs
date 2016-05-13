@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using NLua.Exceptions;
 using LenchScripter.Blocks;
@@ -36,7 +37,14 @@ namespace LenchScripter.Internal
         /// <returns>Block object.</returns>
         public Block getBlock(string blockId)
         {
-            return Scripter.Instance.GetBlock(blockId);
+            try
+            {
+                return Scripter.Instance.GetBlock(new Guid(blockId));
+            }
+            catch (FormatException)
+            {
+                return Scripter.Instance.GetBlock(blockId);
+            }
         }
 
         /// <summary>

@@ -159,7 +159,7 @@ namespace LenchScripter.Internal
         internal Dictionary<GenericBlock, string> buildingBlocks;
 
         // Map: GUID -> Simulation Block
-        internal Dictionary<string, Block> guidToSimulationBlock;
+        internal Dictionary<Guid, Block> guidToSimulationBlock;
 
         // Map: ID -> Simulation Block
         internal Dictionary<string, Block> idToSimulationBlock;
@@ -220,20 +220,26 @@ namespace LenchScripter.Internal
         }
 
         /// <summary>
-        /// Finds blockId string in dictionary of simulation blocks.
-        /// On first call of the simulation, it also initializes the dictionary.
+        /// Finds blockGuid string in dictionary of simulation blocks.
         /// </summary>
-        /// <param name="blockId">Block's unique identifier.</param>
+        /// <param name="blockGuid">Block's GUID.</param>
+        /// <returns>Returns reference to blocks Block handler object.</returns>
+        internal Block GetBlock(Guid blockGuid)
+        {
+            if (guidToSimulationBlock.ContainsKey(blockGuid))
+                return guidToSimulationBlock[blockGuid];
+            throw new BlockNotFoundException("Block " + blockGuid + " not found.");
+        }
+
+        /// <summary>
+        /// Finds blockId string in dictionary of simulation blocks.
+        /// </summary>
+        /// <param name="blockId">Block's sequential identifier.</param>
         /// <returns>Returns reference to blocks Block handler object.</returns>
         internal Block GetBlock(string blockId)
         {
-            if (!handlersInitialised)
-                InitializeSimulationBlockHandlers();
-
             if (idToSimulationBlock.ContainsKey(blockId.ToUpper()))
                 return idToSimulationBlock[blockId.ToUpper()];
-            if (guidToSimulationBlock.ContainsKey(blockId))
-                return guidToSimulationBlock[blockId];
             throw new BlockNotFoundException("Block " + blockId + " not found.");
         }
 
@@ -265,14 +271,14 @@ namespace LenchScripter.Internal
         internal void InitializeSimulationBlockHandlers()
         {
             idToSimulationBlock = new Dictionary<string, Block>();
-            guidToSimulationBlock = new Dictionary<string, Block>();
+            guidToSimulationBlock = new Dictionary<Guid, Block>();
             var typeCount = new Dictionary<string, int>();
             for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
             {
                 string name = Machine.Active().BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
                 string id = name + " " + typeCount[name];
-                string guid = Machine.Active().BuildingBlocks[i].Guid.ToString();
+                Guid guid = Machine.Active().BuildingBlocks[i].Guid;
                 Block b = CreateBlock(Machine.Active().Blocks[i]);
                 idToSimulationBlock[id] = b;
                 guidToSimulationBlock[guid] = b;
