@@ -19,6 +19,8 @@ namespace LenchScripter.Internal
 
         internal static void Save(MachineInfo machineInfo)
         {
+            ScripterMod.ScriptOptions.ScriptName = machineInfo.Name;
+            ScripterMod.ScriptOptions.CheckForScript();
             if (ScripterMod.ScriptOptions.SaveToBsg)
             {
                 ScripterMod.ScriptOptions.CheckForScript();
@@ -32,6 +34,9 @@ namespace LenchScripter.Internal
             }
             else
             {
+                ScripterMod.ScriptOptions.SuccessMessage = null;
+                if (ScripterMod.ScriptOptions.Code != null)
+                    ScripterMod.ScriptOptions.NoteMessage = "Code has not been included in .bsg file.";
                 machineInfo.MachineData.EraseCustomData();
             }
         }

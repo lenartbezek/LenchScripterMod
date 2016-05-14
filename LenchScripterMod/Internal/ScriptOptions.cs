@@ -92,7 +92,11 @@ namespace LenchScripter.Internal
         /// </summary>
         internal void SaveToScript()
         {
-            if (!BsgHasCode) return;
+            if (!BsgHasCode)
+            {
+                ErrorMessage = ".bsg file contains no code to be exported.";
+                return;
+            }
             try
             {
                 var path = ScriptName.EndsWith(".lua") ? ScriptName : ScriptName + ".lua";
@@ -102,7 +106,7 @@ namespace LenchScripter.Internal
             }
             catch (Exception e)
             {
-                ErrorMessage = "Error writing code to script.\nSee console for more info.";
+                ErrorMessage = "Error writing code to script.\nSee console (Ctrl+K) for more info.";
                 Debug.LogException(e);
             }
         }
@@ -155,13 +159,9 @@ namespace LenchScripter.Internal
             init = true;
         }
 
-        private void DoWindow(int id)
+        private void DrawEnabledBadge(bool enabled)
         {
-            // Draw script file text field
-            GUILayout.Label("Script file", Elements.Labels.Title);
-            GUILayout.BeginHorizontal();
-            ScriptName = GUILayout.TextField(ScriptName);
-            if (ScriptFound)
+            if (enabled)
             {
                 var oldColor = GUI.backgroundColor;
                 GUI.backgroundColor = new Color(0f, 1f, 0f, 1f);
@@ -175,6 +175,15 @@ namespace LenchScripter.Internal
                 GUILayout.Label("✘", Elements.InputFields.Default, GUILayout.Width(30));
                 GUI.backgroundColor = oldColor;
             }
+        }
+
+        private void DoWindow(int id)
+        {
+            // Draw script file text field
+            GUILayout.Label("Script file", Elements.Labels.Title);
+            GUILayout.BeginHorizontal();
+            ScriptName = GUILayout.TextField(ScriptName);
+            DrawEnabledBadge(ScriptFound);
             GUILayout.EndHorizontal();
 
             // Draw script source
@@ -197,10 +206,9 @@ namespace LenchScripter.Internal
             GUILayout.Label("Save code to .bsg", Elements.InputFields.Default);
             var b = GUILayout.Toggle(SaveToBsg, "Import", ScriptFound ? Elements.Buttons.Default : Elements.Buttons.Disabled, GUILayout.Width(100)) && ScriptFound;
             if (b != SaveToBsg)
-            {
-                NoteMessage = b ? "Code will be saved to .bsg\nwhen you save the machine." : null;
-            }
+                NoteMessage = b ? "Code will be saved to .bsg when you\n save the machine." : "Code will not be saved to .bsg when you\n save the machine.";
             SaveToBsg = b;
+            DrawEnabledBadge(SaveToBsg);
             GUILayout.EndHorizontal();
 
             // Draw export script to lua
@@ -211,6 +219,7 @@ namespace LenchScripter.Internal
             {
                 SaveToScript();
             }
+            DrawEnabledBadge(BsgHasCode);
             GUILayout.EndHorizontal();
 
             // Draw message

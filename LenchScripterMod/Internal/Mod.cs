@@ -54,7 +54,6 @@ namespace LenchScripter.Internal
             Keybindings.AddKeybinding("Lua Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
 
             Commands.RegisterCommand("lua", Scripter.Instance.InteractiveCommand, "Executes Lua expression.");
-            Commands.RegisterCommand("loadscript", Scripter.Instance.LoadScriptCommand, "Loads Lua script.");
 
             SettingsMenu.RegisterSettingsButton("LUA", Scripter.Instance.RunScriptSettingToggle, true, 12);
         }
@@ -293,7 +292,7 @@ namespace LenchScripter.Internal
             catch (Exception e)
             {
                 Debug.LogException(e);
-                ScripterMod.ScriptOptions.SuccessMessage = "Error executing code.\nSee console for more info.";
+                ScripterMod.ScriptOptions.ErrorMessage = "Error executing code.\nSee console for more info.";
             }
         }
 
@@ -340,44 +339,6 @@ namespace LenchScripter.Internal
             }
                 
             return "";
-        }
-
-        /// <summary>
-        /// Called on loadscript console command.
-        /// </summary>
-        /// <param name="args"></param>
-        /// <param name="namedArgs"></param>
-        /// <returns></returns>
-        internal string LoadScriptCommand(string[] args, IDictionary<string, string> namedArgs)
-        {
-            if (!isSimulating || lua == null)
-                return "Can only be called while simulating.";
-
-            string path;
-            if (args.Length == 0)
-            {
-                var machine_name = Machine.Active().Name;
-                if (machine_name == null)
-                    return "Save the machine first or specify a script name.";
-                path = string.Concat(Application.dataPath, "/Scripts/", machine_name, ".lua");
-            }
-            else
-            {
-                path = args[0];
-            }
-
-            ScripterMod.ScriptOptions.CheckForScript();
-
-            if (ScripterMod.ScriptOptions.ScriptFound)
-            {
-                scriptFile = ScripterMod.ScriptOptions.ScriptPath;
-                return "Script file: " + ScripterMod.ScriptOptions.ScriptPath;
-            } 
-            else
-            {
-                return "Script file not found.";
-            }
-
         }
 
         /// <summary>
