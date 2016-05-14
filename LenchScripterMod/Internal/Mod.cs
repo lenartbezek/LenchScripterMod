@@ -17,7 +17,7 @@ namespace LenchScripter.Internal
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(1, 0, 1);
+        public override Version Version { get; } = new Version(1, 1, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
@@ -25,6 +25,7 @@ namespace LenchScripter.Internal
 
         internal static LuaWatchlist Watchlist;
         internal static IdentifierDisplay IdentifierDisplay;
+        internal static ScriptOptions ScriptOptions;
         internal static Type blockScriptType;
 
         /// <summary>
@@ -37,15 +38,20 @@ namespace LenchScripter.Internal
             Game.OnSimulationToggle += Scripter.Instance.OnSimulationToggle;
             Game.OnBlockPlaced += (Transform block) => Scripter.Instance.rebuildDict = true;
             Game.OnBlockRemoved += () => Scripter.Instance.rebuildDict = true;
+            XmlSaver.OnSave += MachineData.Save;
+            XmlLoader.OnLoad += MachineData.Load;
 
             Watchlist = Scripter.Instance.gameObject.AddComponent<LuaWatchlist>();
             IdentifierDisplay = Scripter.Instance.gameObject.AddComponent<IdentifierDisplay>();
+            ScriptOptions = Scripter.Instance.gameObject.AddComponent<ScriptOptions>();
 
             LoadBlockLoaderAssembly();
-            LoadConfiguration();
+
+            Configuration.Load();
 
             Keybindings.AddKeybinding("Dump Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
             Keybindings.AddKeybinding("Lua Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
+            Keybindings.AddKeybinding("Lua Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
 
             Commands.RegisterCommand("lua", Scripter.Instance.InteractiveCommand, "Executes Lua expression.");
             Commands.RegisterCommand("loadscript", Scripter.Instance.LoadScriptCommand, "Loads Lua script.");
@@ -62,34 +68,14 @@ namespace LenchScripter.Internal
             Game.OnSimulationToggle -= Scripter.Instance.OnSimulationToggle;
             Game.OnBlockPlaced -= (Transform block) => Scripter.Instance.rebuildDict = true;
             Game.OnBlockRemoved -= () => Scripter.Instance.rebuildDict = true;
+            XmlSaver.OnSave -= MachineData.Save;
+            XmlLoader.OnLoad -= MachineData.Load;
 
             Scripter.Instance.OnSimulationToggle(false);
 
-            SaveConfiguration();
-
-            UnityEngine.Object.Destroy(IdentifierDisplay);
-            UnityEngine.Object.Destroy(Watchlist);
-            UnityEngine.Object.Destroy(Scripter.Instance);
-        }
-
-        private void LoadConfiguration()
-        {
-            Watchlist.ConfigurationPosition = new Vector2();
-            Watchlist.ConfigurationPosition.x = Configuration.GetFloat("WatchlistXPos", -380);
-            Watchlist.ConfigurationPosition.y = Configuration.GetFloat("WatchlistYPos", 200);
-
-            IdentifierDisplay.ConfigurationPosition = new Vector2();
-            IdentifierDisplay.ConfigurationPosition.x = Configuration.GetFloat("IdentifierDisplayXPos", 900);
-            IdentifierDisplay.ConfigurationPosition.y = Configuration.GetFloat("IdentifierDisplayYPos", -240);
-        }
-
-        private void SaveConfiguration()
-        {
-            Configuration.SetFloat("WatchlistXPos", Watchlist.ConfigurationPosition.x);
-            Configuration.SetFloat("WatchlistYPos", Watchlist.ConfigurationPosition.y);
-            Configuration.SetFloat("IdentifierDisplayXPos", IdentifierDisplay.ConfigurationPosition.x);
-            Configuration.SetFloat("IdentifierDisplayYPos", IdentifierDisplay.ConfigurationPosition.y);
             Configuration.Save();
+
+            UnityEngine.Object.Destroy(Scripter.Instance);
         }
 
         /// <summary>
@@ -137,6 +123,7 @@ namespace LenchScripter.Internal
         // Lua environment
         internal NLua.Lua lua;
         internal string scriptFile;
+        internal string scriptCode;
 
         // Lua functions
         internal LuaFunction luaOnUpdate;
@@ -292,16 +279,21 @@ namespace LenchScripter.Internal
         {
             try
             {
-                lua.DoFile(scriptFile);
+                if(scriptFile != null)
+                    lua.DoFile(scriptFile);
+                if (scriptCode != null)
+                    lua.DoString(scriptCode);
                 luaOnUpdate = lua["onUpdate"] as LuaFunction;
                 luaOnFixedUpdate = lua["onFixedUpdate"] as LuaFunction;
                 luaOnKey = lua["onKeyHeld"] as LuaFunction;
                 luaOnKeyDown = lua["onKeyDown"] as LuaFunction;
                 luaOnKeyUp = lua["onKeyUp"] as LuaFunction;
+                ScripterMod.ScriptOptions.SuccessMessage = "Successfully executed code.";
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
+                ScripterMod.ScriptOptions.SuccessMessage = "Error executing code.\nSee console for more info.";
             }
         }
 
@@ -374,39 +366,18 @@ namespace LenchScripter.Internal
                 path = args[0];
             }
 
-            try
-            {
-                string found = FindScript(path);
-                scriptFile = found;
-                return "Script file: " + found;
-            }
-            catch (FileNotFoundException e)
-            {
-                return e.Message;
-            }
-        }
+            ScripterMod.ScriptOptions.CheckForScript();
 
-        /// <summary>
-        /// Attempts to find the script file.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        internal string FindScript(string path)
-        {
-            List<string> possibleFiles = new List<string>()
+            if (ScripterMod.ScriptOptions.ScriptFound)
             {
-                path,
-                string.Concat(Application.dataPath, "/Scripts/", path, ".lua"),
-                string.Concat(Application.dataPath, "/Scripts/", path),
-                string.Concat(path, ".lua")
-            };
-
-            foreach (string p in possibleFiles)
+                scriptFile = ScripterMod.ScriptOptions.ScriptPath;
+                return "Script file: " + ScripterMod.ScriptOptions.ScriptPath;
+            } 
+            else
             {
-                if (File.Exists(p))
-                    return p;
+                return "Script file not found.";
             }
-            throw new FileNotFoundException("Script file not found: " + path);
+
         }
 
         /// <summary>
@@ -432,16 +403,17 @@ namespace LenchScripter.Internal
             lua["besiege"] = wrapper;
 
             // Find script file
-            try
+            if (scriptFile == null)
             {
-                if (scriptFile == null)
-                    scriptFile = FindScript(string.Concat(Application.dataPath, "/Scripts/", Machine.Active().Name, ".lua"));
-            }
-            catch (FileNotFoundException e)
-            {
-                // Don't print exceptions for default machine name
-                if(Machine.Active().Name != "Machine")
-                    Debug.Log(e.Message);
+                ScripterMod.ScriptOptions.CheckForScript();
+                if (ScripterMod.ScriptOptions.ScriptSource == "lua")
+                {
+                    scriptFile = ScripterMod.ScriptOptions.ScriptPath;
+                }
+                if (ScripterMod.ScriptOptions.ScriptSource == "bsg")
+                {
+                    scriptCode = ScripterMod.ScriptOptions.Code;
+                }
             }
         }
 
@@ -505,10 +477,11 @@ namespace LenchScripter.Internal
                 InitializeSimulationBlockHandlers();
 
             // Initialize Lua script
-            if (scriptFile != null)
+            if (scriptFile != null || scriptCode != null)
             {
                 LoadLuaScript();
                 scriptFile = null;
+                scriptCode = null;
             }
 
             // Toggle watchlist visibility
@@ -516,7 +489,13 @@ namespace LenchScripter.Internal
             {
                 ScripterMod.Watchlist.Visible = !ScripterMod.Watchlist.Visible;
             }
-                
+
+            // Toggle options visibility
+            if (Keybindings.Get("Lua Script Options").Pressed())
+            {
+                ScripterMod.ScriptOptions.Visible = !ScripterMod.ScriptOptions.Visible;
+            }
+
             if (!isSimulating)
             {
                 // Show block identifiers
@@ -593,6 +572,9 @@ namespace LenchScripter.Internal
             {
                 if (lua != null) DestroyLuaEnvironment();
             }
+            ScripterMod.ScriptOptions.SuccessMessage = null;
+            ScripterMod.ScriptOptions.NoteMessage = null;
+            ScripterMod.ScriptOptions.ErrorMessage = null;
         }
     }
 

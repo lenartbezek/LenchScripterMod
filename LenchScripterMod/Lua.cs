@@ -81,7 +81,8 @@ namespace LenchScripter
         /// Extension can be omitted.</param>
         public static void LoadScript(string path)
         {
-            Scripter.Instance.scriptFile = Scripter.Instance.FindScript(path);
+            ScripterMod.ScriptOptions.FindScript(path);
+            Scripter.Instance.scriptFile = ScripterMod.ScriptOptions.ScriptPath;
         }
     }
 }

@@ -97,7 +97,7 @@ namespace LenchScripter
         /// <param name="BlockHandler">Type of your Block handler.</param>
         public static void AddBlockHandler(int BlockType, Type BlockHandler)
         {
-            if (BlockHandler.IsSubclassOf(typeof(Block)))
+            if (!BlockHandler.IsSubclassOf(typeof(Block)))
             {
                 throw new ArgumentException(BlockHandler.ToString() + " is not a subclass of Block.");
             }

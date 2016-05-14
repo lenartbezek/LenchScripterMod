@@ -12,7 +12,7 @@ namespace LenchScripter.Internal
         internal Vector2 ConfigurationPosition;
 
         private GenericBlock block;
-        internal bool Visible { get; set; }
+        internal bool Visible { get; set; } = false;
 
         private bool init = false;
 
@@ -39,7 +39,7 @@ namespace LenchScripter.Internal
                 GUI.skin.window.padding.left = 8;
                 GUI.skin.window.padding.right = 8;
                 GUI.skin.window.padding.bottom = 8;
-                windowRect = GUI.Window(windowID, windowRect, DoWindow, "Block Info");
+                windowRect = GUILayout.Window(windowID, windowRect, DoWindow, "Block Info", GUILayout.Height(100));
 
                 ConfigurationPosition.x = windowRect.x < Screen.width/2 ? windowRect.x : windowRect.x - Screen.width;
                 ConfigurationPosition.y = windowRect.y < Screen.height/2 ? windowRect.y : windowRect.y - Screen.height;

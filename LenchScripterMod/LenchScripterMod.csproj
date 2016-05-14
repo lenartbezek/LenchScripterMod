@@ -84,10 +84,13 @@
     <Compile Include="Blocks\Spring.cs" />
     <Compile Include="Blocks\Steering.cs" />
     <Compile Include="Blocks\WaterCannon.cs" />
+    <Compile Include="Internal\Configuration.cs" />
     <Compile Include="Internal\IdentifierDisplay.cs" />
     <Compile Include="Internal\LuaMethodWrapper.cs" />
+    <Compile Include="Internal\MachineData.cs" />
     <Compile Include="Internal\Mark.cs" />
     <Compile Include="Internal\Mod.cs" />
+    <Compile Include="Internal\ScriptOptions.cs" />
     <Compile Include="Internal\TrackedCollider.cs" />
     <Compile Include="Lua.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
