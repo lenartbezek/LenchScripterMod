@@ -37,7 +37,6 @@ namespace LenchScripter.Internal
                 ScripterMod.ScriptOptions.SuccessMessage = null;
                 if (ScripterMod.ScriptOptions.Code != null)
                     ScripterMod.ScriptOptions.NoteMessage = "Code has not been included in .bsg file.";
-                machineInfo.MachineData.EraseCustomData();
             }
         }
     }

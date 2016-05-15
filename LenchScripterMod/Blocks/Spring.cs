@@ -1,4 +1,6 @@
-﻿namespace LenchScripter.Blocks
+﻿using UnityEngine;
+
+namespace LenchScripter.Blocks
 {
     /// <summary>
     /// Handler for the Spring and Rope blocks.
@@ -49,6 +51,7 @@
         /// <param name="rate">Rate of movement.</param>
         public void SetInput(float rate = 1)
         {
+            if (Mathf.Abs(rate) < 0.02) return;
             if (sc.winchMode)
             {
                 if (rate > 0)
@@ -58,32 +61,39 @@
             }
             else
             {
-                sc.Contract(rate);
+                try
+                {
+                    sc.Contract(rate);
+                }
+                catch (System.Exception)
+                {
+                    
+                }
             }
         }
 
         /// <summary>
         /// Contracts the spring.
         /// </summary>
-        public void Contract()
+        public void Contract(float rate = 1)
         {
-            sc.Contract(1);
+            sc.Contract(rate);
         }
 
         /// <summary>
         /// Winds the winch.
         /// </summary>
-        public void Wind()
+        public void Wind(float rate = 1)
         {
-            sc.WinchContract(1);
+            sc.WinchContract(rate);
         }
 
         /// <summary>
         /// Unwinds the winch.
         /// </summary>
-        public void Unwind()
+        public void Unwind(float rate = 1)
         {
-            sc.WinchUnwind(1);
+            sc.WinchUnwind(rate);
         }
     }
 }
