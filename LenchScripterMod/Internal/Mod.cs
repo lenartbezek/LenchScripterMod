@@ -158,6 +158,7 @@ namespace LenchScripter.Internal
             {(int)BlockType.CogMediumPowered, typeof(Cog)},
             {(int)BlockType.Wheel, typeof(Cog)},
             {(int)BlockType.LargeWheel, typeof(Cog)},
+            {(int)BlockType.Drill, typeof(Cog)},
             {(int)BlockType.Decoupler, typeof(Decoupler)},
             {(int)BlockType.Flamethrower, typeof(Flamethrower)},
             {(int)BlockType.FlyingBlock, typeof(FlyingSpiral)},
