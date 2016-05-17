@@ -1,4 +1,6 @@
-﻿namespace LenchScripter.Blocks
+﻿using UnityEngine;
+
+namespace LenchScripter.Blocks
 {
     /// <summary>
     /// Handler for the Rocket block.
@@ -30,6 +32,19 @@
                 return;
             }
             throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+        }
+
+        /// <summary>
+        /// Rocket thrust shouldn't be set to zero.
+        /// </summary>
+        /// <param name="sliderName"></param>
+        /// <param name="value"></param>
+        public override void setSliderValue(string sliderName, float value)
+        {
+            if (sliderName.ToUpper() == "THRUST")
+                while (Mathf.Abs(value) < 0.001f)
+                    value += (Random.value - 0.5f) * 0.02f;
+            base.setSliderValue(sliderName, value);
         }
 
         /// <summary>
