@@ -8,13 +8,13 @@ namespace LenchScripter.Internal
         internal static void Load(MachineInfo machineInfo)
         {
             ScripterMod.ScriptOptions.ScriptName = machineInfo.Name;
-            ScripterMod.ScriptOptions.CheckForScript();
             if (!machineInfo.MachineData.HasKey("LenchScripterMod-Version")) return;
             var version = machineInfo.MachineData.ReadString("LenchScripterMod-Version");
             var code = machineInfo.MachineData.ReadString("LenchScripterMod-Code");
             ScripterMod.ScriptOptions.Code = code;
             ScripterMod.ScriptOptions.BsgHasCode = true;
             ScripterMod.ScriptOptions.SuccessMessage = "Successfully loaded code from .bsg.";
+            ScripterMod.ScriptOptions.CheckForScript();
         }
 
         internal static void Save(MachineInfo machineInfo)

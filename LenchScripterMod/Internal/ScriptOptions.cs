@@ -83,7 +83,7 @@ namespace LenchScripter.Internal
             }
             if (ScriptFound && ScriptSource == "none")
                 ScriptSource = "lua";
-            if (!ScriptFound && ScriptSource == "lua")
+            if (!ScriptFound)
                 ScriptSource = BsgHasCode ? "bsg" : "none";
         }
 
