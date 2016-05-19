@@ -53,13 +53,7 @@ namespace LenchScripter
         {
             if (Scripter.Instance.isSimulating)
             {
-                if (Scripter.Instance.idToSimulationBlock == null)
-                    Scripter.Instance.InitializeSimulationBlockHandlers();
-                foreach (KeyValuePair<string, Block> entry in Scripter.Instance.idToSimulationBlock)
-                {
-                    if (entry.Value.GetBlockBehaviour() == bb) return entry.Value;
-                }
-                throw new BlockNotFoundException("Given BlockBehaviour has no corresponding Block handler.");
+                return Scripter.Instance.GetBlock(bb);
             }
             else
             {

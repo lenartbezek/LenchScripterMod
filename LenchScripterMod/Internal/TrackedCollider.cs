@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using LenchScripter.Blocks;
+using UnityEngine;
 
 namespace LenchScripter.Internal
 {
@@ -8,6 +9,7 @@ namespace LenchScripter.Internal
     public class TrackedCollider
     {
         private Collider c;
+        private Block block;
         private Vector3 offset;
         private Vector3 lastPosition;
 
@@ -16,6 +18,9 @@ namespace LenchScripter.Internal
             c = hitCollider;
             offset = c.transform.InverseTransformPoint(hitPoint);
             lastPosition = getPosition();
+            var bb = c.transform.parent.gameObject.GetComponent<BlockBehaviour>();
+            if (bb != null)
+                block = Scripter.Instance.GetBlock(bb);
         }
 
         /// <summary>
@@ -38,10 +43,36 @@ namespace LenchScripter.Internal
         /// <summary>
         /// Returns true if the collider still exists.
         /// </summary>
-        /// <returns></returns>
         public bool exists()
         {
             return c != null;
+        }
+
+        /// <summary>
+        /// Returns true if the collider represents a building block.
+        /// </summary>
+        public bool isBlock()
+        {
+            return block != null;
+        }
+
+        /// <summary>
+        /// Returns block represented by the collider.
+        /// </summary>
+        /// <returns></returns>
+        public Block getBlock()
+        {
+            return block;
+        }
+
+        /// <summary>
+        /// Returns the name of the object represented by the collider.
+        /// Intended for identifying game objects.
+        /// </summary>
+        /// <returns></returns>
+        public string getName()
+        {
+            return c.transform.parent.name;
         }
 
         /// <summary>

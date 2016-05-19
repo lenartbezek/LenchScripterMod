@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using NLua.Exceptions;
 using LenchScripter.Blocks;
 
 namespace LenchScripter.Internal
@@ -402,7 +401,24 @@ namespace LenchScripter.Internal
             {
                 return hit.point;
             }
-            throw new LuaException("Your raycast does not intersect with a collider.");
+            throw new Exception("Your raycast does not intersect with a collider.");
+        }
+
+        /// <summary>
+        /// Casts ray defined by origin and direction vectors.
+        /// </summary>
+        /// <param name="origin">Origin vector of the raycast.</param>
+        /// <param name="direction">Direction vector of the raycast.</param>
+        /// <returns>Returns position of the hit.</returns>
+        public Vector3 getRaycastHit(Vector3 origin, Vector3 direction)
+        {
+            RaycastHit hit;
+            Ray ray = new Ray(origin, direction.normalized);
+            if (Physics.Raycast(ray, out hit))
+            {
+                return hit.point;
+            }
+            throw new Exception("Your raycast does not intersect with a collider.");
         }
 
         /// <summary>
@@ -418,7 +434,24 @@ namespace LenchScripter.Internal
             {
                 return new TrackedCollider(hit.collider, hit.point);
             }
-            throw new LuaException("Your raycast does not intersect with a collider.");
+            throw new Exception("Your raycast does not intersect with a collider.");
+        }
+
+        /// <summary>
+        /// Casts ray defined by origin and direction vectors.
+        /// </summary>
+        /// <param name="origin">Origin vector of the raycast.</param>
+        /// <param name="direction">Direction vector of the raycast.</param>
+        /// <returns>Returns TrackedCollider object of the hit.</returns>
+        public TrackedCollider getRaycastCollider(Vector3 origin, Vector3 direction)
+        {
+            RaycastHit hit;
+            Ray ray = new Ray(origin, direction.normalized);
+            if (Physics.Raycast(ray, out hit))
+            {
+                return new TrackedCollider(hit.collider, hit.point);
+            }
+            throw new Exception("Your raycast does not intersect with a collider.");
         }
 
         /// <summary>

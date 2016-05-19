@@ -219,6 +219,18 @@ namespace LenchScripter.Internal
         }
 
         /// <summary>
+        /// Returns Block handler for a given BlockBehaviour.
+        /// </summary>
+        /// <param name="bb"></param>
+        /// <returns></returns>
+        internal Block GetBlock(BlockBehaviour bb)
+        {
+            foreach (KeyValuePair<Guid, Block> entry in guidToSimulationBlock)
+                if (entry.Value.GetBlockBehaviour().Equals(bb)) return entry.Value;
+            throw new BlockNotFoundException("Given BlockBehaviour has no corresponding Block handler.");
+        }
+
+        /// <summary>
         /// Finds blockId string in dictionary of simulation blocks.
         /// </summary>
         /// <param name="blockId">Block's sequential identifier.</param>
