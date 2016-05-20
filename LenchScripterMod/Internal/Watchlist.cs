@@ -350,7 +350,7 @@ namespace LenchScripter.Internal
         {
             if (global && Scripter.Instance.python != null)
             {
-                Scripter.Instance.python.Engine.Execute(name + " = " + value);
+                Scripter.Instance.python.Evaluate<object>(name + " = " + value);
             }
         }
 

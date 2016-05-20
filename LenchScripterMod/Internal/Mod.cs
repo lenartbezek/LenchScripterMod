@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using spaar.ModLoader;
 using UnityEngine;
-using LenchScripter.Blocks;
 
 namespace LenchScripter.Internal
 {
@@ -22,9 +21,6 @@ namespace LenchScripter.Internal
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
 
-        internal static Watchlist Watchlist;
-        internal static IdentifierDisplay IdentifierDisplay;
-        internal static ScriptOptions ScriptOptions;
         internal static Type blockScriptType;
 
         /// <summary>
@@ -35,24 +31,20 @@ namespace LenchScripter.Internal
         {
             UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
             Game.OnSimulationToggle += Scripter.Instance.OnSimulationToggle;
-            Game.OnBlockPlaced += (Transform block) => Scripter.Instance.rebuildDict = true;
-            Game.OnBlockRemoved += () => Scripter.Instance.rebuildDict = true;
+            Game.OnBlockPlaced += (Transform block) => BlockHandlers.rebuildDict = true;
+            Game.OnBlockRemoved += () => BlockHandlers.rebuildDict = true;
             XmlSaver.OnSave += MachineData.Save;
             XmlLoader.OnLoad += MachineData.Load;
-
-            Watchlist = Scripter.Instance.gameObject.AddComponent<Watchlist>();
-            IdentifierDisplay = Scripter.Instance.gameObject.AddComponent<IdentifierDisplay>();
-            ScriptOptions = Scripter.Instance.gameObject.AddComponent<ScriptOptions>();
 
             LoadBlockLoaderAssembly();
 
             Configuration.Load();
 
-            Keybindings.AddKeybinding("Show Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
+            Keybindings.AddKeybinding("Show Block ID", new Key(KeyCode.None, KeyCode.LeftShift));
             Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
             Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
 
-            Commands.RegisterCommand("py", Scripter.Instance.InteractiveCommand, "Executes Python expression.");
+            Commands.RegisterCommand("python", Scripter.Instance.InteractiveCommand, "Executes Python expression.");
 
             SettingsMenu.RegisterSettingsButton("SCRIPT", Scripter.Instance.RunScriptSettingToggle, true, 12);
         }
@@ -64,8 +56,8 @@ namespace LenchScripter.Internal
         public override void OnUnload()
         {
             Game.OnSimulationToggle -= Scripter.Instance.OnSimulationToggle;
-            Game.OnBlockPlaced -= (Transform block) => Scripter.Instance.rebuildDict = true;
-            Game.OnBlockRemoved -= () => Scripter.Instance.rebuildDict = true;
+            Game.OnBlockPlaced -= (Transform block) => BlockHandlers.rebuildDict = true;
+            Game.OnBlockRemoved -= () => BlockHandlers.rebuildDict = true;
             XmlSaver.OnSave -= MachineData.Save;
             XmlLoader.OnLoad -= MachineData.Load;
 
@@ -115,6 +107,10 @@ namespace LenchScripter.Internal
         /// </summary>
         public override string Name { get; } = "Lench Scripter";
 
+        internal Watchlist Watchlist;
+        internal IdentifierDisplay IdentifierDisplay;
+        internal ScriptOptions ScriptOptions;
+
         // Python environment
         internal PythonEnvironment python;
         internal string scriptFile;
@@ -122,174 +118,25 @@ namespace LenchScripter.Internal
 
         internal bool isSimulating;
         internal bool enableScript = true;
-        internal bool handlersInitialised = false;
 
         // Hovered block for ID dumping
         private GenericBlock hoveredBlock;
 
-        // Machine changed - flag for rebuild
-        internal bool rebuildDict = false;
-
-        // Map: Building Block -> ID
-        internal Dictionary<GenericBlock, string> buildingBlocks;
-
-        // Map: GUID -> Simulation Block
-        internal Dictionary<Guid, Block> guidToSimulationBlock;
-
-        // Map: ID -> Simulation Block
-        internal Dictionary<string, Block> idToSimulationBlock;
-
-        // Map: BlockType -> BlockHandler type
-        internal Dictionary<int, Type> HandlerTypes = new Dictionary<int, Type>
-        {
-            {(int)BlockType.Cannon, typeof(Cannon)},
-            {(int)BlockType.ShrapnelCannon, typeof(Cannon)},
-            {(int)BlockType.CogMediumPowered, typeof(Cog)},
-            {(int)BlockType.Wheel, typeof(Cog)},
-            {(int)BlockType.LargeWheel, typeof(Cog)},
-            {(int)BlockType.Drill, typeof(Cog)},
-            {(int)BlockType.Decoupler, typeof(Decoupler)},
-            {(int)BlockType.Flamethrower, typeof(Flamethrower)},
-            {(int)BlockType.FlyingBlock, typeof(FlyingSpiral)},
-            {(int)BlockType.Grabber, typeof(Grabber)},
-            {(int)BlockType.Grenade, typeof(Grenade)},
-            {(int)BlockType.Piston, typeof(Piston)},
-            {59, typeof(Rocket) },
-            {(int)BlockType.Spring, typeof(Spring)},
-            {(int)BlockType.RopeWinch, typeof(Spring)},
-            {(int)BlockType.SteeringHinge, typeof(Steering)},
-            {(int)BlockType.SteeringBlock, typeof(Steering)},
-            {(int)BlockType.WaterCannon, typeof(WaterCannon)},
-            {410, typeof(Automatron)}
-        };
-
-        /// <summary>
-        /// Events invoked on updates.
-        /// </summary>
-        internal delegate void UpdateEventHandler();
-        internal event UpdateEventHandler OnUpdate;
-
-        internal delegate void LateUpdateEventHandler();
-        internal event LateUpdateEventHandler OnLateUpdate;
-
-        internal delegate void FixedUpdateEventHandler();
-        internal event FixedUpdateEventHandler OnFixedUpdate;
-
-        /// <summary>
-        /// Event invoked when simulation block handlers are initialised.
-        /// </summary>
-        public delegate void InitialisationEventHandler();
-
-        /// <summary>
-        /// Initializes and returns new Block object.
-        /// </summary>
-        /// <param name="bb">BlockBehaviour object.</param>
-        /// <returns>LenchScripterMod.Block object.</returns>
-        private Block CreateBlock(BlockBehaviour bb)
-        {
-            Block block;
-            if (HandlerTypes.ContainsKey(bb.GetBlockID()))
-                block = (Block)Activator.CreateInstance(HandlerTypes[bb.GetBlockID()], new object[] { bb });
-            else
-                block = new Block(bb);
-            return block;
-        }
-
-        /// <summary>
-        /// Finds blockGuid string in dictionary of simulation blocks.
-        /// </summary>
-        /// <param name="blockGuid">Block's GUID.</param>
-        /// <returns>Returns reference to blocks Block handler object.</returns>
-        internal Block GetBlock(Guid blockGuid)
-        {
-            if (guidToSimulationBlock.ContainsKey(blockGuid))
-                return guidToSimulationBlock[blockGuid];
-            throw new BlockNotFoundException("Block " + blockGuid + " not found.");
-        }
-
-        /// <summary>
-        /// Returns Block handler for a given BlockBehaviour.
-        /// </summary>
-        /// <param name="bb"></param>
-        /// <returns></returns>
-        internal Block GetBlock(BlockBehaviour bb)
-        {
-            foreach (KeyValuePair<Guid, Block> entry in guidToSimulationBlock)
-                if (entry.Value.GetBlockBehaviour().Equals(bb)) return entry.Value;
-            throw new BlockNotFoundException("Given BlockBehaviour has no corresponding Block handler.");
-        }
-
-        /// <summary>
-        /// Finds blockId string in dictionary of simulation blocks.
-        /// </summary>
-        /// <param name="blockId">Block's sequential identifier.</param>
-        /// <returns>Returns reference to blocks Block handler object.</returns>
-        internal Block GetBlock(string blockId)
-        {
-            if (idToSimulationBlock.ContainsKey(blockId.ToUpper()))
-                return idToSimulationBlock[blockId.ToUpper()];
-            throw new BlockNotFoundException("Block " + blockId + " not found.");
-        }
-
-        /// <summary>
-        /// Populates dictionary with references to building blocks.
-        /// Used for dumping block IDs while building.
-        /// Called at first DumpBlockID after machine change.
-        /// </summary>
-        internal void InitializeBuildingBlockIDs()
-        {
-            var typeCount = new Dictionary<string, int>();
-            buildingBlocks = new Dictionary<GenericBlock, string>();
-            for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
-            {
-                GenericBlock block = Machine.Active().BuildingBlocks[i].GetComponent<GenericBlock>();
-                string name = Machine.Active().BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
-                typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
-                buildingBlocks[block] = name + " " + typeCount[name];
-            }
-            rebuildDict = false;
-        }
-
-        /// <summary>
-        /// Populates dictionary with references to simulation blocks.
-        /// Used for accessing blocks with GetBlock(blockId) while simulating.
-        /// Called at the start of simulation.
-        /// Invokes OnInitialisation event.
-        /// </summary>
-        internal void InitializeSimulationBlockHandlers()
-        {
-            idToSimulationBlock = new Dictionary<string, Block>();
-            guidToSimulationBlock = new Dictionary<Guid, Block>();
-            var typeCount = new Dictionary<string, int>();
-            for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
-            {
-                string name = Machine.Active().BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
-                typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
-                string id = name + " " + typeCount[name];
-                Guid guid = Machine.Active().BuildingBlocks[i].Guid;
-                Block b = CreateBlock(Machine.Active().Blocks[i]);
-                idToSimulationBlock[id] = b;
-                guidToSimulationBlock[guid] = b;
-            }
-
-            handlersInitialised = true;
-            BlockHandlers.OnInitialisation?.Invoke();
-        }
-
         private void LoadScript()
         {
-            try
+            bool success = true;
+
+            if(scriptFile != null)
+                success = python.LoadScript(scriptFile);
+            else if (scriptCode != null)
+                success = python.LoadCode(scriptCode);
+
+            if (success)
+                ScriptOptions.SuccessMessage = "Successfully compiled code.";
+            else
             {
-                if(scriptFile != null)
-                    python.LoadScript(scriptFile);
-                if (scriptCode != null)
-                    python.LoadCode(scriptCode);
-                ScripterMod.ScriptOptions.SuccessMessage = "Successfully executed code.";
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                ScripterMod.ScriptOptions.ErrorMessage = "Error executing code.\nSee console for more info.";
+                ScriptOptions.ErrorMessage = "Error while compiling code.\nSee console (Ctrl+K) for more info.";
+                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n"+python.LastException);
             }
         }
 
@@ -315,7 +162,7 @@ namespace LenchScripter.Internal
         internal string InteractiveCommand(string[] args, IDictionary<string, string> namedArgs)
         {
             if (args.Length == 0)
-                return "Executes a Lua expression.";
+                return "Executes a Python expression.";
             if (!isSimulating || python == null)
                 return "Can only be called while simulating.";
 
@@ -323,7 +170,7 @@ namespace LenchScripter.Internal
             for (int i = 0; i < args.Length; i++)
                 expression += args[i] + " ";
 
-            object result = python.Engine.Execute(expression);
+            object result = python.Evaluate<object>(expression);
 
             if (result != null)
             {
@@ -338,20 +185,19 @@ namespace LenchScripter.Internal
         /// </summary>
         private void CreateScriptingEnvironment()
         {
-            idToSimulationBlock = null;
             python = new PythonEnvironment();
 
             // Find script file
             if (scriptFile == null)
             {
-                ScripterMod.ScriptOptions.CheckForScript();
-                if (ScripterMod.ScriptOptions.ScriptSource == "py")
+                ScriptOptions.CheckForScript();
+                if (ScriptOptions.ScriptSource == "py")
                 {
-                    scriptFile = ScripterMod.ScriptOptions.ScriptPath;
+                    scriptFile = ScriptOptions.ScriptPath;
                 }
-                if (ScripterMod.ScriptOptions.ScriptSource == "bsg")
+                if (ScriptOptions.ScriptSource == "bsg")
                 {
-                    scriptCode = ScripterMod.ScriptOptions.Code;
+                    scriptCode = ScriptOptions.Code;
                 }
             }
         }
@@ -362,13 +208,11 @@ namespace LenchScripter.Internal
         private void DestroyScriptingEnvironment()
         {
             Functions.ClearMarks(false);
-            idToSimulationBlock = null;
             python = null;
         }
 
         /// <summary>
-        /// Finds hovered block in buildingBlocks dictionary and dumps its ID string
-        /// if LeftShift is pressed.
+        /// Finds hovered block in buildingBlocks dictionary and shows identifier display.
         /// </summary>
         private void ShowBlockIdentifiers()
         {
@@ -380,21 +224,14 @@ namespace LenchScripter.Internal
 
             hoveredBlock = Game.AddPiece.HoveredBlock;
 
-            if (rebuildDict || buildingBlocks == null)
-                InitializeBuildingBlockIDs();
+            IdentifierDisplay.ShowBlock(hoveredBlock);
+        }
 
-            string key;
-            try
-            {
-                key = buildingBlocks[hoveredBlock];
-            }
-            catch (KeyNotFoundException)
-            {
-                InitializeBuildingBlockIDs();
-                key = buildingBlocks[hoveredBlock];
-            }
-            string guid = hoveredBlock.GetComponent<BlockBehaviour>().Guid.ToString();
-            ScripterMod.IdentifierDisplay.ShowBlock(hoveredBlock);
+        private void Start()
+        {
+            Watchlist = gameObject.AddComponent<Watchlist>();
+            IdentifierDisplay = gameObject.AddComponent<IdentifierDisplay>();
+            ScriptOptions = gameObject.AddComponent<ScriptOptions>();
         }
 
         /// <summary>
@@ -403,12 +240,12 @@ namespace LenchScripter.Internal
         /// </summary>
         private void Update()
         {
-            // Initialize 
-            if (isSimulating && !handlersInitialised)
-                InitializeSimulationBlockHandlers();
+            // Initialize block handlers
+            if (isSimulating && !BlockHandlers.Initialised)
+                BlockHandlers.InitializeBlockHandlers();
 
             // Execute code on first call
-            if (scriptFile != null || scriptCode != null)
+            if (enableScript && (scriptFile != null || scriptCode != null))
             {
                 LoadScript();
                 scriptFile = null;
@@ -418,19 +255,19 @@ namespace LenchScripter.Internal
             // Toggle watchlist visibility
             if (Keybindings.Get("Watchlist").Pressed())
             {
-                ScripterMod.Watchlist.Visible = !ScripterMod.Watchlist.Visible;
+                Watchlist.Visible = !Watchlist.Visible;
             }
 
             // Toggle options visibility
             if (Keybindings.Get("Script Options").Pressed())
             {
-                ScripterMod.ScriptOptions.Visible = !ScripterMod.ScriptOptions.Visible;
+                ScriptOptions.Visible = !ScriptOptions.Visible;
             }
 
             if (!isSimulating)
             {
                 // Show block identifiers
-                if (Keybindings.Get("Show Blocks ID").IsDown())
+                if (Keybindings.Get("Show Block ID").IsDown())
                 {
                     ShowBlockIdentifiers();
                 }
@@ -439,16 +276,21 @@ namespace LenchScripter.Internal
             if (!isSimulating) return;
 
             // Call script update.
-            python?.Update?.Invoke();
+            var success = python?.CallUpdate();
+            if (success.HasValue && !success.Value)
+            {
+                ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
+                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastException);
+            }
 
             // Call OnUpdate event for Block handlers.
-            OnUpdate?.Invoke();
+            BlockHandlers.CallUpdate();
         }
 
         private void LateUpdate()
         {
             // Call OnLateUpdate event for Block handlers.
-            OnLateUpdate?.Invoke();
+            BlockHandlers.CallLateUpdate();
         }
 
         /// <summary>
@@ -459,10 +301,15 @@ namespace LenchScripter.Internal
             if (!isSimulating) return;
 
             // Call script update;
-            python?.FixedUpdate?.Invoke();
+            var success = python?.CallFixedUpdate();
+            if (success.HasValue && !success.Value)
+            {
+                ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
+                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastException);
+            }
 
             // Call OnLateUpdate event for Block handlers.
-            OnFixedUpdate?.Invoke();
+            BlockHandlers.CallFixedUpdate();
         }
 
         /// <summary>
@@ -471,7 +318,7 @@ namespace LenchScripter.Internal
         /// <param name="isSimulating"></param>
         internal void OnSimulationToggle(bool isSimulating)
         {
-            handlersInitialised = false;
+            BlockHandlers.DestroyBlockHandlers();
             this.isSimulating = isSimulating;
             if (isSimulating)
             {
@@ -481,9 +328,9 @@ namespace LenchScripter.Internal
             {
                 DestroyScriptingEnvironment();
             }
-            ScripterMod.ScriptOptions.SuccessMessage = null;
-            ScripterMod.ScriptOptions.NoteMessage = null;
-            ScripterMod.ScriptOptions.ErrorMessage = null;
+            ScriptOptions.SuccessMessage = null;
+            ScriptOptions.NoteMessage = null;
+            ScriptOptions.ErrorMessage = null;
         }
     }
 

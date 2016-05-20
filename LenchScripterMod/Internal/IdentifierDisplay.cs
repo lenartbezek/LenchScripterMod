@@ -83,10 +83,8 @@ namespace LenchScripter.Internal
 
             try
             {
-
-                sequential_id = Scripter.Instance.buildingBlocks[block];
+                sequential_id = BlockHandlers.GetID(block);
                 guid = block.Guid.ToString();
-
             }
             catch (KeyNotFoundException)
             {

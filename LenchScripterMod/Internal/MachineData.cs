@@ -7,36 +7,36 @@ namespace LenchScripter.Internal
 
         internal static void Load(MachineInfo machineInfo)
         {
-            ScripterMod.ScriptOptions.ScriptName = machineInfo.Name;
+            Scripter.Instance.ScriptOptions.ScriptName = machineInfo.Name;
             if (!machineInfo.MachineData.HasKey("LenchScripterMod-Version")) return;
             var version = machineInfo.MachineData.ReadString("LenchScripterMod-Version");
             var code = machineInfo.MachineData.ReadString("LenchScripterMod-Code");
-            ScripterMod.ScriptOptions.Code = code;
-            ScripterMod.ScriptOptions.BsgHasCode = true;
-            ScripterMod.ScriptOptions.SuccessMessage = "Successfully loaded code from .bsg.";
-            ScripterMod.ScriptOptions.CheckForScript();
+            Scripter.Instance.ScriptOptions.Code = code;
+            Scripter.Instance.ScriptOptions.BsgHasCode = true;
+            Scripter.Instance.ScriptOptions.SuccessMessage = "Successfully loaded code from .bsg.";
+            Scripter.Instance.ScriptOptions.CheckForScript();
         }
 
         internal static void Save(MachineInfo machineInfo)
         {
-            ScripterMod.ScriptOptions.ScriptName = machineInfo.Name;
-            ScripterMod.ScriptOptions.CheckForScript();
-            if (ScripterMod.ScriptOptions.SaveToBsg)
+            Scripter.Instance.ScriptOptions.ScriptName = machineInfo.Name;
+            Scripter.Instance.ScriptOptions.CheckForScript();
+            if (Scripter.Instance.ScriptOptions.SaveToBsg)
             {
-                ScripterMod.ScriptOptions.CheckForScript();
-                var code = File.ReadAllText(ScripterMod.ScriptOptions.ScriptPath);
+                Scripter.Instance.ScriptOptions.CheckForScript();
+                var code = File.ReadAllText(Scripter.Instance.ScriptOptions.ScriptPath);
                 machineInfo.MachineData.Write("LenchScripterMod-Version", "v2.0.0");
                 machineInfo.MachineData.Write("LenchScripterMod-Code", code);
-                ScripterMod.ScriptOptions.Code = code;
-                ScripterMod.ScriptOptions.BsgHasCode = true;
-                ScripterMod.ScriptOptions.SuccessMessage = "Successfully saved code to .bsg.";
-                ScripterMod.ScriptOptions.NoteMessage = null;
+                Scripter.Instance.ScriptOptions.Code = code;
+                Scripter.Instance.ScriptOptions.BsgHasCode = true;
+                Scripter.Instance.ScriptOptions.SuccessMessage = "Successfully saved code to .bsg.";
+                Scripter.Instance.ScriptOptions.NoteMessage = null;
             }
             else
             {
-                ScripterMod.ScriptOptions.SuccessMessage = null;
-                if (ScripterMod.ScriptOptions.Code != null)
-                    ScripterMod.ScriptOptions.NoteMessage = "Code has not been included in .bsg file.";
+                Scripter.Instance.ScriptOptions.SuccessMessage = null;
+                if (Scripter.Instance.ScriptOptions.Code != null)
+                    Scripter.Instance.ScriptOptions.NoteMessage = "Code has not been saved to .bsg file.";
             }
         }
     }

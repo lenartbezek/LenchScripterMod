@@ -28,6 +28,15 @@ namespace LenchScripter
         }
   
         /// <summary>
+        /// Logs message into console.
+        /// </summary>
+        /// <param name="message"></param>
+        public static void Log(object message)
+        {
+            Debug.Log(message.ToString());
+        }
+
+        /// <summary>
         /// Returns the block's handler.
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
@@ -36,23 +45,30 @@ namespace LenchScripter
         {
             try
             {
-                return Scripter.Instance.GetBlock(new Guid(blockId));
+                return BlockHandlers.GetBlock(new Guid(blockId));
             }
             catch (FormatException)
             {
-                return Scripter.Instance.GetBlock(blockId);
+                return BlockHandlers.GetBlock(blockId);
             }
         }
 
         /// <summary>
-        /// Returns true if the block has RigidBody.
+        /// Returns true if the block exists and has RigidBody.
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>Boolean value.</returns>
         public static bool Exists(string blockId)
         {
-            Block b = GetBlock(blockId);
-            return b.Exists;
+            try
+            {
+                Block b = GetBlock(blockId);
+                return b.Exists;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -72,7 +88,7 @@ namespace LenchScripter
         /// <param name="name">Name of the global variable.</param>
         public static void Watch(string name)
         {
-            ScripterMod.Watchlist.AddToWatchlist(name, null, true);
+            Scripter.Instance.Watchlist.AddToWatchlist(name, null, true);
         }
 
         /// <summary>
@@ -80,9 +96,9 @@ namespace LenchScripter
         /// </summary>
         /// <param name="name">Display name of the variable.</param>
         /// <param name="value">Variable value to be reported.</param>
-        public static void Watch(string name, System.Object value)
+        public static void Watch(string name, object value)
         {
-            ScripterMod.Watchlist.AddToWatchlist(name, value, false);
+            Scripter.Instance.Watchlist.AddToWatchlist(name, value, false);
         }
 
         /// <summary>
@@ -90,7 +106,7 @@ namespace LenchScripter
         /// </summary>
         public static void ClearWatchlist()
         {
-            ScripterMod.Watchlist.ClearWatchlist();
+            Scripter.Instance.Watchlist.ClearWatchlist();
         }
 
         /// <summary>
@@ -110,261 +126,28 @@ namespace LenchScripter
         }
 
         /// <summary>
-        /// Invokes the block's action.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="actionName">Display name of the action.</param>
-        public static void Action(string blockId, string actionName)
-        {
-            Block b = GetBlock(blockId);
-            b.Action(actionName);
-        }
-
-        /// <summary>
-        /// Sets the toggle mode of the block, specified by the toggle display name.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="toggleName">Toggle property to be set.</param>
-        /// <param name="value">Boolean value to be set.</param>
-        public static void SetToggleMode(string blockId, string toggleName, bool value)
-        {
-            Block b = GetBlock(blockId);
-            b.SetToggleMode(toggleName, value);
-        }
-
-        /// <summary>
-        /// Sets the slider value of the block, specified by the slider display name.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="sliderName">Slider value to be set.</param>
-        /// <param name="value">Float value to be set.</param>
-        public static void SetSliderValue(string blockId, string sliderName, float value)
-        {
-            Block b = GetBlock(blockId);
-            b.SetSliderValue(sliderName, value);
-        }
-
-        /// <summary>
-        /// Returns the toggle mode of the block, specified by the toggle display name.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="toggleName">Toggle property to be returned.</param>
-        /// <returns>Boolean value.</returns>
-        public static bool GetToggleMode(string blockId, string toggleName)
-        {
-            Block b = GetBlock(blockId);
-            return b.GetToggleMode(toggleName);
-        }
-
-        /// <summary>
-        /// Returns the slider value of the block, specified by the slider display name.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="sliderName">Toggle property to be returned.</param>
-        /// <returns>Float value.</returns>
-        public static float GetSliderValue(string blockId, string sliderName)
-        {
-            Block b = GetBlock(blockId);
-            return b.GetSliderValue(sliderName);
-        }
-
-        /// <summary>
-        /// Returns the key mapper's minimum slider value, specified by the slider display name.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="sliderName">Minimum slider value to be returned.</param>
-        /// <returns>Float value.</returns>
-        public static float GetSliderMin(string blockId, string sliderName)
-        {
-            Block b = GetBlock(blockId);
-            return b.GetSliderMin(sliderName);
-        }
-
-        /// <summary>
-        /// Returns the key mapper's maximum slider value, specified by the slider display name.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="sliderName">Maximum slider value to be returned.</param>
-        /// <returns>Float value.</returns>
-        public static float GetSliderMax(string blockId, string sliderName)
-        {
-            Block b = GetBlock(blockId);
-            return b.GetSliderMax(sliderName);
-        }
-
-        /// <summary>
-        /// Adds key to the specified key bind.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="keyName">Key bind to add the key to.</param>
-        /// <param name="key">Key value to be added.</param>
-        public static void AddKey(string blockId, string keyName, KeyCode key)
-        {
-            Block b = GetBlock(blockId);
-            b.AddKey(keyName, key);
-        }
-
-        /// <summary>
-        /// Replaces the first key bound to the specified key bind.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="keyName">Key bind to be replaced.</param>
-        /// <param name="key">Key value to be replaced with.</param>
-        public static void ReplaceKey(string blockId, string keyName, KeyCode key)
-        {
-            Block b = GetBlock(blockId);
-            b.ReplaceKey(keyName, key);
-        }
-
-        /// <summary>
-        /// Returns the first key value bound of the specified key bind.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="keyName">Key bind to be returned.</param>
-        /// <returns>Integer value.</returns>
-        public static KeyCode GetKey(string blockId, string keyName)
-        {
-            Block b = GetBlock(blockId);
-            return b.GetKey(keyName);
-        }
-
-        /// <summary>
-        /// Clears all keys of the specified key bind.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <param name="keyName"></param>
-        public static void ClearKeys(string blockId, string keyName)
-        {
-            Block b = GetBlock(blockId);
-            b.ClearKeys(keyName);
-        }
-
-        /// <summary>
-        /// Returns the block's forward vector.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
-        public static Vector3 GetForward(string blockId = "STARTING BLOCK 1")
-        {
-            Block b = GetBlock(blockId);
-            return b.Forward;
-        }
-
-        /// <summary>
-        /// Returns the block's up vector.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
-        public static Vector3 GetUp(string blockId = "STARTING BLOCK 1")
-        {
-            Block b = GetBlock(blockId);
-            return b.Up;
-        }
-
-        /// <summary>
-        /// Returns the block's right vector.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
-        public static Vector3 getRight(string blockId = "STARTING BLOCK 1")
-        {
-            Block b = GetBlock(blockId);
-            return b.Right;
-        }
-
-        /// <summary>
-        /// Returns the block's position vector.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
-        public static Vector3 GetPosition(string blockId = "STARTING BLOCK 1")
-        {
-            Block b = GetBlock(blockId);
-            return b.Position;
-        }
-
-        /// <summary>
-        /// Returns the block's velocity vector.
-        /// Throws NoRigidBodyException if the block has no RigidBody.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
-        public static Vector3 GetVelocity(string blockId = "STARTING BLOCK 1")
-        {
-            Block b = GetBlock(blockId);
-            return b.Velocity;
-        }
-
-        /// <summary>
-        /// Returns the block's mass.
-        /// Throws NoRigidBodyException if the block has no RigidBody.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
-        public static float GetMass(string blockId = "STARTING BLOCK 1")
-        {
-            Block b = GetBlock(blockId);
-            return b.Mass;
-        }
-
-        /// <summary>
-        /// Returns the center of mass of the block, relative to the block's position.
-        /// Throws NoRigidBodyException if the block has no RigidBody.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
-        public static Vector3 GetCenterOfMass(string blockId = "STARTING BLOCK 1")
-        {
-            Block b = GetBlock(blockId);
-            return b.CenterOfMass;
-        }
-
-        /// <summary>
         /// Returns the mass of the machine.
         /// </summary>
         /// <returns>Float value representing total mass.</returns>
-        public static float GetMachineMass()
-        {
-            return Machine.Active().Mass;
-        }
+        public static float MachineMass { get { return Machine.Active().Mass; } }
 
         /// <summary>
         /// Returns the center of mass of the machine in the world.
         /// </summary>
         /// <returns>Vector3 position of world COM.</returns>
-        public static Vector3 GetMachineCenterOfMass()
+        public static Vector3 MachineCenterOfMass
         {
-            Vector3 center = new Vector3(0, 0, 0);
-            for (int i = 0; i < Machine.Active().Blocks.Count; i++)
+            get
             {
-                Rigidbody body = Machine.Active().Blocks[i].GetComponent<Rigidbody>();
-                if(body != null)
-                    center += body.worldCenterOfMass * body.mass;
+                Vector3 center = Vector3.zero;
+                for (int i = 0; i < Machine.Active().Blocks.Count; i++)
+                {
+                    Rigidbody body = Machine.Active().Blocks[i].GetComponent<Rigidbody>();
+                    if (body != null)
+                        center += body.worldCenterOfMass * body.mass;
+                }
+                return center / Machine.Active().Mass;
             }
-            return center / Machine.Active().Mass;
-        }
-
-        /// <summary>
-        /// Returns the block's rotation in the form of it's Euler angles.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
-        public static Vector3 GetEulerAngles(string blockId = "STARTING BLOCK 1")
-        {
-            Block b = GetBlock(blockId);
-            return b.EulerAngles;
-        }
-
-        /// <summary>
-        /// Returns the block's angular velocity.
-        /// Throws NoRigidBodyException if the block has no RigidBody.
-        /// </summary>
-        /// <param name="blockId">Block identifier string.</param>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
-        public static Vector3 GetAngularVelocity(string blockId = "STARTING BLOCK 1")
-        {
-            Block b = GetBlock(blockId);
-            return b.AngularVelocity;
         }
 
         /// <summary>

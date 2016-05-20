@@ -73,9 +73,9 @@ namespace LenchScripter.Blocks
             if (ScripterMod.blockScriptType != null)
                 bs = bb.GetComponent(ScripterMod.blockScriptType) as MonoBehaviour;
 
-            Scripter.Instance.OnUpdate += Update;
-            Scripter.Instance.OnUpdate += LateUpdate;
-            Scripter.Instance.OnUpdate += FixedUpdate;
+            BlockHandlers.OnUpdate += Update;
+            BlockHandlers.OnLateUpdate += LateUpdate;
+            BlockHandlers.OnFixedUpdate += FixedUpdate;
         }
 
         /// <summary>
@@ -457,37 +457,5 @@ namespace LenchScripter.Blocks
                 throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
             }
         }
-    }
-
-    /// <summary>
-    /// Exception to be thrown when a block is not found.
-    /// </summary>
-    public class BlockNotFoundException : Exception
-    {
-        public BlockNotFoundException(string message) : base(message) { }
-    }
-
-    /// <summary>
-    /// Exception to be thrown when trying to call an action that does not exist for the current block.
-    /// </summary>
-    public class ActionNotFoundException : Exception
-    {
-        public ActionNotFoundException(string message) : base(message) { }
-    }
-
-    /// <summary>
-    /// Exception to be thrown when referencing the block's property that does not exist for the current block.
-    /// </summary>
-    public class PropertyNotFoundException : Exception
-    {
-        public PropertyNotFoundException(string message) : base(message) { }
-    }
-
-    /// <summary>
-    /// Exception to be thrown when trying to access the block's rigid body if it does not have one.
-    /// </summary>
-    public class NoRigidBodyException : Exception
-    {
-        public NoRigidBodyException(string message) : base(message) { }
     }
 }

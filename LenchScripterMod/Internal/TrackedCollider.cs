@@ -17,10 +17,10 @@ namespace LenchScripter.Internal
         {
             c = hitCollider;
             offset = c.transform.InverseTransformPoint(hitPoint);
-            lastPosition = getPosition();
+            lastPosition = Position;
             var bb = c.transform.parent.gameObject.GetComponent<BlockBehaviour>();
             if (bb != null)
-                block = Scripter.Instance.GetBlock(bb);
+                block = BlockHandlers.GetBlock(bb);
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace LenchScripter.Internal
         /// <param name="tc"></param>
         static public implicit operator Vector3(TrackedCollider tc)
         {
-            return tc.getPosition();
+            return tc.Position;
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace LenchScripter.Internal
         /// </summary>
         public override string ToString()
         {
-            return getPosition().ToString();
+            return Position.ToString();
         }
 
         /// <summary>
@@ -76,17 +76,20 @@ namespace LenchScripter.Internal
         }
 
         /// <summary>
-        /// Returns the position of the tracked collider with it's offset.
+        /// Position of the tracked collider with it's offset.
         /// If the collider no longer exists, returns it's last position.
         /// </summary>
         /// <returns>Vector3 position.</returns>
-        public Vector3 getPosition()
+        public Vector3 Position
         {
-            if (Exists)
+            get
             {
-                lastPosition = c.transform.TransformPoint(offset);
+                if (Exists)
+                {
+                    lastPosition = c.transform.TransformPoint(offset);
+                }
+                return lastPosition;
             }
-            return lastPosition;
         }
     }
 }

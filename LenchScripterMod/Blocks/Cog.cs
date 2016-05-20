@@ -9,15 +9,11 @@ namespace LenchScripter.Blocks
     public class Cog : Block
     {
         private static FieldInfo input = typeof(CogMotorController).GetField("input", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo toggleFieldInfo = typeof(CogMotorController).GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private CogMotorController cmc;
-        private MToggle toggle;
 
         private float desired_input;
         private bool setInputFlag = false;
-        private bool lastInputFlag = false;
-        private bool realToggle;
 
         /// <summary>
         /// Creates a Block handler.
@@ -26,7 +22,6 @@ namespace LenchScripter.Blocks
         public Cog(BlockBehaviour bb) : base(bb)
         {
             cmc = bb.GetComponent<CogMotorController>();
-            toggle = toggleFieldInfo.GetValue(cmc) as MToggle;
         }
 
         /// <summary>
@@ -65,20 +60,12 @@ namespace LenchScripter.Blocks
         /// <summary>
         /// Sets the desired input value to be read at the next FixedUpdate of the BlockBehaviour script.
         /// </summary>
-        protected override void Update()
+        protected override void LateUpdate()
         {
             if (setInputFlag)
             {
-                realToggle = lastInputFlag ? realToggle : toggle.IsActive;
-                toggle.IsActive = true;
                 input.SetValue(cmc, desired_input);
-                lastInputFlag = true;
                 setInputFlag = false;
-            }
-            else if (lastInputFlag)
-            {
-                toggle.IsActive = realToggle;
-                lastInputFlag = false;
             }
         }
     }

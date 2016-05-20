@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
 using IronPython.Hosting;
 using IronPython.Runtime.Types;
@@ -17,11 +16,12 @@ namespace LenchScripter
         private ScriptScope scope;
         private Action update;
         private Action fixedupdate;
+        private Exception exception;
 
         /// <summary>
         /// Python Engine.
         /// </summary>
-        public ScriptEngine Engine { get { return _engine; } }
+        public static ScriptEngine Engine { get { return _engine; } }
 
         /// <summary>
         /// Python Scope.
@@ -29,19 +29,22 @@ namespace LenchScripter
         public ScriptScope Scope { get { return scope; } }
 
         /// <summary>
-        /// Update function from compiled script.
+        /// Returns last occured formatted exception.
         /// </summary>
-        public Action Update { get { return update; } }
-
-        /// <summary>
-        /// FixedUpdate function from compiled script.
-        /// </summary>
-        public Action FixedUpdate { get { return fixedupdate; } }
+        public string LastException
+        {
+            get
+            {
+                if (exception == null) return null;
+                ExceptionOperations eo = _engine.GetService<ExceptionOperations>();
+                return eo.FormatException(exception);
+            }
+        }
 
         /// <summary>
         /// Scripter Mod's current environment instance.
         /// </summary>
-        public static PythonEnvironment Instance {
+        public static PythonEnvironment ScripterInstance {
             get
             {
                 return Internal.Scripter.Instance.python;
@@ -68,8 +71,9 @@ namespace LenchScripter
 
             // Create environment
             _engine.Execute("import clr", scope);
+            _engine.Execute("clr.AddReference(\"System\")", scope);
             _engine.Execute("clr.AddReference(\"UnityEngine\")", scope);
-            _engine.Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input", scope);
+            _engine.Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode", scope);
             scope.SetVariable("Besiege", DynamicHelpers.GetPythonTypeFromType(typeof(Functions)));
         }
 
@@ -77,25 +81,87 @@ namespace LenchScripter
         /// Compiles and executes code from string.
         /// </summary>
         /// <param name="code"></param>
-        public void LoadCode(string code)
+        public bool LoadCode(string code)
         {
-            var source = _engine.CreateScriptSourceFromString(code);
-            var compiled = source.Compile();
-            compiled.Execute(scope);
-            GetFunctions();
+            try
+            {
+                var source = _engine.CreateScriptSourceFromString(code);
+                var compiled = source.Compile();
+                compiled.Execute(scope);
+                GetFunctions();
+                return true;
+            }
+            catch (Exception e)
+            {
+                exception = e;
+                update = null;
+                fixedupdate = null;
+                return false;
+            }
         }
 
         /// <summary>
         /// Compiles and executes code from file.
         /// </summary>
         /// <param name="path"></param>
-        public void LoadScript(string path)
+        public bool LoadScript(string path)
         {
-            path = Internal.ScripterMod.ScriptOptions.FindScript(path);
-            var source = _engine.CreateScriptSourceFromFile(path);
-            var compiled = source.Compile();
-            compiled.Execute(scope);
-            GetFunctions();
+            try
+            {
+                path = Internal.Scripter.Instance.ScriptOptions.FindScript(path);
+                var source = _engine.CreateScriptSourceFromFile(path);
+                var compiled = source.Compile();
+                compiled.Execute(scope);
+                GetFunctions();
+                return true;
+            }
+            catch (Exception e)
+            {
+                exception = e;
+                update = null;
+                fixedupdate = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Calls python Update function.
+        /// In case of exception, stops execution and returns false.
+        /// </summary>
+        /// <returns></returns>
+        public bool CallUpdate()
+        {
+            try
+            {
+                update?.Invoke();
+                return true;
+            }
+            catch (Exception e)
+            {
+                exception = e;
+                update = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Calls python Update function.
+        /// In case of exception, stops execution and returns false.
+        /// </summary>
+        /// <returns></returns>
+        public bool CallFixedUpdate()
+        {
+            try
+            {
+                update?.Invoke();
+                return true;
+            }
+            catch (Exception e)
+            {
+                exception = e;
+                fixedupdate = null;
+                return false;
+            }
         }
 
         /// <summary>

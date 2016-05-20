@@ -13,7 +13,7 @@ namespace LenchScripter.Internal
         /// <summary>
         /// Should the mark be destroyed at the end of the simulation.
         /// </summary>
-        private bool DestroyOnSimulationStop { get; set; } = true;
+        internal bool DestroyOnSimulationStop { get; set; } = true;
 
         private void Awake()
         {
@@ -29,7 +29,7 @@ namespace LenchScripter.Internal
         /// Implicit conversion to Vector3.
         /// </summary>
         /// <param name="m"></param>
-        static public implicit operator Vector3(Mark m)
+        public static implicit operator Vector3(Mark m)
         {
             return m.transform.position;
         }
