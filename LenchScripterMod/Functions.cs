@@ -2,30 +2,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 using LenchScripter.Blocks;
+using LenchScripter.Internal;
 
-namespace LenchScripter.Internal
+namespace LenchScripter
 {
     /// <summary>
     /// Used as a wrapper for all Lua accessible functions.
     /// Instantiated at the start of the simulation.
     /// </summary>
-    internal class LuaMethodWrapper
+    public static class Functions
     {
         // Measuring time
-        private System.Diagnostics.Stopwatch stopwatch;
-        private float startTime;
+        private static float startTime;
 
         // List of placed marks
-        private List<Mark> marks;
+        private static List<Mark> marks;
 
         /// <summary>
         /// Instantiates the interface that is passed to Lua as besiege object.
         /// </summary>
-        internal LuaMethodWrapper()
+        static Functions()
         {
             marks = new List<Mark>();
-            stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
             startTime = Time.time;
         }
   
@@ -34,7 +32,7 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>Block object.</returns>
-        public Block getBlock(string blockId)
+        public static Block GetBlock(string blockId)
         {
             try
             {
@@ -51,30 +49,10 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>Boolean value.</returns>
-        public bool exists(string blockId)
+        public static bool Exists(string blockId)
         {
-            Block b = getBlock(blockId);
-            return b.exists();
-        }
-
-        /// <summary>
-        /// Logs the string into the debug console.
-        /// </summary>
-        /// <param name="msg">Message string to be logged.</param>
-        public void log(string msg)
-        {
-            Debug.Log(msg);
-        }
-
-        /// <summary>
-        /// Returns the time in seconds from the start of the simulation.
-        /// Independent of the in-game time-scale slider.
-        /// Useful for benchmarking your script's time of execution.
-        /// </summary>
-        /// <returns>Float value.</returns>
-        public float getTime()
-        {
-            return stopwatch.ElapsedMilliseconds / 1000f;
+            Block b = GetBlock(blockId);
+            return b.Exists;
         }
 
         /// <summary>
@@ -83,7 +61,7 @@ namespace LenchScripter.Internal
         /// Useful for calculating the rate of change (speed).
         /// </summary>
         /// <returns>Float value.</returns>
-        public float getScaledTime()
+        public static float GetTime()
         {
             return (Time.time - startTime);
         }
@@ -92,7 +70,7 @@ namespace LenchScripter.Internal
         /// Adds a global variable to the watchlist.
         /// </summary>
         /// <param name="name">Name of the global variable.</param>
-        public void watch(string name)
+        public static void Watch(string name)
         {
             ScripterMod.Watchlist.AddToWatchlist(name, null, true);
         }
@@ -102,7 +80,7 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="name">Display name of the variable.</param>
         /// <param name="value">Variable value to be reported.</param>
-        public void watch(string name, System.Object value)
+        public static void Watch(string name, System.Object value)
         {
             ScripterMod.Watchlist.AddToWatchlist(name, value, false);
         }
@@ -110,7 +88,7 @@ namespace LenchScripter.Internal
         /// <summary>
         /// Clears all entries from the watchlist.
         /// </summary>
-        public void clearWatchlist()
+        public static void ClearWatchlist()
         {
             ScripterMod.Watchlist.ClearWatchlist();
         }
@@ -118,7 +96,7 @@ namespace LenchScripter.Internal
         /// <summary>
         /// Toggles all functions to return angles in degrees.
         /// </summary>
-        public void useDegrees()
+        public static void UseDegrees()
         {
             Block.UseDegrees();
         }
@@ -126,7 +104,7 @@ namespace LenchScripter.Internal
         /// <summary>
         /// Toggles all functions to returns angles in radians.
         /// </summary>
-        public void useRadians()
+        public static void UseRadians()
         {
             Block.UseRadians();
         }
@@ -136,10 +114,10 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="actionName">Display name of the action.</param>
-        public void action(string blockId, string actionName)
+        public static void Action(string blockId, string actionName)
         {
-            Block b = getBlock(blockId);
-            b.action(actionName);
+            Block b = GetBlock(blockId);
+            b.Action(actionName);
         }
 
         /// <summary>
@@ -148,10 +126,10 @@ namespace LenchScripter.Internal
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="toggleName">Toggle property to be set.</param>
         /// <param name="value">Boolean value to be set.</param>
-        public void setToggleMode(string blockId, string toggleName, bool value)
+        public static void SetToggleMode(string blockId, string toggleName, bool value)
         {
-            Block b = getBlock(blockId);
-            b.setToggleMode(toggleName, value);
+            Block b = GetBlock(blockId);
+            b.SetToggleMode(toggleName, value);
         }
 
         /// <summary>
@@ -160,10 +138,10 @@ namespace LenchScripter.Internal
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="sliderName">Slider value to be set.</param>
         /// <param name="value">Float value to be set.</param>
-        public void setSliderValue(string blockId, string sliderName, float value)
+        public static void SetSliderValue(string blockId, string sliderName, float value)
         {
-            Block b = getBlock(blockId);
-            b.setSliderValue(sliderName, value);
+            Block b = GetBlock(blockId);
+            b.SetSliderValue(sliderName, value);
         }
 
         /// <summary>
@@ -172,10 +150,10 @@ namespace LenchScripter.Internal
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="toggleName">Toggle property to be returned.</param>
         /// <returns>Boolean value.</returns>
-        public bool getToggleMode(string blockId, string toggleName)
+        public static bool GetToggleMode(string blockId, string toggleName)
         {
-            Block b = getBlock(blockId);
-            return b.getToggleMode(toggleName);
+            Block b = GetBlock(blockId);
+            return b.GetToggleMode(toggleName);
         }
 
         /// <summary>
@@ -184,10 +162,10 @@ namespace LenchScripter.Internal
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="sliderName">Toggle property to be returned.</param>
         /// <returns>Float value.</returns>
-        public float getSliderValue(string blockId, string sliderName)
+        public static float GetSliderValue(string blockId, string sliderName)
         {
-            Block b = getBlock(blockId);
-            return b.getSliderValue(sliderName);
+            Block b = GetBlock(blockId);
+            return b.GetSliderValue(sliderName);
         }
 
         /// <summary>
@@ -196,10 +174,10 @@ namespace LenchScripter.Internal
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="sliderName">Minimum slider value to be returned.</param>
         /// <returns>Float value.</returns>
-        public float getSliderMin(string blockId, string sliderName)
+        public static float GetSliderMin(string blockId, string sliderName)
         {
-            Block b = getBlock(blockId);
-            return b.getSliderMin(sliderName);
+            Block b = GetBlock(blockId);
+            return b.GetSliderMin(sliderName);
         }
 
         /// <summary>
@@ -208,10 +186,10 @@ namespace LenchScripter.Internal
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="sliderName">Maximum slider value to be returned.</param>
         /// <returns>Float value.</returns>
-        public float getSliderMax(string blockId, string sliderName)
+        public static float GetSliderMax(string blockId, string sliderName)
         {
-            Block b = getBlock(blockId);
-            return b.getSliderMax(sliderName);
+            Block b = GetBlock(blockId);
+            return b.GetSliderMax(sliderName);
         }
 
         /// <summary>
@@ -220,10 +198,10 @@ namespace LenchScripter.Internal
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="keyName">Key bind to add the key to.</param>
         /// <param name="key">Key value to be added.</param>
-        public void addKey(string blockId, string keyName, KeyCode key)
+        public static void AddKey(string blockId, string keyName, KeyCode key)
         {
-            Block b = getBlock(blockId);
-            b.addKey(keyName, key);
+            Block b = GetBlock(blockId);
+            b.AddKey(keyName, key);
         }
 
         /// <summary>
@@ -232,10 +210,10 @@ namespace LenchScripter.Internal
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="keyName">Key bind to be replaced.</param>
         /// <param name="key">Key value to be replaced with.</param>
-        public void replaceKey(string blockId, string keyName, KeyCode key)
+        public static void ReplaceKey(string blockId, string keyName, KeyCode key)
         {
-            Block b = getBlock(blockId);
-            b.replaceKey(keyName, key);
+            Block b = GetBlock(blockId);
+            b.ReplaceKey(keyName, key);
         }
 
         /// <summary>
@@ -244,10 +222,10 @@ namespace LenchScripter.Internal
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="keyName">Key bind to be returned.</param>
         /// <returns>Integer value.</returns>
-        public KeyCode getKey(string blockId, string keyName)
+        public static KeyCode GetKey(string blockId, string keyName)
         {
-            Block b = getBlock(blockId);
-            return b.getKey(keyName);
+            Block b = GetBlock(blockId);
+            return b.GetKey(keyName);
         }
 
         /// <summary>
@@ -255,10 +233,10 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <param name="keyName"></param>
-        public void clearKeys(string blockId, string keyName)
+        public static void ClearKeys(string blockId, string keyName)
         {
-            Block b = getBlock(blockId);
-            b.clearKeys(keyName);
+            Block b = GetBlock(blockId);
+            b.ClearKeys(keyName);
         }
 
         /// <summary>
@@ -266,10 +244,10 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getForward(string blockId = "STARTING BLOCK 1")
+        public static Vector3 GetForward(string blockId = "STARTING BLOCK 1")
         {
-            Block b = getBlock(blockId);
-            return b.getForward();
+            Block b = GetBlock(blockId);
+            return b.Forward;
         }
 
         /// <summary>
@@ -277,10 +255,10 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getUp(string blockId = "STARTING BLOCK 1")
+        public static Vector3 GetUp(string blockId = "STARTING BLOCK 1")
         {
-            Block b = getBlock(blockId);
-            return b.getUp();
+            Block b = GetBlock(blockId);
+            return b.Up;
         }
 
         /// <summary>
@@ -288,10 +266,10 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getRight(string blockId = "STARTING BLOCK 1")
+        public static Vector3 getRight(string blockId = "STARTING BLOCK 1")
         {
-            Block b = getBlock(blockId);
-            return b.getRight();
+            Block b = GetBlock(blockId);
+            return b.Right;
         }
 
         /// <summary>
@@ -299,10 +277,10 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getPosition(string blockId = "STARTING BLOCK 1")
+        public static Vector3 GetPosition(string blockId = "STARTING BLOCK 1")
         {
-            Block b = getBlock(blockId);
-            return b.getPosition();
+            Block b = GetBlock(blockId);
+            return b.Position;
         }
 
         /// <summary>
@@ -311,10 +289,10 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getVelocity(string blockId = "STARTING BLOCK 1")
+        public static Vector3 GetVelocity(string blockId = "STARTING BLOCK 1")
         {
-            Block b = getBlock(blockId);
-            return b.getVelocity();
+            Block b = GetBlock(blockId);
+            return b.Velocity;
         }
 
         /// <summary>
@@ -323,10 +301,10 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public float getMass(string blockId = "STARTING BLOCK 1")
+        public static float GetMass(string blockId = "STARTING BLOCK 1")
         {
-            Block b = getBlock(blockId);
-            return b.getMass();
+            Block b = GetBlock(blockId);
+            return b.Mass;
         }
 
         /// <summary>
@@ -335,17 +313,17 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getCenterOfMass(string blockId = "STARTING BLOCK 1")
+        public static Vector3 GetCenterOfMass(string blockId = "STARTING BLOCK 1")
         {
-            Block b = getBlock(blockId);
-            return b.getCenterOfMass();
+            Block b = GetBlock(blockId);
+            return b.CenterOfMass;
         }
 
         /// <summary>
         /// Returns the mass of the machine.
         /// </summary>
         /// <returns>Float value representing total mass.</returns>
-        public float getMachineMass()
+        public static float GetMachineMass()
         {
             return Machine.Active().Mass;
         }
@@ -354,7 +332,7 @@ namespace LenchScripter.Internal
         /// Returns the center of mass of the machine in the world.
         /// </summary>
         /// <returns>Vector3 position of world COM.</returns>
-        public Vector3 getMachineCenterOfMass()
+        public static Vector3 GetMachineCenterOfMass()
         {
             Vector3 center = new Vector3(0, 0, 0);
             for (int i = 0; i < Machine.Active().Blocks.Count; i++)
@@ -371,10 +349,10 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getEulerAngles(string blockId = "STARTING BLOCK 1")
+        public static Vector3 GetEulerAngles(string blockId = "STARTING BLOCK 1")
         {
-            Block b = getBlock(blockId);
-            return b.getEulerAngles();
+            Block b = GetBlock(blockId);
+            return b.EulerAngles;
         }
 
         /// <summary>
@@ -383,17 +361,17 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public Vector3 getAngularVelocity(string blockId = "STARTING BLOCK 1")
+        public static Vector3 GetAngularVelocity(string blockId = "STARTING BLOCK 1")
         {
-            Block b = getBlock(blockId);
-            return b.getAngularVelocity();
+            Block b = GetBlock(blockId);
+            return b.AngularVelocity;
         }
 
         /// <summary>
         /// Uses raycast to find out where mouse cursor is pointing.
         /// </summary>
         /// <returns>Returns an x, y, z positional vector of the hit.</returns>
-        public Vector3 getRaycastHit()
+        public static Vector3 GetRaycastHit()
         {
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -410,7 +388,7 @@ namespace LenchScripter.Internal
         /// <param name="origin">Origin vector of the raycast.</param>
         /// <param name="direction">Direction vector of the raycast.</param>
         /// <returns>Returns position of the hit.</returns>
-        public Vector3 getRaycastHit(Vector3 origin, Vector3 direction)
+        public static Vector3 GetRaycastHit(Vector3 origin, Vector3 direction)
         {
             RaycastHit hit;
             Ray ray = new Ray(origin, direction.normalized);
@@ -426,7 +404,7 @@ namespace LenchScripter.Internal
         /// If not sucessfull, returns zero vector.
         /// </summary>
         /// <returns>Returns an x, y, z positional vector of the hit.</returns>
-        public TrackedCollider getRaycastCollider()
+        public static TrackedCollider GetRaycastCollider()
         {
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -443,7 +421,7 @@ namespace LenchScripter.Internal
         /// <param name="origin">Origin vector of the raycast.</param>
         /// <param name="direction">Direction vector of the raycast.</param>
         /// <returns>Returns TrackedCollider object of the hit.</returns>
-        public TrackedCollider getRaycastCollider(Vector3 origin, Vector3 direction)
+        public static TrackedCollider GetRaycastCollider(Vector3 origin, Vector3 direction)
         {
             RaycastHit hit;
             Ray ray = new Ray(origin, direction.normalized);
@@ -459,13 +437,13 @@ namespace LenchScripter.Internal
         /// </summary>
         /// <param name="pos">Vector3 specifying position.</param>
         /// <returns>Reference to the mark.</returns>
-        public Mark createMark(Vector3 pos)
+        public static Mark CreateMark(Vector3 pos)
         {
             GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             obj.name = "Mark";
             obj.transform.parent = Scripter.Instance.transform;
             Mark m = obj.AddComponent<Mark>();
-            m.move(pos);
+            m.Move(pos);
             marks.Add(m);
             return m;
         }
@@ -474,11 +452,11 @@ namespace LenchScripter.Internal
         /// Clears all marks.
         /// Called by user or at the end of the simulation.
         /// </summary>
-        public void clearMarks(bool manual_call = true)
+        public static void ClearMarks(bool manual_call = true)
         {
             foreach (Mark m in marks)
             {
-                m.clear(manual_call);
+                m.Clear(manual_call);
             }
             marks.Clear();
         }

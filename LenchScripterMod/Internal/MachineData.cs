@@ -25,7 +25,7 @@ namespace LenchScripter.Internal
             {
                 ScripterMod.ScriptOptions.CheckForScript();
                 var code = File.ReadAllText(ScripterMod.ScriptOptions.ScriptPath);
-                machineInfo.MachineData.Write("LenchScripterMod-Version", "v1.1.0");
+                machineInfo.MachineData.Write("LenchScripterMod-Version", "v2.0.0");
                 machineInfo.MachineData.Write("LenchScripterMod-Code", code);
                 ScripterMod.ScriptOptions.Code = code;
                 ScripterMod.ScriptOptions.BsgHasCode = true;

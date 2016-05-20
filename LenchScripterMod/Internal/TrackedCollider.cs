@@ -43,26 +43,26 @@ namespace LenchScripter.Internal
         /// <summary>
         /// Returns true if the collider still exists.
         /// </summary>
-        public bool exists()
+        public bool Exists
         {
-            return c != null;
+            get { return c != null; }
         }
 
         /// <summary>
         /// Returns true if the collider represents a building block.
         /// </summary>
-        public bool isBlock()
+        public bool IsBlock
         {
-            return block != null;
+            get { return block != null; }
         }
 
         /// <summary>
         /// Returns block represented by the collider.
         /// </summary>
         /// <returns></returns>
-        public Block getBlock()
+        public Block Block
         {
-            return block;
+            get { return block; }
         }
 
         /// <summary>
@@ -70,9 +70,9 @@ namespace LenchScripter.Internal
         /// Intended for identifying game objects.
         /// </summary>
         /// <returns></returns>
-        public string getName()
+        public string Name
         {
-            return c.transform.parent.name;
+            get { return c.transform.parent.name; }
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace LenchScripter.Internal
         /// <returns>Vector3 position.</returns>
         public Vector3 getPosition()
         {
-            if (exists())
+            if (Exists)
             {
                 lastPosition = c.transform.TransformPoint(offset);
             }

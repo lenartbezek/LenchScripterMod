@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using spaar.ModLoader;
 using UnityEngine;
-using NLua;
 using LenchScripter.Blocks;
 
 namespace LenchScripter.Internal
@@ -17,13 +16,13 @@ namespace LenchScripter.Internal
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(1, 1, 2);
+        public override Version Version { get; } = new Version(2, 0, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
 
-        internal static LuaWatchlist Watchlist;
+        internal static Watchlist Watchlist;
         internal static IdentifierDisplay IdentifierDisplay;
         internal static ScriptOptions ScriptOptions;
         internal static Type blockScriptType;
@@ -41,7 +40,7 @@ namespace LenchScripter.Internal
             XmlSaver.OnSave += MachineData.Save;
             XmlLoader.OnLoad += MachineData.Load;
 
-            Watchlist = Scripter.Instance.gameObject.AddComponent<LuaWatchlist>();
+            Watchlist = Scripter.Instance.gameObject.AddComponent<Watchlist>();
             IdentifierDisplay = Scripter.Instance.gameObject.AddComponent<IdentifierDisplay>();
             ScriptOptions = Scripter.Instance.gameObject.AddComponent<ScriptOptions>();
 
@@ -49,13 +48,13 @@ namespace LenchScripter.Internal
 
             Configuration.Load();
 
-            Keybindings.AddKeybinding("Dump Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
-            Keybindings.AddKeybinding("Lua Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
-            Keybindings.AddKeybinding("Lua Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
+            Keybindings.AddKeybinding("Show Blocks ID", new Key(KeyCode.None, KeyCode.LeftShift));
+            Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
+            Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
 
-            Commands.RegisterCommand("lua", Scripter.Instance.InteractiveCommand, "Executes Lua expression.");
+            Commands.RegisterCommand("py", Scripter.Instance.InteractiveCommand, "Executes Python expression.");
 
-            SettingsMenu.RegisterSettingsButton("LUA", Scripter.Instance.RunScriptSettingToggle, true, 12);
+            SettingsMenu.RegisterSettingsButton("SCRIPT", Scripter.Instance.RunScriptSettingToggle, true, 12);
         }
 
         /// <summary>
@@ -116,23 +115,13 @@ namespace LenchScripter.Internal
         /// </summary>
         public override string Name { get; } = "Lench Scripter";
 
-        // Object passed to lua
-        internal LuaMethodWrapper wrapper;
-
-        // Lua environment
-        internal NLua.Lua lua;
+        // Python environment
+        internal PythonEnvironment python;
         internal string scriptFile;
         internal string scriptCode;
 
-        // Lua functions
-        internal LuaFunction luaOnUpdate;
-        internal LuaFunction luaOnFixedUpdate;
-        internal LuaFunction luaOnKey;
-        internal LuaFunction luaOnKeyDown;
-        internal LuaFunction luaOnKeyUp;
-
         internal bool isSimulating;
-        internal bool enableLua = true;
+        internal bool enableScript = true;
         internal bool handlersInitialised = false;
 
         // Hovered block for ID dumping
@@ -287,19 +276,14 @@ namespace LenchScripter.Internal
             BlockHandlers.OnInitialisation?.Invoke();
         }
 
-        private void LoadLuaScript()
+        private void LoadScript()
         {
             try
             {
                 if(scriptFile != null)
-                    lua.DoFile(scriptFile);
+                    python.LoadScript(scriptFile);
                 if (scriptCode != null)
-                    lua.DoString(scriptCode);
-                luaOnUpdate = lua["onUpdate"] as LuaFunction;
-                luaOnFixedUpdate = lua["onFixedUpdate"] as LuaFunction;
-                luaOnKey = lua["onKeyHeld"] as LuaFunction;
-                luaOnKeyDown = lua["onKeyDown"] as LuaFunction;
-                luaOnKeyUp = lua["onKeyUp"] as LuaFunction;
+                    python.LoadCode(scriptCode);
                 ScripterMod.ScriptOptions.SuccessMessage = "Successfully executed code.";
             }
             catch (Exception e)
@@ -315,11 +299,11 @@ namespace LenchScripter.Internal
         /// <param name="active"></param>
         internal void RunScriptSettingToggle(bool active)
         {
-            enableLua = active;
-            if (isSimulating && enableLua)
-                CreateLuaEnvironment();
-            else if (lua != null)
-                DestroyLuaEnvironment();
+            enableScript = active;
+            if (isSimulating && enableScript)
+                CreateScriptingEnvironment();
+            else
+                DestroyScriptingEnvironment();
         }
 
         /// <summary>
@@ -332,55 +316,36 @@ namespace LenchScripter.Internal
         {
             if (args.Length == 0)
                 return "Executes a Lua expression.";
-            if (!isSimulating || lua == null)
+            if (!isSimulating || python == null)
                 return "Can only be called while simulating.";
 
             string expression = "";
             for (int i = 0; i < args.Length; i++)
                 expression += args[i] + " ";
 
-            System.Object[] result = lua.DoString(expression);
+            object result = python.Engine.Execute(expression);
 
             if (result != null)
             {
-                string result_string = "";
-                for (int i = 0; i < result.Length; i++)
-                {
-                    result_string += result[i].ToString() + " ";
-                }
-                return result_string;
+                result.ToString();
             }
                 
             return "";
         }
 
         /// <summary>
-        /// Creates Lua environment. Looks for script to load.
+        /// Creates environment. Looks for script to load.
         /// </summary>
-        private void CreateLuaEnvironment()
+        private void CreateScriptingEnvironment()
         {
             idToSimulationBlock = null;
-            luaOnUpdate = null;
-            luaOnFixedUpdate = null;
-            luaOnKey = null;
-            luaOnKeyDown = null;
-            luaOnKeyUp = null;
-
-            // Lua Environment
-            lua = new NLua.Lua();
-            lua.LoadCLRPackage();
-            lua.DoString(@" import 'System'
-                            import 'UnityEngine' ");
-            lua.DoString(@"package.path = package.path .. ';"+ Application.dataPath + "/Scripts/?.lua'");
-
-            wrapper = new LuaMethodWrapper();
-            lua["besiege"] = wrapper;
+            python = new PythonEnvironment();
 
             // Find script file
             if (scriptFile == null)
             {
                 ScripterMod.ScriptOptions.CheckForScript();
-                if (ScripterMod.ScriptOptions.ScriptSource == "lua")
+                if (ScripterMod.ScriptOptions.ScriptSource == "py")
                 {
                     scriptFile = ScripterMod.ScriptOptions.ScriptPath;
                 }
@@ -394,19 +359,11 @@ namespace LenchScripter.Internal
         /// <summary>
         /// Called to stop script.
         /// </summary>
-        private void DestroyLuaEnvironment()
+        private void DestroyScriptingEnvironment()
         {
-            lua.Close();
-            lua.Dispose();
-            lua = null;
-            wrapper.clearMarks(false);
-            wrapper = null;
+            Functions.ClearMarks(false);
             idToSimulationBlock = null;
-            luaOnUpdate = null;
-            luaOnFixedUpdate = null;
-            luaOnKey = null;
-            luaOnKeyDown = null;
-            luaOnKeyUp = null;
+            python = null;
         }
 
         /// <summary>
@@ -450,22 +407,22 @@ namespace LenchScripter.Internal
             if (isSimulating && !handlersInitialised)
                 InitializeSimulationBlockHandlers();
 
-            // Initialize Lua script
+            // Execute code on first call
             if (scriptFile != null || scriptCode != null)
             {
-                LoadLuaScript();
+                LoadScript();
                 scriptFile = null;
                 scriptCode = null;
             }
 
             // Toggle watchlist visibility
-            if (Keybindings.Get("Lua Watchlist").Pressed())
+            if (Keybindings.Get("Watchlist").Pressed())
             {
                 ScripterMod.Watchlist.Visible = !ScripterMod.Watchlist.Visible;
             }
 
             // Toggle options visibility
-            if (Keybindings.Get("Lua Script Options").Pressed())
+            if (Keybindings.Get("Script Options").Pressed())
             {
                 ScripterMod.ScriptOptions.Visible = !ScripterMod.ScriptOptions.Visible;
             }
@@ -473,7 +430,7 @@ namespace LenchScripter.Internal
             if (!isSimulating)
             {
                 // Show block identifiers
-                if (Keybindings.Get("Dump Blocks ID").IsDown())
+                if (Keybindings.Get("Show Blocks ID").IsDown())
                 {
                     ShowBlockIdentifiers();
                 }
@@ -481,29 +438,8 @@ namespace LenchScripter.Internal
 
             if (!isSimulating) return;
 
-            // Call Lua onUpdate
-            if (luaOnUpdate != null)
-                luaOnUpdate.Call();
-
-            // Call Lua onKey
-            foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
-            {
-                if (luaOnKey != null)
-                {
-                    if (!Input.GetKey(key)) continue;
-                        luaOnKey.Call(key);
-                }
-                if (luaOnKeyDown != null)
-                {
-                    if (!Input.GetKeyDown(key)) continue;
-                        luaOnKeyDown.Call(key);
-                }
-                if (luaOnKeyUp != null)
-                {
-                    if (!Input.GetKeyUp(key)) continue;
-                    luaOnKeyUp.Call(key);
-                }
-            }
+            // Call script update.
+            python?.Update?.Invoke();
 
             // Call OnUpdate event for Block handlers.
             OnUpdate?.Invoke();
@@ -522,9 +458,8 @@ namespace LenchScripter.Internal
         {
             if (!isSimulating) return;
 
-            // Call Lua onFixedUpdate
-            if (luaOnFixedUpdate != null)
-                luaOnFixedUpdate.Call();
+            // Call script update;
+            python?.FixedUpdate?.Invoke();
 
             // Call OnLateUpdate event for Block handlers.
             OnFixedUpdate?.Invoke();
@@ -540,11 +475,11 @@ namespace LenchScripter.Internal
             this.isSimulating = isSimulating;
             if (isSimulating)
             {
-                if (enableLua) CreateLuaEnvironment();
+                if (enableScript) CreateScriptingEnvironment();
             }
             else
             {
-                if (lua != null) DestroyLuaEnvironment();
+                DestroyScriptingEnvironment();
             }
             ScripterMod.ScriptOptions.SuccessMessage = null;
             ScripterMod.ScriptOptions.NoteMessage = null;

@@ -13,7 +13,7 @@ namespace LenchScripter.Internal
         /// <summary>
         /// Should the mark be destroyed at the end of the simulation.
         /// </summary>
-        public bool DestroyOnSimulationStop { get; set; } = true;
+        private bool DestroyOnSimulationStop { get; set; } = true;
 
         private void Awake()
         {
@@ -46,7 +46,7 @@ namespace LenchScripter.Internal
         /// Moves the mark to the target position.
         /// </summary>
         /// <param name="target">Vector3 target position</param>
-        public void move(Vector3 target)
+        public void Move(Vector3 target)
         {
             transform.position = target;
         }
@@ -55,7 +55,7 @@ namespace LenchScripter.Internal
         /// Sets the color of the mark.
         /// </summary>
         /// <param name="c">UnityEngine.Color</param>
-        public void setColor(Color c)
+        public void SetColor(Color c)
         {
             c.a = 0.6f;
             renderer.material.color = c;
@@ -64,7 +64,7 @@ namespace LenchScripter.Internal
         /// <summary>
         /// Clears the mark.
         /// </summary>
-        public void clear(bool manual_call = true)
+        public void Clear(bool manual_call = true)
         {
             if (DestroyOnSimulationStop || manual_call)
             {

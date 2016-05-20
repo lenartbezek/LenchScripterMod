@@ -41,7 +41,7 @@ namespace LenchScripter.Blocks
         /// Throws ActionNotFoundException if the block does not poses such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
-        public override void action(string actionName)
+        public override void Action(string actionName)
         {
             actionName = actionName.ToUpper();
             if (actionName == "LEFT")

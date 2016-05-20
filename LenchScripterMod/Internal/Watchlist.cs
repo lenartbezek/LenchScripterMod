@@ -11,12 +11,12 @@ namespace LenchScripter.Internal
     /// <summary>
     /// Displays global Lua variables in a GUI.
     /// </summary>
-    public class LuaWatchlist : MonoBehaviour
+    public class Watchlist : MonoBehaviour
     {
         /// <summary>
         /// Name in the Unity Hierarchy.
         /// </summary>
-        public new string name { get { return "Lua Watchlist"; } }
+        public new string name { get { return "Watchlist"; } }
 
         internal Vector2 ConfigurationPosition;
 
@@ -60,7 +60,7 @@ namespace LenchScripter.Internal
                 GUI.skin.window.padding.left = 8;
                 GUI.skin.window.padding.right = 8;
                 GUI.skin.window.padding.bottom = 8;
-                mainWindowRect = GUI.Window(mainWindowID, mainWindowRect, DoMainWindow, "Lua Watchlist");
+                mainWindowRect = GUI.Window(mainWindowID, mainWindowRect, DoMainWindow, "Watchlist");
                 if (editing)
                 {
                     editWindowRect = GUI.Window(editWindowID, editWindowRect, DoEditWindow, "Edit " + editingVariable.GetName());
@@ -148,6 +148,8 @@ namespace LenchScripter.Internal
         /// <param name="id"></param>
         private void DoMainWindow(int id)
         {
+            var oldColor = GUI.backgroundColor;
+
             // Draw close button
             if (GUI.Button(new Rect(mainWindowRect.width - 28, 8, 20, 20),
                 "×", Elements.Buttons.Red))
@@ -155,8 +157,7 @@ namespace LenchScripter.Internal
 
             List<VariableWatch> toBeRemoved = new List<VariableWatch>();
 
-            var oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.5f);
+            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
             newVariableName = GUI.TextField(new Rect(68, 48, 248, 20), newVariableName, Elements.InputFields.ComponentField);
             GUI.backgroundColor = oldColor;
             if (GUI.Button(new Rect(4, 48, 60, 20), "Add", Elements.Buttons.Default) && Regex.Replace(newVariableName, @"\s+", "") != "")
@@ -166,10 +167,12 @@ namespace LenchScripter.Internal
                 newVariableName = "";
             }
 
+            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.4f);
             scrollPosition = GUI.BeginScrollView(
                 new Rect(4, 72, 312, 400),
                 scrollPosition,
                 new Rect(0, 0, 296, 4 + (watched.Count * 24)));
+            GUI.backgroundColor = oldColor;
 
             int i = 0;
             foreach (VariableWatch v in watched)
@@ -257,7 +260,7 @@ namespace LenchScripter.Internal
     public class VariableWatch : IEquatable<VariableWatch>
     {
         private string name;
-        private System.Object value;
+        private object value;
         internal bool global = false;
 
         internal VariableWatch(string name)
@@ -270,7 +273,7 @@ namespace LenchScripter.Internal
         /// Checks if the variable is global.
         /// </summary>
         /// <param name="value"></param>
-        public void ReportValue(System.Object value)
+        public void ReportValue(object value)
         {
             if (value != null)
             {
@@ -278,9 +281,9 @@ namespace LenchScripter.Internal
                 if (!global)
                 { 
                     // Check if global
-                    if (Scripter.Instance.lua[name] != null)
+                    if (Scripter.Instance.python.Scope.ContainsVariable(name))
                     {
-                        System.Object globalValue = Scripter.Instance.lua[name];
+                        object globalValue = Scripter.Instance.python.Scope.GetVariable(name);
                         global = value.Equals(globalValue);
                     }
                 }  
@@ -304,8 +307,8 @@ namespace LenchScripter.Internal
         {
             if (global && Scripter.Instance.isSimulating)
             {
-                if(Scripter.Instance.lua[name] != null)
-                    value = Scripter.Instance.lua[name];
+                if(Scripter.Instance.python.Scope.ContainsVariable(name))
+                    value = Scripter.Instance.python.Scope.GetVariable(name);
             }    
             try
             {
@@ -345,9 +348,9 @@ namespace LenchScripter.Internal
         /// <param name="value"></param>
         public void SetValue(string value)
         {
-            if (global && Scripter.Instance.lua != null)
+            if (global && Scripter.Instance.python != null)
             {
-                Scripter.Instance.lua.DoString(name+" = "+value);
+                Scripter.Instance.python.Engine.Execute(name + " = " + value);
             }
         }
 

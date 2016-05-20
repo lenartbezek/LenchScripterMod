@@ -23,7 +23,7 @@ namespace LenchScripter.Blocks
         /// Throws ActionNotFoundException if the block does not posess such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
-        public override void action(string actionName)
+        public override void Action(string actionName)
         {
             actionName = actionName.ToUpper();
             if (!sc.winchMode && actionName == "CONTRACT")

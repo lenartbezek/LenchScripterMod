@@ -67,7 +67,7 @@ namespace LenchScripter.Blocks
         /// Creates a Block handler.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
-        public Block(BlockBehaviour bb)
+        internal Block(BlockBehaviour bb)
         {
             this.bb = bb;
             if (ScripterMod.blockScriptType != null)
@@ -116,7 +116,7 @@ namespace LenchScripter.Blocks
         /// Throws ActionNotFoundException if the block does not poses such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
-        public virtual void action(string actionName) {
+        public virtual void Action(string actionName) {
             actionName = actionName.ToUpper();
             throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
@@ -125,16 +125,16 @@ namespace LenchScripter.Blocks
         /// Returns true if the block has RigidBody.
         /// </summary>
         /// <returns>Boolean value.</returns>
-        public virtual bool exists()
+        public virtual bool Exists
         {
-            return bb != null && bb.GetComponent<Rigidbody>() != null;
+            get { return bb != null && bb.GetComponent<Rigidbody>() != null; }
         }
 
         /// <summary>
         /// Returns a list of all available toggles.
         /// </summary>
         /// <returns></returns>
-        public virtual List<string> getToggles()
+        public virtual List<string> GetToggles()
         {
             List<string> toggles = new List<string>();
             foreach (MToggle m in bb.Toggles)
@@ -148,7 +148,7 @@ namespace LenchScripter.Blocks
         /// Returns a list of all available sliders.
         /// </summary>
         /// <returns></returns>
-        public virtual List<string> getSliders()
+        public virtual List<string> GetSliders()
         {
             List<string> sliders = new List<string>();
             foreach (MSlider m in bb.Sliders)
@@ -163,7 +163,7 @@ namespace LenchScripter.Blocks
         /// </summary>
         /// <param name="toggleName">Toggle property to be set.</param>
         /// <param name="value">Boolean value to be set.</param>
-        public virtual void setToggleMode(string toggleName, bool value)
+        public virtual void SetToggleMode(string toggleName, bool value)
         {
             foreach (MToggle m in bb.Toggles)
             {
@@ -181,7 +181,7 @@ namespace LenchScripter.Blocks
         /// </summary>
         /// <param name="sliderName">Slider value to be set.</param>
         /// <param name="value">Float value to be set.</param>
-        public virtual void setSliderValue(string sliderName, float value)
+        public virtual void SetSliderValue(string sliderName, float value)
         {
             if (float.IsNaN(value))
                 throw new ArgumentException("Value is not a number (NaN).");
@@ -201,7 +201,7 @@ namespace LenchScripter.Blocks
         /// </summary>
         /// <param name="toggleName">Toggle property to be returned.</param>
         /// <returns>Boolean value.</returns>
-        public virtual bool getToggleMode(string toggleName)
+        public virtual bool GetToggleMode(string toggleName)
         {
             foreach (MToggle m in bb.Toggles)
             {
@@ -218,7 +218,7 @@ namespace LenchScripter.Blocks
         /// </summary>
         /// <param name="sliderName">Toggle property to be returned.</param>
         /// <returns>Float value.</returns>
-        public virtual float getSliderValue(string sliderName)
+        public virtual float GetSliderValue(string sliderName)
         {
             foreach (MSlider m in bb.Sliders)
             {
@@ -235,7 +235,7 @@ namespace LenchScripter.Blocks
         /// </summary>
         /// <param name="sliderName">Minimum slider value to be returned.</param>
         /// <returns>Float value.</returns>
-        public virtual float getSliderMin(string sliderName)
+        public virtual float GetSliderMin(string sliderName)
         {
             foreach (MSlider m in bb.Sliders)
             {
@@ -252,7 +252,7 @@ namespace LenchScripter.Blocks
         /// </summary>
         /// <param name="sliderName">Maximum slider value to be returned.</param>
         /// <returns>Float value.</returns>
-        public virtual float getSliderMax(string sliderName)
+        public virtual float GetSliderMax(string sliderName)
         {
             foreach (MSlider m in bb.Sliders)
             {
@@ -269,7 +269,7 @@ namespace LenchScripter.Blocks
         /// </summary>
         /// <param name="keyName">Key bind to add the key to.</param>
         /// <param name="key">Key value to be added.</param>
-        public virtual void addKey(string keyName, KeyCode key)
+        public virtual void AddKey(string keyName, KeyCode key)
         {
             foreach (MKey m in bb.Keys)
             {
@@ -293,7 +293,7 @@ namespace LenchScripter.Blocks
         /// </summary>
         /// <param name="keyName">Key bind to be replaced.</param>
         /// <param name="key">Key value to be replaced with.</param>
-        public virtual void replaceKey(string keyName, KeyCode key)
+        public virtual void ReplaceKey(string keyName, KeyCode key)
         {
             foreach (MKey m in bb.Keys)
             {
@@ -310,7 +310,7 @@ namespace LenchScripter.Blocks
         /// </summary>
         /// <param name="keyName">Key bind to be returned.</param>
         /// <returns>Integer value.</returns>
-        public virtual KeyCode getKey(string keyName)
+        public virtual KeyCode GetKey(string keyName)
         {
             foreach (MKey m in bb.Keys)
             {
@@ -326,7 +326,7 @@ namespace LenchScripter.Blocks
         /// Clears all keys of the specified key bind.
         /// </summary>
         /// <param name="keyName"></param>
-        public virtual void clearKeys(string keyName)
+        public virtual void ClearKeys(string keyName)
         {
             foreach (MKey m in bb.Keys)
             {
@@ -344,36 +344,36 @@ namespace LenchScripter.Blocks
         /// Returns the block's forward vector.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public virtual Vector3 getForward()
+        public virtual Vector3 Forward
         {
-            return bb.transform.forward;
+            get { return bb.transform.forward; }
         }
 
         /// <summary>
         /// Returns the block's up vector.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public virtual Vector3 getUp()
+        public virtual Vector3 Up
         {
-            return bb.transform.up;
+            get { return bb.transform.up; }
         }
 
         /// <summary>
         /// Returns the block's right vector.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public virtual Vector3 getRight()
+        public virtual Vector3 Right
         {
-            return bb.transform.right;
+            get { return bb.transform.right; }
         }
 
         /// <summary>
         /// Returns the position of the block.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public virtual Vector3 getPosition()
+        public virtual Vector3 Position
         {
-            return bb.transform.position;
+            get { return bb.transform.position; }
         }
 
         /// <summary>
@@ -381,48 +381,60 @@ namespace LenchScripter.Blocks
         /// Throws NoRigidBodyException if the block has no RigidBody.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public virtual Vector3 getVelocity()
+        public virtual Vector3 Velocity
         {
-            Rigidbody body = bb.GetComponent<Rigidbody>();
-            if (body != null)
-                return body.velocity;
-            throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
+            get
+            {
+                Rigidbody body = bb.GetComponent<Rigidbody>();
+                if (body != null)
+                    return body.velocity;
+                throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
+            }
         }
 
         /// <summary>
         /// Returns the mass of the block.
         /// </summary>
         /// <returns>Float value.</returns>
-        public virtual float getMass()
+        public virtual float Mass
         {
-            Rigidbody body = bb.GetComponent<Rigidbody>();
-            if (body != null)
-                return body.mass;
-            throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
+            get
+            {
+                Rigidbody body = bb.GetComponent<Rigidbody>();
+                if (body != null)
+                    return body.mass;
+                throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
+            }
         }
 
         /// <summary>
         /// Returns the center of mass of the block, relative to the block's position.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public virtual Vector3 getCenterOfMass()
+        public virtual Vector3 CenterOfMass
         {
-            Rigidbody body = bb.GetComponent<Rigidbody>();
-            if (body != null)
-                return body.centerOfMass;
-            throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
+            get
+            {
+                Rigidbody body = bb.GetComponent<Rigidbody>();
+                if (body != null)
+                    return body.centerOfMass;
+                throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
+            }
         }
 
         /// <summary>
         /// Returns the block's rotation in the form of it's Euler angles.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public virtual Vector3 getEulerAngles()
+        public virtual Vector3 EulerAngles
         {
-            Vector3 d2r = new Vector3(convertToRadians, convertToRadians, convertToRadians);
-            Vector3 euler = bb.transform.eulerAngles;
-            euler.Scale(d2r);
-            return euler;
+            get
+            {
+                Vector3 d2r = new Vector3(convertToRadians, convertToRadians, convertToRadians);
+                Vector3 euler = bb.transform.eulerAngles;
+                euler.Scale(d2r);
+                return euler;
+            }
         }
 
         /// <summary>
@@ -430,17 +442,20 @@ namespace LenchScripter.Blocks
         /// Throws NoRigidBodyException if the block has no RigidBody.
         /// </summary>
         /// <returns>UnityEngine.Vector3 vector.</returns>
-        public virtual Vector3 getAngularVelocity()
+        public virtual Vector3 AngularVelocity
         {
-            Rigidbody body = bb.GetComponent<Rigidbody>();
-            if (body != null)
+            get
             {
-                Vector3 convertUnits = new Vector3(convertToDegrees, convertToDegrees, convertToDegrees);
-                Vector3 angularVelocity = body.angularVelocity;
-                angularVelocity.Scale(convertUnits);
-                return angularVelocity;
+                Rigidbody body = bb.GetComponent<Rigidbody>();
+                if (body != null)
+                {
+                    Vector3 convertUnits = new Vector3(convertToDegrees, convertToDegrees, convertToDegrees);
+                    Vector3 angularVelocity = body.angularVelocity;
+                    angularVelocity.Scale(convertUnits);
+                    return angularVelocity;
+                }
+                throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
             }
-            throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
         }
     }
 

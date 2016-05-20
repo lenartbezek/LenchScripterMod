@@ -44,7 +44,7 @@ namespace LenchScripter.Internal
                 GUI.skin.window.padding.left = 8;
                 GUI.skin.window.padding.right = 8;
                 GUI.skin.window.padding.bottom = 8;
-                windowRect = GUILayout.Window(windowID, windowRect, DoWindow, "Lua Script Options",
+                windowRect = GUILayout.Window(windowID, windowRect, DoWindow, "Script Options",
                     GUILayout.Height(200),
                     GUILayout.Width(320));
 
@@ -82,7 +82,7 @@ namespace LenchScripter.Internal
                 ScriptFound = false;
             }
             if (ScriptFound && ScriptSource == "none")
-                ScriptSource = "lua";
+                ScriptSource = "py";
             if (!ScriptFound)
                 ScriptSource = BsgHasCode ? "bsg" : "none";
         }
@@ -99,7 +99,7 @@ namespace LenchScripter.Internal
             }
             try
             {
-                var path = ScriptName.EndsWith(".lua") ? ScriptName : ScriptName + ".lua";
+                var path = ScriptName.EndsWith(".py") ? ScriptName : ScriptName + ".py";
                 path = string.Concat(Application.dataPath, "/Scripts/", path);
                 File.WriteAllText(path, Code);
                 SuccessMessage = "Successfully wrote code to\n" + path;
@@ -121,9 +121,9 @@ namespace LenchScripter.Internal
             List<string> possibleFiles = new List<string>()
             {
                 path,
-                string.Concat(Application.dataPath, "/Scripts/", path, ".lua"),
+                string.Concat(Application.dataPath, "/Scripts/", path, ".py"),
                 string.Concat(Application.dataPath, "/Scripts/", path),
-                string.Concat(path, ".lua")
+                string.Concat(path, ".py")
             };
 
             foreach (string p in possibleFiles)
@@ -194,9 +194,9 @@ namespace LenchScripter.Internal
             {
                 ScriptSource = "bsg";
             }
-            if (GUILayout.Button(".lua", ScriptSource == "lua" ? Elements.Buttons.Default : Elements.Buttons.Disabled) && ScriptFound)
+            if (GUILayout.Button(".py", ScriptSource == "py" ? Elements.Buttons.Default : Elements.Buttons.Disabled) && ScriptFound)
             {
-                ScriptSource = "lua";
+                ScriptSource = "py";
             }
             GUILayout.EndHorizontal();
 
@@ -214,7 +214,7 @@ namespace LenchScripter.Internal
             // Draw export script to lua
             GUILayout.Label(" ", Elements.Labels.Title);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Save code to .lua", Elements.InputFields.Default);
+            GUILayout.Label("Save code to .py", Elements.InputFields.Default);
             if(GUILayout.Button("Export", BsgHasCode ? Elements.Buttons.Default : Elements.Buttons.Disabled, GUILayout.Width(100)))
             {
                 SaveToScript();

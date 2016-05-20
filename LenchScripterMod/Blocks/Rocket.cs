@@ -23,7 +23,7 @@ namespace LenchScripter.Blocks
         /// Throws ActionNotFoundException if the block does not posess such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
-        public override void action(string actionName)
+        public override void Action(string actionName)
         {
             actionName = actionName.ToUpper();
             if (actionName == "LAUNCH")
@@ -39,12 +39,12 @@ namespace LenchScripter.Blocks
         /// </summary>
         /// <param name="sliderName"></param>
         /// <param name="value"></param>
-        public override void setSliderValue(string sliderName, float value)
+        public override void SetSliderValue(string sliderName, float value)
         {
             if (sliderName.ToUpper() == "THRUST")
                 while (Mathf.Abs(value) < 0.001f)
                     value += (Random.value - 0.5f) * 0.02f;
-            base.setSliderValue(sliderName, value);
+            base.SetSliderValue(sliderName, value);
         }
 
         /// <summary>
