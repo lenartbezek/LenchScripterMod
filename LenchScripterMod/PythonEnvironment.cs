@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using IronPython.Hosting;
-using IronPython.Runtime.Types;
 using Microsoft.Scripting.Hosting;
+using IronPython.Runtime;
 
 namespace LenchScripter
 {
@@ -42,6 +43,15 @@ namespace LenchScripter
         }
 
         /// <summary>
+        /// Returns search paths of the engine.
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> GetSearchPaths()
+        {
+            return (List<string>)_engine.GetSearchPaths();
+        }
+
+        /// <summary>
         /// Scripter Mod's current environment instance.
         /// </summary>
         public static PythonEnvironment ScripterInstance {
@@ -55,10 +65,26 @@ namespace LenchScripter
             }
         }
 
-        static PythonEnvironment()
+        /// <summary>
+        /// Initializes IronPython engine.
+        /// </summary>
+        public static void InitializeEngine()
         {
             _engine = Python.CreateEngine();
-            _engine.GetSearchPaths().Add(Application.dataPath + "/Scripts/");
+
+            // Add search paths
+            ICollection<string> paths = _engine.GetSearchPaths();
+            paths.Add(Application.dataPath + "/Scripts/");
+            _engine.SetSearchPaths(paths);
+        }
+
+        /// <summary>
+        /// Destroys IronPython engine.
+        /// </summary>
+        public static void DestroyEngine()
+        {
+            _engine?.Runtime.Shutdown();
+            _engine = null;
         }
 
         /// <summary>
@@ -66,15 +92,20 @@ namespace LenchScripter
         /// </summary>
         public PythonEnvironment()
         {
+            // Initialize engine
+            if (_engine == null)
+                InitializeEngine();
+
             // Initialize scope
             scope = _engine.CreateScope();
 
-            // Create environment
+            // Set up environment
             _engine.Execute("import clr", scope);
             _engine.Execute("clr.AddReference(\"System\")", scope);
             _engine.Execute("clr.AddReference(\"UnityEngine\")", scope);
             _engine.Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode", scope);
-            scope.SetVariable("Besiege", DynamicHelpers.GetPythonTypeFromType(typeof(Functions)));
+            _engine.Execute("clr.AddReference(\"LenchScripterMod\")", scope);
+            _engine.Execute("from LenchScripter import Functions as Besiege", scope);
         }
 
         /// <summary>
@@ -165,14 +196,45 @@ namespace LenchScripter
         }
 
         /// <summary>
-        /// Evaluates expression and returns the result as type T.
+        /// Evaluates Python expression and saves the result in an output parameter.
+        /// Returns true if expression was executed with no errors.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="expression">Python expression.</param>
-        /// <returns></returns>
-        public object Evaluate<T>(string expression)
+        /// <param name="result">Output variable.</param>
+        /// <returns>Successfull execution.</returns>
+        public bool Evaluate(string expression, out object result)
         {
-            return _engine.Execute<T>(expression, scope);
+            try
+            {
+                result = _engine.Execute(expression, scope);
+                return true;
+            }
+            catch (Exception e)
+            {
+                exception = e;
+                result = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Evaluates Python expression.
+        /// Returns true if expression wa executed with no errors.
+        /// </summary>
+        /// <param name="expression">Python expression.</param>
+        /// <returns>Successfull execution.</returns>
+        public bool Evaluate(string expression)
+        {
+            try
+            {
+                _engine.Execute(expression, scope);
+                return true;
+            }
+            catch (Exception e)
+            {
+                exception = e;
+                return false;
+            }
         }
 
         private void GetFunctions()
@@ -180,6 +242,5 @@ namespace LenchScripter
             scope.TryGetVariable("Update", out update);
             scope.TryGetVariable("FixedUpdate", out fixedupdate);
         }
-
     }
 }

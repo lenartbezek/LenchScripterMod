@@ -1,102 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using spaar.ModLoader;
 using System.Collections.Generic;
-using System.Reflection;
-using spaar.ModLoader;
 using UnityEngine;
 
 namespace LenchScripter.Internal
 {
-    /// <summary>
-    /// Mod class loaded by the Mod Loader.
-    /// </summary>
-    public class ScripterMod : Mod
-    {
-        public override string Name { get; } = "Lench Scripter Mod";
-        public override string DisplayName { get; } = "Lench Scripter Mod";
-        public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(2, 0, 0);
-        public override string VersionExtra { get; } = "";
-        public override string BesiegeVersion { get; } = "v0.27";
-        public override bool CanBeUnloaded { get; } = true;
-        public override bool Preload { get; } = false;
-
-        internal static Type blockScriptType;
-
-        /// <summary>
-        /// Instantiates the mod and it's components.
-        /// Looks for and loads assemblies.
-        /// </summary>
-        public override void OnLoad()
-        {
-            UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
-            Game.OnSimulationToggle += Scripter.Instance.OnSimulationToggle;
-            Game.OnBlockPlaced += (Transform block) => BlockHandlers.rebuildDict = true;
-            Game.OnBlockRemoved += () => BlockHandlers.rebuildDict = true;
-            XmlSaver.OnSave += MachineData.Save;
-            XmlLoader.OnLoad += MachineData.Load;
-
-            LoadBlockLoaderAssembly();
-
-            Configuration.Load();
-
-            Keybindings.AddKeybinding("Show Block ID", new Key(KeyCode.None, KeyCode.LeftShift));
-            Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
-            Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
-
-            Commands.RegisterCommand("python", Scripter.Instance.InteractiveCommand, "Executes Python expression.");
-
-            SettingsMenu.RegisterSettingsButton("SCRIPT", Scripter.Instance.RunScriptSettingToggle, true, 12);
-        }
-
-        /// <summary>
-        /// Disables the mod from executing scripts.
-        /// Destroys GameObjects.
-        /// </summary>
-        public override void OnUnload()
-        {
-            Game.OnSimulationToggle -= Scripter.Instance.OnSimulationToggle;
-            Game.OnBlockPlaced -= (Transform block) => BlockHandlers.rebuildDict = true;
-            Game.OnBlockRemoved -= () => BlockHandlers.rebuildDict = true;
-            XmlSaver.OnSave -= MachineData.Save;
-            XmlLoader.OnLoad -= MachineData.Load;
-
-            Scripter.Instance.OnSimulationToggle(false);
-
-            Configuration.Save();
-
-            UnityEngine.Object.Destroy(Scripter.Instance);
-        }
-
-        /// <summary>
-        /// Attempts to load TGYD's BlockLoader assembly.
-        /// </summary>
-        /// <returns>Returns true if successfull.</returns>
-        private bool LoadBlockLoaderAssembly()
-        {
-            Assembly blockLoaderAssembly;
-            try
-            {
-                blockLoaderAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/BlockLoader.dll");
-            }
-            catch (FileNotFoundException)
-            {
-                return false;
-            }
-
-            foreach (Type type in blockLoaderAssembly.GetExportedTypes())
-            {
-                if (type.FullName == "BlockScript")
-                    blockScriptType = type;
-            }
-
-            if (blockScriptType == null)
-                return false;
-
-            return true;
-        }
-    }
-
     /// <summary>
     /// Class representing an instance of the mod.
     /// </summary>
@@ -126,7 +33,7 @@ namespace LenchScripter.Internal
         {
             bool success = true;
 
-            if(scriptFile != null)
+            if (scriptFile != null)
                 success = python.LoadScript(scriptFile);
             else if (scriptCode != null)
                 success = python.LoadCode(scriptCode);
@@ -136,7 +43,7 @@ namespace LenchScripter.Internal
             else
             {
                 ScriptOptions.ErrorMessage = "Error while compiling code.\nSee console (Ctrl+K) for more info.";
-                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n"+python.LastException);
+                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastException);
             }
         }
 
@@ -170,14 +77,18 @@ namespace LenchScripter.Internal
             for (int i = 0; i < args.Length; i++)
                 expression += args[i] + " ";
 
-            object result = python.Evaluate<object>(expression);
-
-            if (result != null)
+            object result = null;
+            var success = python.Evaluate(expression, out result);
+            if (success)
             {
-                result.ToString();
+                return result != null ? result.ToString() : "";
             }
-                
-            return "";
+            else
+            {
+                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastException);
+                return "";
+            }
+
         }
 
         /// <summary>
@@ -227,7 +138,7 @@ namespace LenchScripter.Internal
             IdentifierDisplay.ShowBlock(hoveredBlock);
         }
 
-        private void Start()
+        private void Awake()
         {
             Watchlist = gameObject.AddComponent<Watchlist>();
             IdentifierDisplay = gameObject.AddComponent<IdentifierDisplay>();
@@ -333,5 +244,4 @@ namespace LenchScripter.Internal
             ScriptOptions.ErrorMessage = null;
         }
     }
-
 }

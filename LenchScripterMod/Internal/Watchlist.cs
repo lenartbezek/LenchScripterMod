@@ -157,9 +157,7 @@ namespace LenchScripter.Internal
 
             List<VariableWatch> toBeRemoved = new List<VariableWatch>();
 
-            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
             newVariableName = GUI.TextField(new Rect(68, 48, 248, 20), newVariableName, Elements.InputFields.ComponentField);
-            GUI.backgroundColor = oldColor;
             if (GUI.Button(new Rect(4, 48, 60, 20), "Add", Elements.Buttons.Default) && Regex.Replace(newVariableName, @"\s+", "") != "")
             {
                 newVariableName = Regex.Replace(newVariableName, @"\s+", "");
@@ -167,7 +165,7 @@ namespace LenchScripter.Internal
                 newVariableName = "";
             }
 
-            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.4f);
+            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
             scrollPosition = GUI.BeginScrollView(
                 new Rect(4, 72, 312, 400),
                 scrollPosition,
@@ -177,7 +175,6 @@ namespace LenchScripter.Internal
             int i = 0;
             foreach (VariableWatch v in watched)
             {
-
                 // Button for removing line
                 if (GUI.Button(new Rect(4, 4 + i * 24, 20, 20), "×", Elements.Buttons.Red))
                     toBeRemoved.Add(v);
@@ -241,7 +238,7 @@ namespace LenchScripter.Internal
                 editing = false;
             }
 
-            GUI.Label(new Rect(8, 52, 224, 20), "Enter a Lua expression:", Elements.Labels.Default);
+            GUI.Label(new Rect(8, 52, 224, 20), "Enter a Python expression:", Elements.Labels.Default);
 
             var oldColor = GUI.backgroundColor;
             GUI.backgroundColor = Color.black;
@@ -331,6 +328,8 @@ namespace LenchScripter.Internal
             if (value != null)
             {
                 var type = value.GetType();
+                if (type == typeof(Vector4))
+                    return "Vector3" + value.ToString();
                 if (type == typeof(Vector3))
                     return "Vector3" + value.ToString();
                 if (type == typeof(Vector2))
@@ -350,10 +349,15 @@ namespace LenchScripter.Internal
         {
             if (global && Scripter.Instance.python != null)
             {
-                Scripter.Instance.python.Evaluate<object>(name + " = " + value);
+                Scripter.Instance.python.Evaluate(name + " = " + value);
             }
         }
 
+        /// <summary>
+        /// Returns true if the entries represent the same variable.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(VariableWatch other)
         {
             return this.name == other.name && this.global == other.global;
