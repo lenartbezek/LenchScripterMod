@@ -43,7 +43,7 @@ namespace LenchScripter.Internal
             else
             {
                 ScriptOptions.ErrorMessage = "Error while compiling code.\nSee console (Ctrl+K) for more info.";
-                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastException);
+                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastExceptionFormatted());
             }
         }
 
@@ -78,14 +78,14 @@ namespace LenchScripter.Internal
                 expression += args[i] + " ";
 
             object result = null;
-            var success = python.Evaluate(expression, out result);
+            var success = python.Execute(expression, out result);
             if (success)
             {
                 return result != null ? result.ToString() : "";
             }
             else
             {
-                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastException);
+                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastExceptionFormatted());
                 return "";
             }
 
@@ -191,7 +191,7 @@ namespace LenchScripter.Internal
             if (success.HasValue && !success.Value)
             {
                 ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
-                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastException);
+                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastExceptionFormatted());
             }
 
             // Call OnUpdate event for Block handlers.
@@ -216,7 +216,7 @@ namespace LenchScripter.Internal
             if (success.HasValue && !success.Value)
             {
                 ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
-                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastException);
+                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastExceptionFormatted());
             }
 
             // Call OnLateUpdate event for Block handlers.

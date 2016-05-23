@@ -4,7 +4,6 @@ using System.Reflection;
 using spaar.ModLoader;
 using UnityEngine;
 using LenchScripter.Internal;
-using System.Security.Policy;
 
 namespace LenchScripter
 {
@@ -22,7 +21,7 @@ namespace LenchScripter
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
 
-        internal static Type blockScriptType;
+        internal static Type blockScript;
 
         /// <summary>
         /// Is LenchScripterMod loaded.
@@ -39,20 +38,31 @@ namespace LenchScripter
             Game.OnSimulationToggle += Scripter.Instance.OnSimulationToggle;
             Game.OnBlockPlaced += (Transform block) => BlockHandlers.rebuildDict = true;
             Game.OnBlockRemoved += () => BlockHandlers.rebuildDict = true;
-            XmlSaver.OnSave += Internal.MachineData.Save;
-            XmlLoader.OnLoad += Internal.MachineData.Load;
+            
 
             LoadBlockLoaderAssembly();
+            if (LoadPythonAssembly())
+            {
+                PythonEnvironment.InitializeEngine();
+                Debug.Log("[LenchScripterMod]: Python assemblies loaded. Script engine available.");
 
-            Internal.Configuration.Load();
+                XmlSaver.OnSave += Internal.MachineData.Save;
+                XmlLoader.OnLoad += Internal.MachineData.Load;
 
-            Keybindings.AddKeybinding("Show Block ID", new Key(KeyCode.None, KeyCode.LeftShift));
-            Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
-            Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
+                Keybindings.AddKeybinding("Show Block ID", new Key(KeyCode.None, KeyCode.LeftShift));
+                Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
+                Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
 
-            Commands.RegisterCommand("python", Scripter.Instance.InteractiveCommand, "Executes Python expression.");
+                Commands.RegisterCommand("python", Scripter.Instance.InteractiveCommand, "Executes Python expression.");
 
-            SettingsMenu.RegisterSettingsButton("SCRIPT", Scripter.Instance.RunScriptSettingToggle, true, 12);
+                SettingsMenu.RegisterSettingsButton("SCRIPT", Scripter.Instance.RunScriptSettingToggle, true, 12);
+
+                Internal.Configuration.Load();
+            }
+            else
+            {
+                Debug.Log("[LenchScripterMod]: Running in API only mode. Script engine unavailable.");
+            }
         }
 
         /// <summary>
@@ -61,15 +71,18 @@ namespace LenchScripter
         /// </summary>
         public override void OnUnload()
         {
+
             Game.OnSimulationToggle -= Scripter.Instance.OnSimulationToggle;
+            Scripter.Instance.OnSimulationToggle(false);
             Game.OnBlockPlaced -= (Transform block) => BlockHandlers.rebuildDict = true;
             Game.OnBlockRemoved -= () => BlockHandlers.rebuildDict = true;
-            XmlSaver.OnSave -= Internal.MachineData.Save;
-            XmlLoader.OnLoad -= Internal.MachineData.Load;
 
-            Scripter.Instance.OnSimulationToggle(false);
-
-            Internal.Configuration.Save();
+            if (PythonEnvironment.Loaded)
+            {
+                XmlSaver.OnSave -= Internal.MachineData.Save;
+                XmlLoader.OnLoad -= Internal.MachineData.Load;
+                Internal.Configuration.Save();
+            }
 
             UnityEngine.Object.Destroy(Scripter.Instance);
         }
@@ -80,26 +93,35 @@ namespace LenchScripter
         /// <returns>Returns true if successfull.</returns>
         private bool LoadBlockLoaderAssembly()
         {
-            Assembly blockLoaderAssembly;
+            Assembly assembly;
             try
             {
-                blockLoaderAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/BlockLoader.dll");
+                assembly = Assembly.LoadFrom(Application.dataPath + "/Mods/BlockLoader.dll");
+                blockScript = assembly.GetType("BlockScript");
+                return blockScript != null;
             }
             catch (FileNotFoundException)
             {
                 return false;
             }
+        }
 
-            foreach (Type type in blockLoaderAssembly.GetExportedTypes())
+        /// <summary>
+        /// Loads Python assemblies into a new domain.
+        /// </summary>
+        /// <returns>Returns true if successfull.</returns>
+        private bool LoadPythonAssembly()
+        {
+            try
             {
-                if (type.FullName == "BlockScript")
-                    blockScriptType = type;
+                PythonEnvironment.ironPythonAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/IronPython.dll");
+                PythonEnvironment.microsoftScriptingAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Scripting.dll");
+                return true;
             }
-
-            if (blockScriptType == null)
+            catch (Exception e)
+            {
                 return false;
-
-            return true;
+            }
         }
     }
 }

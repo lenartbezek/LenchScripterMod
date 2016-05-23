@@ -278,9 +278,9 @@ namespace LenchScripter.Internal
                 if (!global)
                 { 
                     // Check if global
-                    if (Scripter.Instance.python.Scope.ContainsVariable(name))
+                    if (Scripter.Instance.python.ContainsVariable(name))
                     {
-                        object globalValue = Scripter.Instance.python.Scope.GetVariable(name);
+                        object globalValue = Scripter.Instance.python.GetVariable(name);
                         global = value.Equals(globalValue);
                     }
                 }  
@@ -304,8 +304,8 @@ namespace LenchScripter.Internal
         {
             if (global && Scripter.Instance.isSimulating)
             {
-                if(Scripter.Instance.python.Scope.ContainsVariable(name))
-                    value = Scripter.Instance.python.Scope.GetVariable(name);
+                if(Scripter.Instance.python.ContainsVariable(name))
+                    value = Scripter.Instance.python.GetVariable(name);
             }    
             try
             {
@@ -349,7 +349,7 @@ namespace LenchScripter.Internal
         {
             if (global && Scripter.Instance.python != null)
             {
-                Scripter.Instance.python.Evaluate(name + " = " + value);
+                Scripter.Instance.python.Execute(name + " = " + value);
             }
         }
 

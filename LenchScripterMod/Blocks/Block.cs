@@ -70,8 +70,8 @@ namespace LenchScripter.Blocks
         internal Block(BlockBehaviour bb)
         {
             this.bb = bb;
-            if (ScripterMod.blockScriptType != null)
-                bs = bb.GetComponent(ScripterMod.blockScriptType) as MonoBehaviour;
+            if (ScripterMod.blockScript != null)
+                bs = bb.GetComponent(ScripterMod.blockScript) as MonoBehaviour;
 
             BlockHandlers.OnUpdate += Update;
             BlockHandlers.OnLateUpdate += LateUpdate;
