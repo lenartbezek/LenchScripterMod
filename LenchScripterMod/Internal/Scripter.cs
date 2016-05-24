@@ -43,7 +43,7 @@ namespace LenchScripter.Internal
             else
             {
                 ScriptOptions.ErrorMessage = "Error while compiling code.\nSee console (Ctrl+K) for more info.";
-                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + python.LastExceptionFormatted());
+                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + PythonEnvironment.FormatException(python.LastException));
             }
         }
 
@@ -85,7 +85,7 @@ namespace LenchScripter.Internal
             }
             else
             {
-                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.GetType() + "</color></b>\n" + python.LastExceptionFormatted());
+                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + PythonEnvironment.FormatException(python.LastException));
                 return "";
             }
 
@@ -191,7 +191,7 @@ namespace LenchScripter.Internal
             if (success.HasValue && !success.Value)
             {
                 ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
-                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + python.LastExceptionFormatted());
+                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + PythonEnvironment.FormatException(python.LastException));
             }
 
             // Call OnUpdate event for Block handlers.
@@ -216,7 +216,7 @@ namespace LenchScripter.Internal
             if (success.HasValue && !success.Value)
             {
                 ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
-                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + python.LastExceptionFormatted());
+                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + PythonEnvironment.FormatException(python.LastException));
             }
 
             // Call OnLateUpdate event for Block handlers.

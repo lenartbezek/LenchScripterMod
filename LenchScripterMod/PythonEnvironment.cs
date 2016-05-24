@@ -42,6 +42,11 @@ namespace LenchScripter
         public static bool Loaded { get { return !(ironPythonAssembly == null || microsoftScriptingAssembly == null); } }
 
         /// <summary>
+        /// Is script enabled to be ran on simulation start.
+        /// </summary>
+        public static bool Enabled { get { return Scripter.Instance.enableScript; } }
+
+        /// <summary>
         /// Returns PythonEnvironment instance currently used by the scripting mod.
         /// Only instantiated during simulation.
         /// </summary>
@@ -55,14 +60,14 @@ namespace LenchScripter
         /// </summary>
         public Exception LastException
         {
-            get { return exception.InnerException; }
+            get { return exception.InnerException == null ? exception : exception.InnerException; }
         }
 
         /// <summary>
         /// Returns last occured exception in Python format.
         /// </summary>
         /// <returns></returns>
-        public string LastExceptionFormatted()
+        public static string FormatException(Exception e)
         {
             if (_engine == null)
                 throw new InvalidOperationException("Python engine not initialised.");
@@ -74,7 +79,7 @@ namespace LenchScripter
                     .GetGenericMethodDefinition()
                     .MakeGenericMethod(exceptionOperations)
                     .Invoke(_engine, new object[] { null });
-            return (string)exceptionOperations.GetMethod("FormatException", new[] { typeof(Exception) }).Invoke(_eo, new[] { exception.InnerException });
+            return (string)exceptionOperations.GetMethod("FormatException", new[] { typeof(Exception) }).Invoke(_eo, new[] { e });
         }
 
         /// <summary>
@@ -147,9 +152,10 @@ namespace LenchScripter
             Execute("import clr");
             Execute("clr.AddReference(\"System\")");
             Execute("clr.AddReference(\"UnityEngine\")");
-            Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode");
+            Execute("from UnityEngine import Vector2, Vector3, Vector4, Time, Input, KeyCode, Color");
             Execute("clr.AddReference(\"LenchScripterMod\")");
             Execute("from LenchScripter import Functions as Besiege");
+            Execute("from __future__ import division");
 
             // Redirect standard output
             Execute("import sys");
@@ -176,6 +182,24 @@ namespace LenchScripter
         public object GetVariable(string name)
         {
             return getVariableMethod.Invoke(scope, new [] { name });
+        }
+
+        /// <summary>
+        /// Returns variable with given name of type T.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public T GetVariable<T>(string name)
+        {
+            var method = scriptScope.GetMethods()
+                .Single(m =>
+                    m.Name == "GetVariable" &&
+                    m.IsGenericMethod &&
+                    m.GetParameters().Count() == 1 &&
+                    m.GetParameters()[0].ParameterType == typeof(string))
+                .MakeGenericMethod(typeof(T));
+
+            return (T)method.Invoke(scope, new[] { name });
         }
 
         /// <summary>
@@ -253,8 +277,30 @@ namespace LenchScripter
         }
 
         /// <summary>
-        /// Calls python Update function.
-        /// In case of exception, stops execution and returns false.
+        /// Compiles code into a function.
+        /// </summary>
+        /// <param name="code">Python code.</param>
+        /// <returns>Function that returns</returns>
+        public Func<object> Compile(string code)
+        {
+            var source = scriptEngine.GetMethod("CreateScriptSourceFromString", new[] { typeof(string) }).Invoke(_engine, new[] { code });
+            var compiled = scriptSource.GetMethods().
+                FirstOrDefault(method =>
+                    method.Name == "Compile" &&
+                    method.GetParameters().Count() == 0)
+                .Invoke(source, null);
+            var execute = compiledCode.GetMethods()
+                .FirstOrDefault(method =>
+                    method.Name == "Execute" &&
+                    method.GetParameters().Count() == 1 &&
+                    method.GetParameters()[0].ParameterType == scriptScope);
+            return () => execute.Invoke(compiled, new[] { scope });
+        }
+
+        /// <summary>
+        /// Calls Python Update function.
+        /// Does nothing if currently loaded script has no Update function.
+        /// In case of exception stops execution and returns false.
         /// </summary>
         /// <returns></returns>
         public bool CallUpdate()
@@ -273,8 +319,9 @@ namespace LenchScripter
         }
 
         /// <summary>
-        /// Calls Python Update function.
-        /// In case of exception, stops execution and returns false.
+        /// Calls Python FixedUpdate function.
+        /// Does nothing if currently loaded script has no FixedUpdate function.
+        /// In case of exception stops execution and returns false.
         /// </summary>
         /// <returns></returns>
         public bool CallFixedUpdate()
@@ -336,19 +383,11 @@ namespace LenchScripter
 
         private void GetFunctions()
         {
-            var method = scriptScope.GetMethods()
-                .Single(m =>
-                    m.Name == "GetVariable" &&
-                    m.IsGenericMethod &&
-                    m.GetParameters().Count() == 1 &&
-                    m.GetParameters()[0].ParameterType == typeof(string))
-                .MakeGenericMethod(typeof(Action));
-
             if (ContainsVariable("Update"))
-                update = method.Invoke(scope, new[] { "Update" }) as Action;
+                update = GetVariable<Action>("Update");
 
             if (ContainsVariable("FixedUpdate"))
-                fixedupdate = method.Invoke(scope, new[] { "FixedUpdate" }) as Action;
+                fixedupdate = GetVariable<Action>("FixedUpdate");
         }
 
         /// <summary>
