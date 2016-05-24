@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LenchScripter.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -23,6 +24,7 @@ namespace LenchScripter
         private static Type exceptionOperations;
         private static MethodInfo executeMethod;
         private static MethodInfo getVariableMethod;
+        private static MethodInfo setVariableMethod;
         private static MethodInfo containsVariableMethod;
 
         private static object _eo;
@@ -40,11 +42,20 @@ namespace LenchScripter
         public static bool Loaded { get { return !(ironPythonAssembly == null || microsoftScriptingAssembly == null); } }
 
         /// <summary>
+        /// Returns PythonEnvironment instance currently used by the scripting mod.
+        /// Only instantiated during simulation.
+        /// </summary>
+        public static PythonEnvironment ScripterEnvironment
+        {
+            get { return Scripter.Instance.python; }
+        }
+
+        /// <summary>
         /// Returns last occured exception.
         /// </summary>
         public Exception LastException
         {
-            get { return exception; }
+            get { return exception.InnerException; }
         }
 
         /// <summary>
@@ -63,7 +74,7 @@ namespace LenchScripter
                     .GetGenericMethodDefinition()
                     .MakeGenericMethod(exceptionOperations)
                     .Invoke(_engine, new object[] { null });
-            return (string)exceptionOperations.GetMethod("FormatException", new[] { typeof(Exception) }).Invoke(_eo, new[] { exception });
+            return (string)exceptionOperations.GetMethod("FormatException", new[] { typeof(Exception) }).Invoke(_eo, new[] { exception.InnerException });
         }
 
         /// <summary>
@@ -89,6 +100,7 @@ namespace LenchScripter
                     method.GetParameters()[0].ParameterType == typeof(string) &&
                     method.GetParameters()[1].ParameterType == scriptScope);
             getVariableMethod = scriptScope.GetMethod("GetVariable", new[] { typeof(string) });
+            setVariableMethod = scriptScope.GetMethod("SetVariable", new[] { typeof(string), typeof(object) });
             containsVariableMethod = scriptScope.GetMethod("ContainsVariable", new[] { typeof(string) });
             
             _engine = python.GetMethods()
@@ -138,6 +150,12 @@ namespace LenchScripter
             Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode");
             Execute("clr.AddReference(\"LenchScripterMod\")");
             Execute("from LenchScripter import Functions as Besiege");
+
+            // Redirect standard output
+            Execute("import sys");
+            SetVariable("pythonenv", this);
+            Execute("sys.stdout = pythonenv");
+            SetVariable("pythonenv", null);
         }
 
         /// <summary>
@@ -158,6 +176,16 @@ namespace LenchScripter
         public object GetVariable(string name)
         {
             return getVariableMethod.Invoke(scope, new [] { name });
+        }
+
+        /// <summary>
+        /// Sets the value of the variable with given name in current scope.
+        /// </summary>
+        /// <param name="name">Name of the variable.</param>
+        /// <param name="value">Value of the variable.</param>
+        public void SetVariable(string name, object value)
+        {
+            setVariableMethod.Invoke(scope, new[] { name, value });
         }
 
         /// <summary>
@@ -316,15 +344,21 @@ namespace LenchScripter
                     m.GetParameters()[0].ParameterType == typeof(string))
                 .MakeGenericMethod(typeof(Action));
 
-            try
-            { update = method.Invoke(scope, new[] { "Update" }) as Action; }
-            catch (Exception)
-            { update = null; }
+            if (ContainsVariable("Update"))
+                update = method.Invoke(scope, new[] { "Update" }) as Action;
 
-            try
-            { fixedupdate = method.Invoke(scope, new[] { "FixedUpdate" }) as Action; }
-            catch (Exception)
-            { fixedupdate = null; }
+            if (ContainsVariable("FixedUpdate"))
+                fixedupdate = method.Invoke(scope, new[] { "FixedUpdate" }) as Action;
+        }
+
+        /// <summary>
+        /// Used by the Python engine as standard output;
+        /// </summary>
+        /// <param name="s">Message to be sent.</param>
+        public void write(object s)
+        {
+            if (s.ToString().Trim().Length != 0)
+                Debug.Log(s.ToString().TrimEnd());
         }
     }
 }

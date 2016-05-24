@@ -43,7 +43,7 @@ namespace LenchScripter.Internal
             else
             {
                 ScriptOptions.ErrorMessage = "Error while compiling code.\nSee console (Ctrl+K) for more info.";
-                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastExceptionFormatted());
+                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + python.LastExceptionFormatted());
             }
         }
 
@@ -54,7 +54,7 @@ namespace LenchScripter.Internal
         internal void RunScriptSettingToggle(bool active)
         {
             enableScript = active;
-            if (isSimulating && enableScript)
+            if (isSimulating && enableScript && PythonEnvironment.Loaded)
                 CreateScriptingEnvironment();
             else
                 DestroyScriptingEnvironment();
@@ -85,7 +85,7 @@ namespace LenchScripter.Internal
             }
             else
             {
-                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastExceptionFormatted());
+                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.GetType() + "</color></b>\n" + python.LastExceptionFormatted());
                 return "";
             }
 
@@ -156,7 +156,7 @@ namespace LenchScripter.Internal
                 BlockHandlers.InitializeBlockHandlers();
 
             // Execute code on first call
-            if (enableScript && (scriptFile != null || scriptCode != null))
+            if (enableScript && (scriptFile != null || scriptCode != null) && PythonEnvironment.Loaded)
             {
                 LoadScript();
                 scriptFile = null;
@@ -164,13 +164,13 @@ namespace LenchScripter.Internal
             }
 
             // Toggle watchlist visibility
-            if (Keybindings.Get("Watchlist").Pressed())
+            if (Keybindings.Get("Watchlist").Pressed() && PythonEnvironment.Loaded)
             {
                 Watchlist.Visible = !Watchlist.Visible;
             }
 
             // Toggle options visibility
-            if (Keybindings.Get("Script Options").Pressed())
+            if (Keybindings.Get("Script Options").Pressed() && PythonEnvironment.Loaded)
             {
                 ScriptOptions.Visible = !ScriptOptions.Visible;
             }
@@ -178,7 +178,7 @@ namespace LenchScripter.Internal
             if (!isSimulating)
             {
                 // Show block identifiers
-                if (Keybindings.Get("Show Block ID").IsDown())
+                if (Keybindings.Get("Show Block ID").IsDown() && PythonEnvironment.Loaded)
                 {
                     ShowBlockIdentifiers();
                 }
@@ -191,7 +191,7 @@ namespace LenchScripter.Internal
             if (success.HasValue && !success.Value)
             {
                 ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
-                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastExceptionFormatted());
+                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + python.LastExceptionFormatted());
             }
 
             // Call OnUpdate event for Block handlers.
@@ -216,7 +216,7 @@ namespace LenchScripter.Internal
             if (success.HasValue && !success.Value)
             {
                 ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
-                ModConsole.AddMessage(LogType.Log, "<b><color=#FF0000>Python error:</color></b>\n" + python.LastExceptionFormatted());
+                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + python.LastExceptionFormatted());
             }
 
             // Call OnLateUpdate event for Block handlers.
@@ -233,7 +233,7 @@ namespace LenchScripter.Internal
             this.isSimulating = isSimulating;
             if (isSimulating)
             {
-                if (enableScript) CreateScriptingEnvironment();
+                if (enableScript && PythonEnvironment.Loaded) CreateScriptingEnvironment();
             }
             else
             {

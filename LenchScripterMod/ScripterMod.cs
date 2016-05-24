@@ -18,7 +18,7 @@ namespace LenchScripter
         public override Version Version { get; } = new Version(2, 0, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.27";
-        public override bool CanBeUnloaded { get; } = true;
+        public override bool CanBeUnloaded { get; } = false;
         public override bool Preload { get; } = false;
 
         internal static Type blockScript;
@@ -38,13 +38,13 @@ namespace LenchScripter
             Game.OnSimulationToggle += Scripter.Instance.OnSimulationToggle;
             Game.OnBlockPlaced += (Transform block) => BlockHandlers.rebuildDict = true;
             Game.OnBlockRemoved += () => BlockHandlers.rebuildDict = true;
-            
 
             LoadBlockLoaderAssembly();
+
             if (LoadPythonAssembly())
             {
                 PythonEnvironment.InitializeEngine();
-                Debug.Log("[LenchScripterMod]: Python assemblies loaded. Script engine available.");
+                Debug.Log("[LenchScripterMod]: Python assemblies loaded. Script engine ready.");
 
                 XmlSaver.OnSave += Internal.MachineData.Save;
                 XmlLoader.OnLoad += Internal.MachineData.Load;
@@ -116,9 +116,10 @@ namespace LenchScripter
             {
                 PythonEnvironment.ironPythonAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/IronPython.dll");
                 PythonEnvironment.microsoftScriptingAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Scripting.dll");
+                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/IronPython.Modules.dll");
                 return true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }
