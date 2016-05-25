@@ -144,15 +144,17 @@ namespace LenchScripter
                 InitializeEngine();
 
             // Initialize scope
-            scope = scriptEngine.GetMethods().Single
-                (method => method.Name == "CreateScope"
-                && method.GetParameters().Count() == 0).Invoke(_engine, null);
+            scope = scriptEngine.GetMethods()
+                .Single(method => 
+                    method.Name == "CreateScope" &&
+                    method.GetParameters().Count() == 0)
+                .Invoke(_engine, null);
 
             // Set up environment
             Execute("import clr");
             Execute("clr.AddReference(\"System\")");
             Execute("clr.AddReference(\"UnityEngine\")");
-            Execute("from UnityEngine import Vector2, Vector3, Vector4, Time, Input, KeyCode, Color");
+            Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode, Color");
             Execute("clr.AddReference(\"LenchScripterMod\")");
             Execute("from LenchScripter import Functions as Besiege");
             Execute("from __future__ import division");

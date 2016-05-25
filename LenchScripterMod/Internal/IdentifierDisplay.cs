@@ -95,7 +95,7 @@ namespace LenchScripter.Internal
             GUILayout.BeginHorizontal();
 
             GUILayout.TextField(sequential_id);
-            if (GUILayout.Button("✄", Elements.Buttons.Red, GUILayout.Width(30)))
+            if (GUILayout.Button("✂", Elements.Buttons.Red, GUILayout.Width(30)))
                 ClipboardHelper.clipBoard = sequential_id;
 
             GUILayout.EndHorizontal();
@@ -104,7 +104,7 @@ namespace LenchScripter.Internal
             GUILayout.BeginHorizontal();
 
             GUILayout.TextField(guid);
-            if (GUILayout.Button("✄", Elements.Buttons.Red, GUILayout.Width(30)))
+            if (GUILayout.Button("✂", Elements.Buttons.Red, GUILayout.Width(30)))
                 ClipboardHelper.clipBoard = guid;
 
             GUILayout.EndHorizontal();

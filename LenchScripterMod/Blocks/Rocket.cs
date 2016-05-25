@@ -60,12 +60,19 @@ namespace LenchScripter.Blocks
         }
 
         /// <summary>
-        /// Returns true if the rocket has fired.
+        /// Is true if the rocket has fired.
         /// </summary>
-        /// <returns></returns>
-        public bool hasFired()
+        public bool HasFired
         {
-            return tr.hasFired;
+            get { return tr.hasFired; }
+        }
+
+        /// <summary>
+        /// Is true if the rocket has exploded.
+        /// </summary>
+        public bool HasExploded
+        {
+            get { return tr.hasExploded; }
         }
     }
 }

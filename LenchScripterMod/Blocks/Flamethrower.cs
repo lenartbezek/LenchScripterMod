@@ -51,21 +51,18 @@ namespace LenchScripter.Blocks
         }
 
         /// <summary>
-        /// Sets the remaining time of the flamethrower.
+        /// Remaining time of the flamethrower.
         /// </summary>
-        /// <param name="t">Float value; time in seconds.</param>
-        public void setRemainingTime(float t)
+        public float RemainingTime
         {
-            fc.timey = 10 - t;
-        }
-
-        /// <summary>
-        /// Returns the remaining time of the flamethrower.
-        /// </summary>
-        /// <returns>Float value; time in seconds.</returns>
-        public float getRemainingTime()
-        {
-            return 10 - fc.timey;
+            get
+            {
+                return 10 - fc.timey;
+            }
+            set
+            {
+                fc.timey = 10 - value;
+            }
         }
 
         /// <summary>
