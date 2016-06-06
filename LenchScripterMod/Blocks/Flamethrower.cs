@@ -72,7 +72,7 @@ namespace LenchScripter.Blocks
         {
             if (setIgniteFlag)
             {
-                if (!fc.timeOut || STATLORD.infiniteAmmoMode)
+                if (!fc.timeOut || StatMaster.GodTools.InfiniteAmmoMode)
                 {
                     if (holdToFire.IsActive)
                     {
