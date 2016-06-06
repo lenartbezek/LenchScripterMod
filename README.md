@@ -3,7 +3,7 @@
 [![GitHub total downloads](https://img.shields.io/github/downloads/lench4991/LenchScripterMod/total.svg)](https://github.com/lench4991/LenchScripterMod/releases)
 
 # Lench Scripter Mod
-Python scripting mod for Besiege v0.27
+Python scripting mod for Besiege v0.3
 
 This mod enables you to control your Besiege machine Python scripts.
 Changing sliders or toggles and triggering actions allows you to create controllers, stabilisators, autopilots or anything you can dream up to guide your machines.
