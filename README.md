@@ -3,9 +3,9 @@
 [![GitHub total downloads](https://img.shields.io/github/downloads/lench4991/LenchScripterMod/total.svg)](https://github.com/lench4991/LenchScripterMod/releases)
 
 # Lench Scripter Mod
-Lua scripting mod for Besiege v0.27
+Python scripting mod for Besiege v0.27
 
-This mod enables you to control your Besiege machine with simple yet powerful Lua scripts.
+This mod enables you to control your Besiege machine Python scripts.
 Changing sliders or toggles and triggering actions allows you to create controllers, stabilisators, autopilots or anything you can dream up to guide your machines.
 
 Requires [Spaar's Mod Loader](http://forum.spiderlinggames.co.uk/forum/main-forum/besiege-early-access/modding/8432-spaar-s-mod-loader-1-3-3-besiege-v0-27).
