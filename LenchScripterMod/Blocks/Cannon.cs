@@ -7,12 +7,7 @@ namespace LenchScripter.Blocks
     /// </summary>
     public class Cannon : Block
     {
-        private static FieldInfo turret_field = typeof(CanonBlock).GetField("turret", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo shrapnel_field = typeof(CanonBlock).GetField("shrapnel", BindingFlags.NonPublic | BindingFlags.Instance);
-
         private CanonBlock cb;
-        private ArrowTurret turret;
-        private ShrapnelCannon shrapnel;
 
         /// <summary>
         /// Creates a Block handler.
@@ -21,8 +16,6 @@ namespace LenchScripter.Blocks
         public Cannon(BlockBehaviour bb) : base(bb)
         {
             cb = bb.GetComponent<CanonBlock>();
-            turret = turret_field.GetValue(cb) as ArrowTurret;
-            shrapnel = shrapnel_field.GetValue(cb) as ShrapnelCannon;
         }
 
         /// <summary>
@@ -46,10 +39,7 @@ namespace LenchScripter.Blocks
         /// </summary>
         public void Shoot()
         {
-            if (turret)
-                cb.StartCoroutine_Auto(turret.Shoot());
-            if (shrapnel)
-                cb.StartCoroutine_Auto(shrapnel.Shoot());
+            cb.Shoot();
         }
     }
 }
