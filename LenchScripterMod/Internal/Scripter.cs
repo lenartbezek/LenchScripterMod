@@ -164,13 +164,13 @@ namespace LenchScripter.Internal
             }
 
             // Toggle watchlist visibility
-            if (Keybindings.Get("Watchlist").Pressed() && PythonEnvironment.Loaded)
+            if (PythonEnvironment.Loaded && Keybindings.Get("Watchlist").Pressed())
             {
                 Watchlist.Visible = !Watchlist.Visible;
             }
 
             // Toggle options visibility
-            if (Keybindings.Get("Script Options").Pressed() && PythonEnvironment.Loaded)
+            if (PythonEnvironment.Loaded && Keybindings.Get("Script Options").Pressed())
             {
                 ScriptOptions.Visible = !ScriptOptions.Visible;
             }
@@ -178,7 +178,7 @@ namespace LenchScripter.Internal
             if (!isSimulating)
             {
                 // Show block identifiers
-                if (Keybindings.Get("Show Block ID").IsDown() && PythonEnvironment.Loaded)
+                if (PythonEnvironment.Loaded && Keybindings.Get("Show Block ID").IsDown())
                 {
                     ShowBlockIdentifiers();
                 }
