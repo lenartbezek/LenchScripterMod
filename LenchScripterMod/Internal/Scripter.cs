@@ -23,8 +23,8 @@ namespace LenchScripter.Internal
         internal string scriptFile;
         internal string scriptCode;
 
-        internal bool isSimulating;
         internal bool enableScript = true;
+        internal bool rebuildIDs = false;
 
         // Hovered block for ID dumping
         private GenericBlock hoveredBlock;
@@ -54,7 +54,7 @@ namespace LenchScripter.Internal
         internal void RunScriptSettingToggle(bool active)
         {
             enableScript = active;
-            if (isSimulating && enableScript && PythonEnvironment.Loaded)
+            if (Game.IsSimulating && enableScript && PythonEnvironment.Loaded)
                 CreateScriptingEnvironment();
             else
                 DestroyScriptingEnvironment();
@@ -70,7 +70,7 @@ namespace LenchScripter.Internal
         {
             if (args.Length == 0)
                 return "Executes a Python expression.";
-            if (!isSimulating || python == null)
+            if (!Game.IsSimulating || python == null)
                 return "Can only be called while simulating.";
 
             string expression = "";
@@ -127,7 +127,7 @@ namespace LenchScripter.Internal
         /// </summary>
         private void ShowBlockIdentifiers()
         {
-            if (Game.AddPiece.HoveredBlock == null)
+            if (Game.AddPiece == null || Game.AddPiece.HoveredBlock == null)
             {
                 hoveredBlock = null;
                 return;
@@ -147,13 +147,20 @@ namespace LenchScripter.Internal
 
         /// <summary>
         /// Mod functionality.
-        /// Calls Lua functions.
+        /// Calls Python functions.
         /// </summary>
         private void Update()
         {
             // Initialize block handlers
-            if (isSimulating && !BlockHandlers.Initialised)
+            if (Game.IsSimulating && !BlockHandlers.Initialised)
                 BlockHandlers.InitializeBlockHandlers();
+
+            // Initialize block identifiers
+            if (!Game.IsSimulating && rebuildIDs)
+            {
+                rebuildIDs = false;
+                BlockHandlers.InitializeBuildingBlockIDs();
+            }
 
             // Execute code on first call
             if (enableScript && (scriptFile != null || scriptCode != null) && PythonEnvironment.Loaded)
@@ -175,7 +182,7 @@ namespace LenchScripter.Internal
                 ScriptOptions.Visible = !ScriptOptions.Visible;
             }
 
-            if (!isSimulating)
+            if (!Game.IsSimulating)
             {
                 // Show block identifiers
                 if (PythonEnvironment.Loaded && Keybindings.Get("Show Block ID").IsDown())
@@ -184,7 +191,7 @@ namespace LenchScripter.Internal
                 }
             }
 
-            if (!isSimulating) return;
+            if (!Game.IsSimulating) return;
 
             // Call script update.
             var success = python?.CallUpdate();
@@ -209,7 +216,7 @@ namespace LenchScripter.Internal
         /// </summary>
         private void FixedUpdate()
         {
-            if (!isSimulating) return;
+            if (!Game.IsSimulating) return;
 
             // Call script update;
             var success = python?.CallFixedUpdate();
@@ -230,7 +237,6 @@ namespace LenchScripter.Internal
         internal void OnSimulationToggle(bool isSimulating)
         {
             BlockHandlers.DestroyBlockHandlers();
-            this.isSimulating = isSimulating;
             if (isSimulating)
             {
                 if (enableScript && PythonEnvironment.Loaded) CreateScriptingEnvironment();

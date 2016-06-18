@@ -13,7 +13,13 @@ namespace LenchScripter
         /// Event invoked when simulation block handlers are initialised.
         /// Use this instead of OnSimulation if you're relying on block handlers.
         /// </summary>
-        public static InitialisationDelegate OnInitialisation;
+        public static InitialisationDelegate OnHandlerInitialisation;
+
+        /// <summary>
+        /// Event invoked when block identifiers are changed.
+        /// Use this if you rely on sequential block identifiers.
+        /// </summary>
+        public static InitialisationDelegate OnIdentifierInitialisation;
 
         /// <summary>
         /// Returns True if block handlers are initialised.
@@ -21,11 +27,8 @@ namespace LenchScripter
         public static bool Initialised { get { return handlersInitialised; } }
         internal static bool handlersInitialised = false;
 
-        // Machine changed - flag for rebuild
-        internal static bool rebuildDict = false;
-
-        // Map: Building Block -> Sequential ID
-        internal static Dictionary<GenericBlock, string> buildingBlocks;
+        // Map: Building GUID -> Sequential ID
+        internal static Dictionary<Guid, string> buildingBlocks;
 
         // Map: BlockBehaviour -> Block handler
         internal static Dictionary<BlockBehaviour, Block> bbToBlockHandler;
@@ -166,7 +169,19 @@ namespace LenchScripter
         {
             if (buildingBlocks == null)
                 InitializeBuildingBlockIDs();
-            return buildingBlocks[block];
+            return buildingBlocks[block.Guid];
+        }
+
+        /// <summary>
+        /// Returns sequential identifier of a block with given guid during building.
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        public static string GetID(Guid guid)
+        {
+            if (buildingBlocks == null)
+                InitializeBuildingBlockIDs();
+            return buildingBlocks[guid];
         }
 
         /// <summary>
@@ -174,18 +189,20 @@ namespace LenchScripter
         /// Used for dumping block IDs while building.
         /// Called at first DumpBlockID after machine change.
         /// </summary>
-        internal static void InitializeBuildingBlockIDs()
+        public static void InitializeBuildingBlockIDs()
         {
             var typeCount = new Dictionary<string, int>();
-            buildingBlocks = new Dictionary<GenericBlock, string>();
+            buildingBlocks = new Dictionary<Guid, string>();
             for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
             {
                 GenericBlock block = Machine.Active().BuildingBlocks[i].GetComponent<GenericBlock>();
                 string name = Machine.Active().BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
-                buildingBlocks[block] = name + " " + typeCount[name];
+                buildingBlocks[block.Guid] = name + " " + typeCount[name];
             }
-            rebuildDict = false;
+
+            UnityEngine.Debug.Log("Machine blocks: " + buildingBlocks.Count);
+            OnIdentifierInitialisation?.Invoke();
         }
 
         /// <summary>
@@ -212,7 +229,7 @@ namespace LenchScripter
             }
 
             handlersInitialised = true;
-            OnInitialisation?.Invoke();
+            OnHandlerInitialisation?.Invoke();
         }
 
         /// <summary>

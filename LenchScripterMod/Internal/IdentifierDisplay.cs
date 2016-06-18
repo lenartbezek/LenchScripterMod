@@ -30,7 +30,7 @@ namespace LenchScripter.Internal
         /// </summary>
         private void OnGUI()
         {
-            if (Visible && !Scripter.Instance.isSimulating)
+            if (Visible && !Game.IsSimulating)
             {
                 InitialiseWindowRect();
 
@@ -79,12 +79,10 @@ namespace LenchScripter.Internal
                 Visible = false;
 
             string sequential_id;
-            string guid;
 
             try
             {
-                sequential_id = BlockHandlers.GetID(block);
-                guid = block.Guid.ToString();
+                sequential_id = BlockHandlers.GetID(block.Guid);
             }
             catch (KeyNotFoundException)
             {
@@ -103,9 +101,9 @@ namespace LenchScripter.Internal
             // GUID field
             GUILayout.BeginHorizontal();
 
-            GUILayout.TextField(guid);
+            GUILayout.TextField(block.Guid.ToString());
             if (GUILayout.Button("✂", Elements.Buttons.Red, GUILayout.Width(30)))
-                ClipboardHelper.clipBoard = guid;
+                ClipboardHelper.clipBoard = block.Guid.ToString();
 
             GUILayout.EndHorizontal();
 

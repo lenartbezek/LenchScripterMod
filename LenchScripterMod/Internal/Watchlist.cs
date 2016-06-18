@@ -302,7 +302,7 @@ namespace LenchScripter.Internal
         /// <returns></returns>
         public string GetValue()
         {
-            if (global && Scripter.Instance.isSimulating)
+            if (global && Game.IsSimulating)
             {
                 if(Scripter.Instance.python.ContainsVariable(name))
                     value = Scripter.Instance.python.GetVariable(name);

@@ -15,7 +15,7 @@ namespace LenchScripter
         public override string Name { get; } = "Lench Scripter Mod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(2, 0, 1);
+        public override Version Version { get; } = new Version(2, 1, 0);
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.3";
         public override bool CanBeUnloaded { get; } = false;
@@ -36,8 +36,8 @@ namespace LenchScripter
         {
             UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
             Game.OnSimulationToggle += Scripter.Instance.OnSimulationToggle;
-            Game.OnBlockPlaced += (Transform block) => BlockHandlers.rebuildDict = true;
-            Game.OnBlockRemoved += () => BlockHandlers.rebuildDict = true;
+            Game.OnBlockPlaced += (Transform block) => Scripter.Instance.rebuildIDs = true;
+            Game.OnBlockRemoved += () => Scripter.Instance.rebuildIDs = true;
 
             LoadBlockLoaderAssembly();
 
@@ -74,8 +74,8 @@ namespace LenchScripter
 
             Game.OnSimulationToggle -= Scripter.Instance.OnSimulationToggle;
             Scripter.Instance.OnSimulationToggle(false);
-            Game.OnBlockPlaced -= (Transform block) => BlockHandlers.rebuildDict = true;
-            Game.OnBlockRemoved -= () => BlockHandlers.rebuildDict = true;
+            Game.OnBlockPlaced -= (Transform block) => Scripter.Instance.rebuildIDs = true;
+            Game.OnBlockRemoved -= () => Scripter.Instance.rebuildIDs = true;
 
             if (PythonEnvironment.Loaded)
             {

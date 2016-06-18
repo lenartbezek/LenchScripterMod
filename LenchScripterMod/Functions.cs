@@ -157,7 +157,7 @@ namespace LenchScripter
         public static Vector3 GetRaycastHit()
         {
             RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Ray ray = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 return hit.point;
@@ -190,7 +190,7 @@ namespace LenchScripter
         public static TrackedCollider GetRaycastCollider()
         {
             RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Ray ray = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 return new TrackedCollider(hit.collider, hit.point);
