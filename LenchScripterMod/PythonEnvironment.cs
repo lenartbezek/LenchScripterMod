@@ -34,7 +34,7 @@ namespace LenchScripter
         private Action update;
         private Action fixedupdate;
 
-        private Exception exception;
+        private static List<string> init_statements = new List<string>();
 
         /// <summary>
         /// Are Python assemblies loaded and engine ready to be initialised.
@@ -56,14 +56,6 @@ namespace LenchScripter
         }
 
         /// <summary>
-        /// Returns last occured exception.
-        /// </summary>
-        public Exception LastException
-        {
-            get { return exception.InnerException == null ? exception : exception.InnerException; }
-        }
-
-        /// <summary>
         /// Returns last occured exception in Python format.
         /// </summary>
         /// <returns></returns>
@@ -79,7 +71,19 @@ namespace LenchScripter
                     .GetGenericMethodDefinition()
                     .MakeGenericMethod(exceptionOperations)
                     .Invoke(_engine, new object[] { null });
+            if (e.InnerException != null)
+                e = e.InnerException;
             return (string)exceptionOperations.GetMethod("FormatException", new[] { typeof(Exception) }).Invoke(_eo, new[] { e });
+        }
+
+        /// <summary>
+        /// Adds a statement to the list of initialisation statements
+        /// to be executed every time when creating an environment.
+        /// </summary>
+        /// <param name="s">Python expression.</param>
+        public static void AddInitStatement(string s)
+        {
+            init_statements.Add(s);
         }
 
         /// <summary>
@@ -157,13 +161,16 @@ namespace LenchScripter
             Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode, Color");
             Execute("clr.AddReference(\"LenchScripterMod\")");
             Execute("from LenchScripter import Functions as Besiege");
-            Execute("from __future__ import division");
 
             // Redirect standard output
             Execute("import sys");
             SetVariable("pythonenv", this);
             Execute("sys.stdout = pythonenv");
             SetVariable("pythonenv", null);
+
+            // Run additional init statements
+            foreach (string s in init_statements)
+                Execute(s);
         }
 
         /// <summary>
@@ -217,65 +224,43 @@ namespace LenchScripter
         /// <summary>
         /// Compiles and executes code from string.
         /// </summary>
-        /// <param name="code"></param>
-        public bool LoadCode(string code)
+        /// <param name="code">Complete Python script.</param>
+        public void LoadCode(string code)
         {
-            try
-            {
-                var source = scriptEngine.GetMethod("CreateScriptSourceFromString", new[] { typeof(string) }).Invoke(_engine, new [] { code });
-                var compiled = scriptSource.GetMethods().
-                    FirstOrDefault(method =>
-                        method.Name == "Compile" &&
-                        method.GetParameters().Count() == 0)
-                    .Invoke(source, null);
-                compiledCode.GetMethods()
-                    .FirstOrDefault(method =>
-                        method.Name == "Execute" &&
-                        method.GetParameters().Count() == 1 &&
-                        method.GetParameters()[0].ParameterType == scriptScope)
-                    .Invoke(compiled, new[] { scope });
-                GetFunctions();
-                return true;
-            }
-            catch (Exception e)
-            {
-                exception = e;
-                update = null;
-                fixedupdate = null;
-                return false;
-            }
+            var source = scriptEngine.GetMethod("CreateScriptSourceFromString", new[] { typeof(string) }).Invoke(_engine, new [] { code });
+            var compiled = scriptSource.GetMethods().
+                FirstOrDefault(method =>
+                    method.Name == "Compile" &&
+                    method.GetParameters().Count() == 0)
+                .Invoke(source, null);
+            compiledCode.GetMethods()
+                .FirstOrDefault(method =>
+                    method.Name == "Execute" &&
+                    method.GetParameters().Count() == 1 &&
+                    method.GetParameters()[0].ParameterType == scriptScope)
+                .Invoke(compiled, new[] { scope });
+            GetFunctions();
         }
 
         /// <summary>
         /// Compiles and executes code from file.
         /// </summary>
-        /// <param name="path"></param>
-        public bool LoadScript(string path)
+        /// <param name="path">Path to a Python script.</param>
+        public void LoadScript(string path)
         {
-            try
-            {
-                var source = scriptEngine.GetMethod("CreateScriptSourceFromFile", new[] { typeof(string) }).Invoke(_engine, new[] { path });
-                var compiled = scriptSource.GetMethods()
-                    .FirstOrDefault(method => 
-                        method.Name == "Compile" &&
-                        method.GetParameters().Count() == 0)
-                    .Invoke(source, null);
-                compiledCode.GetMethods()
-                    .FirstOrDefault(method => 
-                        method.Name == "Execute" &&
-                        method.GetParameters().Count() == 1 &&
-                        method.GetParameters()[0].ParameterType == scriptScope)
-                    .Invoke(compiled, new[] { scope });
-                GetFunctions();
-                return true;
-            }
-            catch (Exception e)
-            {
-                exception = e;
-                update = null;
-                fixedupdate = null;
-                return false;
-            }
+            var source = scriptEngine.GetMethod("CreateScriptSourceFromFile", new[] { typeof(string) }).Invoke(_engine, new[] { path });
+            var compiled = scriptSource.GetMethods()
+                .FirstOrDefault(method => 
+                    method.Name == "Compile" &&
+                    method.GetParameters().Count() == 0)
+                .Invoke(source, null);
+            compiledCode.GetMethods()
+                .FirstOrDefault(method => 
+                    method.Name == "Execute" &&
+                    method.GetParameters().Count() == 1 &&
+                    method.GetParameters()[0].ParameterType == scriptScope)
+                .Invoke(compiled, new[] { scope });
+            GetFunctions();
         }
 
         /// <summary>
@@ -302,22 +287,10 @@ namespace LenchScripter
         /// <summary>
         /// Calls Python Update function.
         /// Does nothing if currently loaded script has no Update function.
-        /// In case of exception stops execution and returns false.
         /// </summary>
-        /// <returns></returns>
-        public bool CallUpdate()
+        public void CallUpdate()
         {
-            try
-            {
-                update?.Invoke();
-                return true;
-            }
-            catch (Exception e)
-            {
-                exception = e;
-                update = null;
-                return false;
-            }
+            update?.Invoke();
         }
 
         /// <summary>
@@ -326,19 +299,9 @@ namespace LenchScripter
         /// In case of exception stops execution and returns false.
         /// </summary>
         /// <returns></returns>
-        public bool CallFixedUpdate()
+        public void CallFixedUpdate()
         {
-            try
-            {
-                fixedupdate?.Invoke();
-                return true;
-            }
-            catch (Exception e)
-            {
-                exception = e;
-                fixedupdate = null;
-                return false;
-            }
+            fixedupdate?.Invoke();
         }
 
         /// <summary>
@@ -346,41 +309,10 @@ namespace LenchScripter
         /// Returns true if expression was executed with no errors.
         /// </summary>
         /// <param name="expression">Python expression.</param>
-        /// <param name="result">Output variable.</param>
         /// <returns>Successfull execution.</returns>
-        public bool Execute(string expression, out object result)
+        public object Execute(string expression)
         {
-            try
-            {
-                result = executeMethod.Invoke(_engine, new [] { expression, scope });
-                return true;
-            }
-            catch (Exception e)
-            {
-                exception = e;
-                result = null;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Evaluates Python expression.
-        /// Returns true if expression wa executed with no errors.
-        /// </summary>
-        /// <param name="expression">Python expression.</param>
-        /// <returns>Successfull execution.</returns>
-        public bool Execute(string expression)
-        {
-            try
-            {
-                executeMethod.Invoke(_engine, new[] { expression, scope });
-                return true;
-            }
-            catch (Exception e)
-            {
-                exception = e;
-                return false;
-            }
+            return executeMethod.Invoke(_engine, new [] { expression, scope });
         }
 
         private void GetFunctions()

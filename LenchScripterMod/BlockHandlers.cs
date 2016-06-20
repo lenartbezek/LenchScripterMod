@@ -13,13 +13,7 @@ namespace LenchScripter
         /// Event invoked when simulation block handlers are initialised.
         /// Use this instead of OnSimulation if you're relying on block handlers.
         /// </summary>
-        public static InitialisationDelegate OnHandlerInitialisation;
-
-        /// <summary>
-        /// Event invoked when block identifiers are changed.
-        /// Use this if you rely on sequential block identifiers.
-        /// </summary>
-        public static InitialisationDelegate OnIdentifierInitialisation;
+        public static InitialisationDelegate OnInitialisation;
 
         /// <summary>
         /// Returns True if block handlers are initialised.
@@ -200,9 +194,6 @@ namespace LenchScripter
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
                 buildingBlocks[block.Guid] = name + " " + typeCount[name];
             }
-
-            UnityEngine.Debug.Log("Machine blocks: " + buildingBlocks.Count);
-            OnIdentifierInitialisation?.Invoke();
         }
 
         /// <summary>
@@ -229,7 +220,7 @@ namespace LenchScripter
             }
 
             handlersInitialised = true;
-            OnHandlerInitialisation?.Invoke();
+            OnInitialisation?.Invoke();
         }
 
         /// <summary>

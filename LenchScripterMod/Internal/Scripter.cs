@@ -1,4 +1,5 @@
 ﻿using spaar.ModLoader;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,25 +26,26 @@ namespace LenchScripter.Internal
 
         internal bool enableScript = true;
         internal bool rebuildIDs = false;
+        internal bool runtime_error = false;
 
         // Hovered block for ID dumping
         private GenericBlock hoveredBlock;
 
         private void LoadScript()
         {
-            bool success = true;
-
-            if (scriptFile != null)
-                success = python.LoadScript(scriptFile);
-            else if (scriptCode != null)
-                success = python.LoadCode(scriptCode);
-
-            if (success)
-                ScriptOptions.SuccessMessage = "Successfully compiled code.";
-            else
+            try
             {
+                if (scriptFile != null)
+                    python.LoadScript(scriptFile);
+                else if (scriptCode != null)
+                    python.LoadCode(scriptCode);
+                ScriptOptions.SuccessMessage = "Successfully compiled code.";
+            }
+            catch (Exception e)
+            {
+                if (e.InnerException != null) e = e.InnerException;
                 ScriptOptions.ErrorMessage = "Error while compiling code.\nSee console (Ctrl+K) for more info.";
-                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + PythonEnvironment.FormatException(python.LastException));
+                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
             }
         }
 
@@ -77,15 +79,15 @@ namespace LenchScripter.Internal
             for (int i = 0; i < args.Length; i++)
                 expression += args[i] + " ";
 
-            object result = null;
-            var success = python.Execute(expression, out result);
-            if (success)
+            try
             {
+                var result = python.Execute(expression);
                 return result != null ? result.ToString() : "";
             }
-            else
+            catch (Exception e)
             {
-                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + PythonEnvironment.FormatException(python.LastException));
+                if (e.InnerException != null) e = e.InnerException;
+                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
                 return "";
             }
 
@@ -97,6 +99,7 @@ namespace LenchScripter.Internal
         private void CreateScriptingEnvironment()
         {
             python = new PythonEnvironment();
+            runtime_error = false;
 
             // Find script file
             if (scriptFile == null)
@@ -194,11 +197,17 @@ namespace LenchScripter.Internal
             if (!Game.IsSimulating) return;
 
             // Call script update.
-            var success = python?.CallUpdate();
-            if (success.HasValue && !success.Value)
+            try
             {
+                if (!runtime_error)
+                    python?.CallUpdate();
+            }
+            catch (Exception e)
+            {
+                runtime_error = true;
+                if (e.InnerException != null) e = e.InnerException;
                 ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
-                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + PythonEnvironment.FormatException(python.LastException));
+                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
             }
 
             // Call OnUpdate event for Block handlers.
@@ -218,12 +227,18 @@ namespace LenchScripter.Internal
         {
             if (!Game.IsSimulating) return;
 
-            // Call script update;
-            var success = python?.CallFixedUpdate();
-            if (success.HasValue && !success.Value)
+            // Call script update.
+            try
             {
+                if (!runtime_error)
+                    python?.CallFixedUpdate();
+            }
+            catch (Exception e)
+            {
+                runtime_error = true;
+                if (e.InnerException != null) e = e.InnerException;
                 ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
-                Debug.Log("<b><color=#FF0000>Python error: " + python.LastException.Message + "</color></b>\n" + PythonEnvironment.FormatException(python.LastException));
+                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
             }
 
             // Call OnLateUpdate event for Block handlers.
