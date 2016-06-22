@@ -169,8 +169,16 @@ namespace LenchScripter
             SetVariable("pythonenv", null);
 
             // Run additional init statements
-            foreach (string s in init_statements)
-                Execute(s);
+            for (int i = 0; i < init_statements.Count;)
+                try
+                {
+                    Execute(init_statements[i]);
+                    i++;
+                }
+                catch
+                {
+                    init_statements.RemoveAt(i);
+                }
         }
 
         /// <summary>

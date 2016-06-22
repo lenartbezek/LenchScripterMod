@@ -148,6 +148,13 @@ namespace LenchScripter.Internal
             ScriptOptions = gameObject.AddComponent<ScriptOptions>();
         }
 
+        private void OnDestroy()
+        {
+            Destroy(Watchlist);
+            Destroy(IdentifierDisplay);
+            Destroy(ScriptOptions);
+        }
+
         /// <summary>
         /// Mod functionality.
         /// Calls Python functions.
