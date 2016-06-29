@@ -72,8 +72,6 @@ namespace LenchScripter.Internal
         {
             if (args.Length == 0)
                 return "Executes a Python expression.";
-            if (!Game.IsSimulating || python == null)
-                return "Can only be called while simulating.";
 
             string expression = "";
             for (int i = 0; i < args.Length; i++)
@@ -148,8 +146,16 @@ namespace LenchScripter.Internal
             ScriptOptions = gameObject.AddComponent<ScriptOptions>();
         }
 
+        private void Start()
+        {
+            if (PythonEnvironment.Loaded)
+                CreateScriptingEnvironment();
+        }
+
         private void OnDestroy()
         {
+            DestroyScriptingEnvironment();
+            PythonEnvironment.DestroyEngine();
             Destroy(Watchlist);
             Destroy(IdentifierDisplay);
             Destroy(ScriptOptions);
@@ -173,7 +179,7 @@ namespace LenchScripter.Internal
             }
 
             // Execute code on first call
-            if (enableScript && (scriptFile != null || scriptCode != null) && PythonEnvironment.Loaded)
+            if (Game.IsSimulating && PythonEnvironment.Loaded && enableScript && (scriptFile != null || scriptCode != null))
             {
                 LoadScript();
                 scriptFile = null;
@@ -259,13 +265,10 @@ namespace LenchScripter.Internal
         internal void OnSimulationToggle(bool isSimulating)
         {
             BlockHandlers.DestroyBlockHandlers();
-            if (isSimulating)
-            {
-                if (enableScript && PythonEnvironment.Loaded) CreateScriptingEnvironment();
-            }
-            else
+            if (enableScript && PythonEnvironment.Loaded)
             {
                 DestroyScriptingEnvironment();
+                CreateScriptingEnvironment();
             }
             ScriptOptions.SuccessMessage = null;
             ScriptOptions.NoteMessage = null;
