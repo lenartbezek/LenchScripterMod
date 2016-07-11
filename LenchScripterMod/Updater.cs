@@ -83,24 +83,29 @@ namespace Lench.Scripter
         /// <param name="api">GitHub API release url.</param>
         /// <param name="current">Current version.</param>
         /// <param name="links">Links to be displayed.</param>
+        /// <param name="verbose">Verbose mode.</param>
         /// <returns></returns>
-        public void Check(string window_name, string api, Version current, List<Link> links)
+        public void Check(string window_name, string api, Version current, List<Link> links, bool verbose = false)
         {
             WindowName = window_name;
             API = api;
             CurrentVersion = current;
             Links = links;
-            StartCoroutine(Check());
+            StartCoroutine(Check(verbose));
         } 
 
-        private IEnumerator Check()
+        private IEnumerator Check(bool verbose)
         {
             var www = new WWW(API);
 
             yield return www;
 
             if (!www.isDone || !string.IsNullOrEmpty(www.error))
+            {
+                if (verbose) Debug.Log("=> Unable to connect.");
+                Destroy(this);
                 yield break;
+            }  
 
             string response = www.text;
 
@@ -111,9 +116,12 @@ namespace Lench.Scripter
 
             if (LatestVersion > CurrentVersion)
             {
+                if (verbose) Debug.Log("=> Update available: v" + LatestVersion+": "+LatestReleaseName);
                 UpdateAvailable = true;
                 Visible = true;
             }
+            else
+                if (verbose) Debug.Log("=> Mod is up to date.");
         }
 
         private void OnGUI()
@@ -150,7 +158,7 @@ namespace Lench.Scripter
             if (GUI.Button(new Rect(windowRect.width - 38, 8, 30, 30),
                 "×", Elements.Buttons.Red))
             {
-                Visible = false;
+                Destroy(this);
             }
 
             // Drag window

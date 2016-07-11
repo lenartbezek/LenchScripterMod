@@ -1,6 +1,7 @@
 ﻿using spaar.ModLoader;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace Lench.Scripter.Internal
@@ -28,8 +29,11 @@ namespace Lench.Scripter.Internal
         internal bool rebuildIDs = false;
         internal bool runtime_error = false;
 
+        internal bool ModUpdaterEnabled = false;
+
         // Hovered block for ID dumping
         private GenericBlock hoveredBlock;
+
 
         private void LoadScript()
         {
@@ -63,12 +67,12 @@ namespace Lench.Scripter.Internal
         }
 
         /// <summary>
-        /// Called on lua console command.
+        /// Called on python console command.
         /// </summary>
         /// <param name="args"></param>
         /// <param name="namedArgs"></param>
         /// <returns></returns>
-        internal string InteractiveCommand(string[] args, IDictionary<string, string> namedArgs)
+        internal string PythonCommand(string[] args, IDictionary<string, string> namedArgs)
         {
             if (args.Length == 0)
                 return "Executes a Python expression.";
@@ -88,7 +92,62 @@ namespace Lench.Scripter.Internal
                 Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
                 return "";
             }
+        }
 
+        internal string ConfigurationCommand(string[] args, IDictionary<string, string> namedArgs)
+        {
+            if (args.Length > 0)
+            {
+                switch (args[0].ToLower())
+                {
+                    case "modupdate":
+                        if (args.Length > 1)
+                        {
+                            switch (args[1].ToLower())
+                            {
+                                case "check":
+                                    CheckForModUpdate(true);
+                                    return "Checking for mod updates ...";
+                                case "enable":
+                                    ModUpdaterEnabled = true;
+                                    return "Mod update checker enabled.";
+                                case "disable":
+                                    ModUpdaterEnabled = false;
+                                    return "Mod update checker disabled.";
+                                default:
+                                    return "Invalid argument [check/enable/disable]. Enter 'lsm' for all available commands.";
+                            }
+                        }
+                        else
+                        {
+                            return "Missing argument [check/enable/disable]. Enter 'lsm' for all available commands.";
+                        }
+                    default:
+                        return "Invalid command. Enter 'lsm' for all available commands.";
+                }
+            }
+            else
+            {
+                return "Available commands:\n" +
+                    "  lsm modupdate check  \t Checks for mod update.\n" +
+                    "  lsm modupdate enable \t Enables update checker.\n" +
+                    "  lsm modupdate disable\t Disables update checker.\n";
+            }
+        }
+
+        private void CheckForModUpdate(bool verbose = false)
+        {
+            var updater = gameObject.AddComponent<Updater>();
+            updater.Check(
+                "Lench Scripter Mod",
+                "https://api.github.com/repos/lench4991/LenchScripterMod/releases",
+                Assembly.GetExecutingAssembly().GetName().Version,
+                new List<Updater.Link>()
+                    {
+                            new Updater.Link() { DisplayName = "Spiderling forum page", URL = "http://forum.spiderlinggames.co.uk/index.php?threads/3003/" },
+                            new Updater.Link() { DisplayName = "GitHub release page", URL = "https://github.com/lench4991/LenchScripterMod/releases/latest" }
+                    },
+                verbose);
         }
 
         /// <summary>
@@ -150,6 +209,9 @@ namespace Lench.Scripter.Internal
         {
             if (PythonEnvironment.Loaded)
                 CreateScriptingEnvironment();
+
+            if (ModUpdaterEnabled)
+                CheckForModUpdate();
         }
 
         private void OnDestroy()

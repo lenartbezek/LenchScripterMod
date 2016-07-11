@@ -60,22 +60,12 @@ namespace Lench.Scripter
                 Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
                 Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
 
-                Commands.RegisterCommand("python", Internal.Scripter.Instance.InteractiveCommand, "Executes Python expression.");
+                Commands.RegisterCommand("lsm", Internal.Scripter.Instance.ConfigurationCommand, "Enter 'acm' for all available commands.");
+                Commands.RegisterCommand("python", Internal.Scripter.Instance.PythonCommand, "Executes Python expression.");
 
                 SettingsMenu.RegisterSettingsButton("SCRIPT", Internal.Scripter.Instance.RunScriptSettingToggle, true, 12);
 
                 Internal.Configuration.Load();
-
-                var updater = Internal.Scripter.Instance.gameObject.AddComponent<Updater>();
-                updater.Check(
-                    "Lench Scripter Mod",
-                    "https://api.github.com/repos/lench4991/LenchScripterMod/releases",
-                    Assembly.GetExecutingAssembly().GetName().Version,
-                    new List<Updater.Link>()
-                        {
-                            new Updater.Link() { DisplayName = "Spiderling forum page", URL = "http://forum.spiderlinggames.co.uk/index.php?threads/3003/" },
-                            new Updater.Link() { DisplayName = "GitHub release page", URL = "https://github.com/lench4991/LenchScripterMod/releases/latest" }
-                        });
             }
         }
 

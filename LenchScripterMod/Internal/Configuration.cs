@@ -6,6 +6,8 @@ namespace Lench.Scripter.Internal
     {
         internal static void Load()
         {
+            Scripter.Instance.ModUpdaterEnabled = spaar.ModLoader.Configuration.GetBool("mod-updater-enabled", true);
+
             Scripter.Instance.Watchlist.ConfigurationPosition = new Vector2();
             Scripter.Instance.Watchlist.ConfigurationPosition.x = spaar.ModLoader.Configuration.GetFloat("WatchlistXPos", -380);
             Scripter.Instance.Watchlist.ConfigurationPosition.y = spaar.ModLoader.Configuration.GetFloat("WatchlistYPos", 200);
@@ -21,6 +23,8 @@ namespace Lench.Scripter.Internal
 
         internal static void Save()
         {
+            spaar.ModLoader.Configuration.SetBool("mod-updater-enabled", Scripter.Instance.ModUpdaterEnabled);
+
             spaar.ModLoader.Configuration.SetFloat("WatchlistXPos", Scripter.Instance.Watchlist.ConfigurationPosition.x);
             spaar.ModLoader.Configuration.SetFloat("WatchlistYPos", Scripter.Instance.Watchlist.ConfigurationPosition.y);
 
