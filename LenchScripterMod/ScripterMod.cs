@@ -3,19 +3,19 @@ using System.IO;
 using System.Reflection;
 using spaar.ModLoader;
 using UnityEngine;
-using LenchScripter.Internal;
+using Lench.Scripter.Internal;
 
-namespace LenchScripter
+namespace Lench.Scripter
 {
     /// <summary>
     /// Mod class loaded by the Mod Loader.
     /// </summary>
     public class ScripterMod : Mod
     {
-        public override string Name { get; } = "Lench Scripter Mod";
+        public override string Name { get; } = "LenchScripterMod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get; } = new Version(2, 0, 4);
+        public override Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.3";
         public override bool CanBeUnloaded { get; } = true;
@@ -26,7 +26,7 @@ namespace LenchScripter
         /// <summary>
         /// Is LenchScripterMod loaded.
         /// </summary>
-        public static bool Loaded { get { return Scripter.Instance != null; } }
+        public static bool Loaded { get { return Internal.Scripter.Instance != null; } }
 
         /// <summary>
         /// Instantiates the mod and it's components.
@@ -34,10 +34,10 @@ namespace LenchScripter
         /// </summary>
         public override void OnLoad()
         {
-            UnityEngine.Object.DontDestroyOnLoad(Scripter.Instance);
-            Game.OnSimulationToggle += Scripter.Instance.OnSimulationToggle;
-            Game.OnBlockPlaced += (Transform block) => Scripter.Instance.rebuildIDs = true;
-            Game.OnBlockRemoved += () => Scripter.Instance.rebuildIDs = true;
+            UnityEngine.Object.DontDestroyOnLoad(Internal.Scripter.Instance);
+            Game.OnSimulationToggle += Internal.Scripter.Instance.OnSimulationToggle;
+            Game.OnBlockPlaced += (Transform block) => Internal.Scripter.Instance.rebuildIDs = true;
+            Game.OnBlockRemoved += () => Internal.Scripter.Instance.rebuildIDs = true;
 
             LoadBlockLoaderAssembly();
 
@@ -53,15 +53,13 @@ namespace LenchScripter
                 Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
                 Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
 
-                Commands.RegisterCommand("python", Scripter.Instance.InteractiveCommand, "Executes Python expression.");
+                Commands.RegisterCommand("python", Internal.Scripter.Instance.InteractiveCommand, "Executes Python expression.");
 
-                SettingsMenu.RegisterSettingsButton("SCRIPT", Scripter.Instance.RunScriptSettingToggle, true, 12);
+                SettingsMenu.RegisterSettingsButton("SCRIPT", Internal.Scripter.Instance.RunScriptSettingToggle, true, 12);
 
                 Internal.Configuration.Load();
-            }
-            else
-            {
-                Debug.Log("[LenchScripterMod]: Running in API only mode. Script engine unavailable.");
+
+                Internal.Scripter.Instance.gameObject.AddComponent<Updater>();
             }
         }
 
@@ -72,10 +70,10 @@ namespace LenchScripter
         public override void OnUnload()
         {
 
-            Game.OnSimulationToggle -= Scripter.Instance.OnSimulationToggle;
-            Scripter.Instance.OnSimulationToggle(false);
-            Game.OnBlockPlaced -= (Transform block) => Scripter.Instance.rebuildIDs = true;
-            Game.OnBlockRemoved -= () => Scripter.Instance.rebuildIDs = true;
+            Game.OnSimulationToggle -= Internal.Scripter.Instance.OnSimulationToggle;
+            Internal.Scripter.Instance.OnSimulationToggle(false);
+            Game.OnBlockPlaced -= (Transform block) => Internal.Scripter.Instance.rebuildIDs = true;
+            Game.OnBlockRemoved -= () => Internal.Scripter.Instance.rebuildIDs = true;
 
             if (PythonEnvironment.Loaded)
             {
@@ -84,7 +82,7 @@ namespace LenchScripter
                 Internal.Configuration.Save();
             }
 
-            UnityEngine.Object.Destroy(Scripter.Instance);
+            UnityEngine.Object.Destroy(Internal.Scripter.Instance);
             UnityEngine.Object.Destroy(GameObject.Find("Lench Scripter").transform.gameObject);
         }
 
@@ -123,7 +121,7 @@ namespace LenchScripter
                 Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Dynamic.dll");
                 return true;
             }
-            catch (Exception)
+            catch
             {
                 return false;
             }

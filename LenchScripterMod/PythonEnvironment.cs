@@ -1,11 +1,10 @@
-﻿using LenchScripter.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace LenchScripter
+namespace Lench.Scripter
 {
     /// <summary>
     /// Class handling Python environment.
@@ -44,7 +43,7 @@ namespace LenchScripter
         /// <summary>
         /// Is script enabled to be ran on simulation start.
         /// </summary>
-        public static bool Enabled { get { return Scripter.Instance.enableScript; } }
+        public static bool Enabled { get { return Internal.Scripter.Instance.enableScript; } }
 
         /// <summary>
         /// Returns PythonEnvironment instance currently used by the scripting mod.
@@ -52,7 +51,7 @@ namespace LenchScripter
         /// </summary>
         public static PythonEnvironment ScripterEnvironment
         {
-            get { return Scripter.Instance.python; }
+            get { return Internal.Scripter.Instance.python; }
         }
 
         /// <summary>
@@ -160,13 +159,13 @@ namespace LenchScripter
             Execute("clr.AddReference(\"UnityEngine\")");
             Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode, Color");
             Execute("clr.AddReference(\"LenchScripterMod\")");
-            Execute("from LenchScripter import Functions as Besiege");
+            Execute("from Lench.Scripter import Functions as Besiege");
 
             // Redirect standard output
             Execute("import sys");
             SetVariable("pythonenv", this);
             Execute("sys.stdout = pythonenv");
-            SetVariable("pythonenv", null);
+            Execute("del pythonenv");
 
             // Run additional init statements
             for (int i = 0; i < init_statements.Count;)

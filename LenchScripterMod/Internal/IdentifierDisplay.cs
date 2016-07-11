@@ -5,7 +5,7 @@ using spaar.ModLoader;
 using spaar.ModLoader.UI;
 using UnityEngine;
 
-namespace LenchScripter.Internal
+namespace Lench.Scripter.Internal
 {
     internal class IdentifierDisplay : MonoBehaviour
     {

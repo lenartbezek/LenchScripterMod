@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace LenchScripter.Internal
+namespace Lench.Scripter.Internal
 {
     /// <summary>
     /// Class representing an instance of the mod.

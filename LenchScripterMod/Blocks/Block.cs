@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using LenchScripter.Internal;
+using Lench.Scripter.Internal;
 
-namespace LenchScripter.Blocks
+namespace Lench.Scripter.Blocks
 {
 
     /// <summary>

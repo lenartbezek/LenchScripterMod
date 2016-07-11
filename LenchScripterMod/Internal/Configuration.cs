@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace LenchScripter.Internal
+namespace Lench.Scripter.Internal
 {
     internal static class Configuration
     {

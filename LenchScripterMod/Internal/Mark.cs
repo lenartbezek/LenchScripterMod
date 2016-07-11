@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace LenchScripter.Internal
+namespace Lench.Scripter.Internal
 {
     /// <summary>
     /// Mark script attached to primitive sphere objects.

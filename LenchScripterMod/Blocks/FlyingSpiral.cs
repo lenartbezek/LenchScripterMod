@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using UnityEngine;
 
-namespace LenchScripter.Blocks
+namespace Lench.Scripter.Blocks
 {
     /// <summary>
     /// Handler for the Flying Spiral block.

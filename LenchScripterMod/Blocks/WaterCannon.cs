@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace LenchScripter.Blocks
+namespace Lench.Scripter.Blocks
 {
     /// <summary>
     /// Handler for the Water Cannon block.

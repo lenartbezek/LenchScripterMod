@@ -5,7 +5,7 @@ using UnityEngine;
 using spaar.ModLoader;
 using spaar.ModLoader.UI;
 
-namespace LenchScripter.Internal
+namespace Lench.Scripter.Internal
 {
     internal class ScriptOptions : MonoBehaviour
     {

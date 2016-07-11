@@ -1,6 +1,7 @@
 ﻿using System.IO;
+using System.Reflection;
 
-namespace LenchScripter.Internal
+namespace Lench.Scripter.Internal
 {
     internal static class MachineData
     { 
@@ -25,7 +26,7 @@ namespace LenchScripter.Internal
             {
                 Scripter.Instance.ScriptOptions.CheckForScript();
                 var code = File.ReadAllText(Scripter.Instance.ScriptOptions.ScriptPath);
-                machineInfo.MachineData.Write("LenchScripterMod-Version", "v2.0.0");
+                machineInfo.MachineData.Write("LenchScripterMod-Version", Assembly.GetExecutingAssembly().GetName().Version);
                 machineInfo.MachineData.Write("LenchScripterMod-Code", code);
                 Scripter.Instance.ScriptOptions.Code = code;
                 Scripter.Instance.ScriptOptions.BsgHasCode = true;

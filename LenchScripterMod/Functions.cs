@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using LenchScripter.Blocks;
-using LenchScripter.Internal;
+using Lench.Scripter.Blocks;
+using Lench.Scripter.Internal;
 
-namespace LenchScripter
+namespace Lench.Scripter
 {
     /// <summary>
     /// Used as a wrapper for all Lua accessible functions.
@@ -88,7 +88,7 @@ namespace LenchScripter
         /// <param name="name">Name of the global variable.</param>
         public static void Watch(string name)
         {
-            Scripter.Instance.Watchlist.AddToWatchlist(name, null, true);
+            Internal.Scripter.Instance.Watchlist.AddToWatchlist(name, null, true);
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace LenchScripter
         /// <param name="value">Variable value to be reported.</param>
         public static void Watch(string name, object value)
         {
-            Scripter.Instance.Watchlist.AddToWatchlist(name, value, false);
+            Internal.Scripter.Instance.Watchlist.AddToWatchlist(name, value, false);
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace LenchScripter
         /// </summary>
         public static void ClearWatchlist()
         {
-            Scripter.Instance.Watchlist.ClearWatchlist();
+            Internal.Scripter.Instance.Watchlist.ClearWatchlist();
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace LenchScripter
         {
             GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             obj.name = "Mark";
-            obj.transform.parent = Scripter.Instance.transform;
+            obj.transform.parent = Internal.Scripter.Instance.transform;
             Mark m = obj.AddComponent<Mark>();
             m.Move(pos);
             marks.Add(m);

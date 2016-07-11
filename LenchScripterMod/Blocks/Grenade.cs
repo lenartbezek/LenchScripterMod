@@ -1,4 +1,4 @@
-﻿namespace LenchScripter.Blocks
+﻿namespace Lench.Scripter.Blocks
 {
     /// <summary>
     /// Handler for the Grenade block.

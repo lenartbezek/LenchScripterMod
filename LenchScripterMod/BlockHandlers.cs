@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using LenchScripter.Blocks;
+using Lench.Scripter.Blocks;
 
-namespace LenchScripter
+namespace Lench.Scripter
 {
     /// <summary>
     /// Block Handlers API of the scripting mod.
@@ -157,11 +157,11 @@ namespace LenchScripter
         /// <summary>
         /// Returns sequential identifier of a block during building.
         /// </summary>
-        /// <param name="block"></param>
+        /// <param name="block">Block object.</param>
         /// <returns></returns>
         public static string GetID(GenericBlock block)
         {
-            if (buildingBlocks == null)
+            if (buildingBlocks == null || !buildingBlocks.ContainsKey(block.Guid))
                 InitializeBuildingBlockIDs();
             return buildingBlocks[block.Guid];
         }
@@ -169,11 +169,11 @@ namespace LenchScripter
         /// <summary>
         /// Returns sequential identifier of a block with given guid during building.
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="guid">Guid of the block.</param>
         /// <returns></returns>
         public static string GetID(Guid guid)
         {
-            if (buildingBlocks == null)
+            if (buildingBlocks == null || !buildingBlocks.ContainsKey(guid))
                 InitializeBuildingBlockIDs();
             return buildingBlocks[guid];
         }
