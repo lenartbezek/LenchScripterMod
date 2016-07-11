@@ -186,6 +186,15 @@ namespace Lench.Scripter.Internal
             DrawEnabledBadge(ScriptFound);
             GUILayout.EndHorizontal();
 
+            // Draw open folder button
+            if (GUILayout.Button("Open Scripts folder", Elements.Buttons.ComponentField))
+            {
+                string dir = Application.dataPath + "/Scripts/";
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+                Application.OpenURL(dir);
+            }
+
             // Draw script source
             GUILayout.Label(" ", Elements.Labels.Title);
             GUILayout.Label("Script source", Elements.Labels.Title);
@@ -241,7 +250,7 @@ namespace Lench.Scripter.Internal
             }
 
             // Draw close button
-            if (GUI.Button(new Rect(windowRect.width - 28, 8, 20, 20),
+            if (GUI.Button(new Rect(windowRect.width - 38, 8, 30, 30),
                 "×", Elements.Buttons.Red))
                 Visible = false;
 

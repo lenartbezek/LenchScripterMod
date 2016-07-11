@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Reflection;
 using SimpleJSON;
 using UnityEngine;
 using spaar.ModLoader.UI;
@@ -11,7 +10,7 @@ namespace Lench.Scripter
     /// <summary>
     /// Overridable update checker.
     /// </summary>
-    public class Updater : SingleInstance<Updater>
+    public class Updater : MonoBehaviour
     {
         /// <summary>
         /// Struct representing a link with a display name and URL.
@@ -30,11 +29,6 @@ namespace Lench.Scripter
         }
 
         /// <summary>
-        /// Name of the object in the Unity hierarchy.
-        /// </summary>
-        public override string Name { get { return "LenchScripter Updater"; } }
-
-        /// <summary>
         /// Is update available. Checked on start.
         /// </summary>
         public bool UpdateAvailable { get; private set; } = false;
@@ -42,7 +36,7 @@ namespace Lench.Scripter
         /// <summary>
         /// Current installed version.
         /// </summary>
-        public virtual Version CurrentVersion { get { return Assembly.GetExecutingAssembly().GetName().Version; } } 
+        public Version CurrentVersion { get; private set; } 
 
         /// <summary>
         /// Latest version available.
@@ -67,28 +61,41 @@ namespace Lench.Scripter
         /// <summary>
         /// GitHub API URL for checking the latest release.
         /// </summary>
-        public virtual string APIURL { get; set; } = "https://api.github.com/repos/lench4991/LenchScripterMod/releases";
+        public string API { get; set; }
 
         /// <summary>
         /// Update checker window name.
         /// </summary>
-        public virtual string WindowName { get; set; } = "Lench Scripter Mod";
+        public string WindowName { get; set; }
 
         /// <summary>
         /// Links to be displayed below the notification.
         /// </summary>
-        public virtual List<Link> Links { get; set; } = new List<Link>()
-            {
-                new Link() { DisplayName = "Spiderling forum page", URL = "http://forum.spiderlinggames.co.uk/index.php?threads/3003/" },
-                new Link() { DisplayName = "GitHub release page", URL = "https://github.com/lench4991/LenchScripterMod/releases/latest"}
-            };
+        public List<Link> Links { get; set; }
 
         private int windowID = spaar.ModLoader.Util.GetWindowID();
         private Rect windowRect = new Rect(300, 300, 320, 100);
 
-        private IEnumerator Start()
+        /// <summary>
+        /// Check for update.
+        /// </summary>
+        /// <param name="window_name">Title of the updater window.</param>
+        /// <param name="api">GitHub API release url.</param>
+        /// <param name="current">Current version.</param>
+        /// <param name="links">Links to be displayed.</param>
+        /// <returns></returns>
+        public void Check(string window_name, string api, Version current, List<Link> links)
         {
-            var www = new WWW(APIURL);
+            WindowName = window_name;
+            API = api;
+            CurrentVersion = current;
+            Links = links;
+            StartCoroutine(Check());
+        } 
+
+        private IEnumerator Check()
+        {
+            var www = new WWW(API);
 
             yield return www;
 
@@ -129,13 +136,14 @@ namespace Lench.Scripter
                 new GUIStyle(Elements.Labels.Default) { alignment = TextAnchor.MiddleCenter });
             GUILayout.Label("<b>v" + LatestVersion + ": " + LatestReleaseName + "</b>",
                 new GUIStyle(Elements.Labels.Default) { alignment = TextAnchor.MiddleCenter, fontSize = 16 });
-            GUILayout.Label(LatestReleaseBody, new GUIStyle(Elements.Labels.Default) { fontSize = 12, margin = new RectOffset(8, 8, 16, 16) });
+            GUILayout.Label(LatestReleaseBody,
+                new GUIStyle(Elements.Labels.Default) { fontSize = 12, margin = new RectOffset(8, 8, 16, 16) });
 
             // Draw updater links
             foreach (Link link in Links)
             {
                 if (GUILayout.Button(link.DisplayName, Elements.Buttons.ComponentField))
-                    System.Diagnostics.Process.Start(link.URL);
+                    Application.OpenURL(link.URL);
             }
 
             // Draw close button

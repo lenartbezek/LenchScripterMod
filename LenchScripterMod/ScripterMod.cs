@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Collections.Generic;
 using spaar.ModLoader;
 using UnityEngine;
-using Lench.Scripter.Internal;
 
 namespace Lench.Scripter
 {
@@ -15,7 +15,14 @@ namespace Lench.Scripter
         public override string Name { get; } = "LenchScripterMod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
-        public override Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
+        public override Version Version
+        {
+            get
+            {
+                var v = Assembly.GetExecutingAssembly().GetName().Version;
+                return new Version(v.Major, v.Minor, v.Build);
+            }
+        }
         public override string VersionExtra { get; } = "";
         public override string BesiegeVersion { get; } = "v0.3";
         public override bool CanBeUnloaded { get; } = true;
@@ -59,7 +66,16 @@ namespace Lench.Scripter
 
                 Internal.Configuration.Load();
 
-                Internal.Scripter.Instance.gameObject.AddComponent<Updater>();
+                var updater = Internal.Scripter.Instance.gameObject.AddComponent<Updater>();
+                updater.Check(
+                    "Lench Scripter Mod",
+                    "https://api.github.com/repos/lench4991/LenchScripterMod/releases",
+                    Assembly.GetExecutingAssembly().GetName().Version,
+                    new List<Updater.Link>()
+                        {
+                            new Updater.Link() { DisplayName = "Spiderling forum page", URL = "http://forum.spiderlinggames.co.uk/index.php?threads/3003/" },
+                            new Updater.Link() { DisplayName = "GitHub release page", URL = "https://github.com/lench4991/LenchScripterMod/releases/latest" }
+                        });
             }
         }
 

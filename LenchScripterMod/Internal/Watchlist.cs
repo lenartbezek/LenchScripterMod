@@ -151,7 +151,7 @@ namespace Lench.Scripter.Internal
             var oldColor = GUI.backgroundColor;
 
             // Draw close button
-            if (GUI.Button(new Rect(mainWindowRect.width - 28, 8, 20, 20),
+            if (GUI.Button(new Rect(mainWindowRect.width - 38, 8, 30, 30),
                 "×", Elements.Buttons.Red))
                 Visible = false;
 
