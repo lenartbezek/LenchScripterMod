@@ -48,6 +48,8 @@ namespace Lench.Scripter
             LoadedScripter = true;
 
             PythonEnvironment.InitializeEngine();
+            Internal.Scripter.Instance.python = new PythonEnvironment();
+
             Debug.Log("[LenchScripterMod]: Python assemblies loaded. Script engine ready.");
 
             XmlSaver.OnSave += Internal.MachineData.Save;
@@ -64,6 +66,21 @@ namespace Lench.Scripter
             SettingsMenu.RegisterSettingsButton("SCRIPT", Internal.Scripter.Instance.RunScriptSettingToggle, true, 12);
 
             Internal.Configuration.Load();
+        }
+
+        /// <summary>
+        /// Automatic update checker.
+        /// </summary>
+        public static bool UpdateCheckerEnabled
+        {
+            get
+            {
+                return Internal.Scripter.Instance.ModUpdaterEnabled;
+            }
+            set
+            {
+                Internal.Scripter.Instance.ModUpdaterEnabled = value;
+            }
         }
 
         /// <summary>
@@ -107,6 +124,9 @@ namespace Lench.Scripter
 
             UnityEngine.Object.Destroy(Internal.Scripter.Instance);
             UnityEngine.Object.Destroy(GameObject.Find("Lench Scripter").transform.gameObject);
+
+            LoadedScripter = false;
+            LoadedAPI = false;
         }
 
         /// <summary>

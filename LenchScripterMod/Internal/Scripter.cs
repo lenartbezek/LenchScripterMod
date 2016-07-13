@@ -34,7 +34,6 @@ namespace Lench.Scripter.Internal
         // Hovered block for ID dumping
         private GenericBlock hoveredBlock;
 
-
         private void LoadScript()
         {
             try
