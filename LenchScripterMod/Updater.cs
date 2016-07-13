@@ -73,6 +73,7 @@ namespace Lench.Scripter
         /// </summary>
         public List<Link> Links { get; set; }
 
+        private static int opened_checkers = 0;
         private int windowID = spaar.ModLoader.Util.GetWindowID();
         private Rect windowRect = new Rect(300, 300, 320, 100);
 
@@ -92,7 +93,13 @@ namespace Lench.Scripter
             CurrentVersion = current;
             Links = links;
             StartCoroutine(Check(verbose));
-        } 
+        }
+
+        private void OnDestroy()
+        {
+            if (Visible)
+                opened_checkers--;
+        }
 
         private IEnumerator Check(bool verbose)
         {
@@ -119,6 +126,9 @@ namespace Lench.Scripter
                 if (verbose) Debug.Log("=> Update available: v" + LatestVersion+": "+LatestReleaseName);
                 UpdateAvailable = true;
                 Visible = true;
+                opened_checkers++;
+                windowRect.x = 100 + opened_checkers * 100;
+                windowRect.y = 100 + opened_checkers * 100;
             }
             else
                 if (verbose) Debug.Log("=> Mod is up to date.");

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Reflection;
-using System.Collections.Generic;
 using spaar.ModLoader;
 using UnityEngine;
 
@@ -31,9 +29,42 @@ namespace Lench.Scripter
         internal static Type blockScript;
 
         /// <summary>
-        /// Is LenchScripterMod loaded.
+        /// Is LenchScripterMod API loaded.
         /// </summary>
-        public static bool Loaded { get { return Internal.Scripter.Instance != null; } }
+        public static bool LoadedAPI { get; private set; } = false;
+
+        /// <summary>
+        /// Is LenchScripterMod full scripter loaded.
+        /// </summary>
+        public static bool LoadedScripter { get; private set; } = false;
+
+        /// <summary>
+        /// Loads mod's scripting features.
+        /// </summary>
+        public static void LoadScripter()
+        {
+            if (LoadedScripter)
+                throw new InvalidOperationException("Mod's scripting features already loaded.");
+            LoadedScripter = true;
+
+            PythonEnvironment.InitializeEngine();
+            Debug.Log("[LenchScripterMod]: Python assemblies loaded. Script engine ready.");
+
+            XmlSaver.OnSave += Internal.MachineData.Save;
+            XmlLoader.OnLoad += Internal.MachineData.Load;
+
+            Keybindings.AddKeybinding("Show Block ID", new Key(KeyCode.None, KeyCode.LeftShift));
+            Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
+            Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
+
+            Commands.RegisterCommand("lsm", Internal.Scripter.Instance.ConfigurationCommand, "Enter 'lsm' for all available commands.");
+            Commands.RegisterCommand("py", Internal.Scripter.Instance.PythonCommand, "Executes Python expression.");
+            Commands.RegisterCommand("python", Internal.Scripter.Instance.PythonCommand, "Executes Python expression.");
+
+            SettingsMenu.RegisterSettingsButton("SCRIPT", Internal.Scripter.Instance.RunScriptSettingToggle, true, 12);
+
+            Internal.Configuration.Load();
+        }
 
         /// <summary>
         /// Instantiates the mod and it's components.
@@ -50,23 +81,10 @@ namespace Lench.Scripter
 
             if (LoadPythonAssembly())
             {
-                PythonEnvironment.InitializeEngine();
-                Debug.Log("[LenchScripterMod]: Python assemblies loaded. Script engine ready.");
-
-                XmlSaver.OnSave += Internal.MachineData.Save;
-                XmlLoader.OnLoad += Internal.MachineData.Load;
-
-                Keybindings.AddKeybinding("Show Block ID", new Key(KeyCode.None, KeyCode.LeftShift));
-                Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
-                Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
-
-                Commands.RegisterCommand("lsm", Internal.Scripter.Instance.ConfigurationCommand, "Enter 'acm' for all available commands.");
-                Commands.RegisterCommand("python", Internal.Scripter.Instance.PythonCommand, "Executes Python expression.");
-
-                SettingsMenu.RegisterSettingsButton("SCRIPT", Internal.Scripter.Instance.RunScriptSettingToggle, true, 12);
-
-                Internal.Configuration.Load();
+                LoadScripter();
             }
+
+            LoadedAPI = true;
         }
 
         /// <summary>
@@ -75,7 +93,6 @@ namespace Lench.Scripter
         /// </summary>
         public override void OnUnload()
         {
-
             Game.OnSimulationToggle -= Internal.Scripter.Instance.OnSimulationToggle;
             Internal.Scripter.Instance.OnSimulationToggle(false);
             Game.OnBlockPlaced -= (Transform block) => Internal.Scripter.Instance.rebuildIDs = true;
@@ -96,7 +113,7 @@ namespace Lench.Scripter
         /// Attempts to load TGYD's BlockLoader assembly.
         /// </summary>
         /// <returns>Returns true if successfull.</returns>
-        private bool LoadBlockLoaderAssembly()
+        public static bool LoadBlockLoaderAssembly()
         {
             Assembly assembly;
             try
@@ -105,17 +122,17 @@ namespace Lench.Scripter
                 blockScript = assembly.GetType("BlockScript");
                 return blockScript != null;
             }
-            catch (FileNotFoundException)
+            catch
             {
                 return false;
             }
         }
 
         /// <summary>
-        /// Loads Python assemblies into a new domain.
+        /// Loads Python assemblies.
         /// </summary>
         /// <returns>Returns true if successfull.</returns>
-        private bool LoadPythonAssembly()
+        public static bool LoadPythonAssembly()
         {
             try
             {
