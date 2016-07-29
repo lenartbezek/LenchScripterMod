@@ -11,8 +11,8 @@ namespace Lench.Scripter
     /// </summary>
     public class PythonEnvironment
     {
-        internal static Assembly ironPythonAssembly;
-        internal static Assembly microsoftScriptingAssembly;
+        internal static Assembly _ironPythonAssembly;
+        internal static Assembly _microsoftScriptingAssembly;
 
         private static Type python;
         private static Type scriptEngine;
@@ -36,23 +36,42 @@ namespace Lench.Scripter
         private static List<string> init_statements = new List<string>();
 
         /// <summary>
+        /// Loads Python assemblies.
+        /// </summary>
+        /// <returns>Returns true if successfull.</returns>
+        public static bool LoadPythonAssembly()
+        {
+            try
+            {
+                _ironPythonAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/IronPython.dll");
+                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/IronPython.Modules.dll");
+
+                _microsoftScriptingAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Scripting.dll");
+                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Scripting.Core.dll");
+                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Dynamic.dll");
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Are Python assemblies loaded and engine ready to be initialised.
         /// </summary>
-        public static bool Loaded { get { return !(ironPythonAssembly == null || microsoftScriptingAssembly == null); } }
+        public static bool Loaded { get { return !(_ironPythonAssembly == null || _microsoftScriptingAssembly == null); } }
 
         /// <summary>
         /// Is script enabled to be ran on simulation start.
         /// </summary>
-        public static bool Enabled { get { return Internal.Scripter.Instance.enableScript; } }
+        public static bool Enabled { get; set; }
 
         /// <summary>
         /// Returns PythonEnvironment instance currently used by the scripting mod.
         /// Only instantiated during simulation.
         /// </summary>
-        public static PythonEnvironment ScripterEnvironment
-        {
-            get { return Internal.Scripter.Instance.python; }
-        }
+        public static PythonEnvironment MainInstance { get; internal set; }
 
         /// <summary>
         /// Returns last occured exception in Python format.
@@ -90,16 +109,16 @@ namespace Lench.Scripter
         /// </summary>
         public static void InitializeEngine()
         {
-            if (ironPythonAssembly == null || microsoftScriptingAssembly == null)
+            if (_ironPythonAssembly == null || _microsoftScriptingAssembly == null)
                 throw new InvalidOperationException("IronPython assemblies not loaded. Script engine not available.");
 
-            python = ironPythonAssembly.GetType("IronPython.Hosting.Python");
-            scriptEngine = microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptEngine");
-            scriptScope = microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptScope");
-            scriptRuntime = microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptRuntime");
-            scriptSource = microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptSource");
-            compiledCode = microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.CompiledCode");
-            exceptionOperations = microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ExceptionOperations");
+            python = _ironPythonAssembly.GetType("IronPython.Hosting.Python");
+            scriptEngine = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptEngine");
+            scriptScope = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptScope");
+            scriptRuntime = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptRuntime");
+            scriptSource = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptSource");
+            compiledCode = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.CompiledCode");
+            exceptionOperations = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ExceptionOperations");
 
             executeMethod = scriptEngine.GetMethods()
                 .Single(method => 
@@ -158,7 +177,7 @@ namespace Lench.Scripter
             Execute("clr.AddReference(\"System\")");
             Execute("clr.AddReference(\"UnityEngine\")");
             Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode, Color");
-            Execute("clr.AddReference(\"LenchScripterMod\")");
+            Execute("clr.AddReference(\""+Assembly.GetExecutingAssembly().GetName().Name+"\")");
             Execute("from Lench.Scripter import Functions as Besiege");
 
             // Redirect standard output

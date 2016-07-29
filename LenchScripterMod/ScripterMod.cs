@@ -2,6 +2,7 @@
 using System.Reflection;
 using spaar.ModLoader;
 using UnityEngine;
+using Lench.Scripter.Blocks;
 
 namespace Lench.Scripter
 {
@@ -49,7 +50,7 @@ namespace Lench.Scripter
             LoadedScripter = true;
 
             PythonEnvironment.InitializeEngine();
-            Internal.Scripter.Instance.python = new PythonEnvironment();
+            PythonEnvironment.MainInstance = new PythonEnvironment();
 
             Debug.Log("[LenchScripterMod]: Python assemblies loaded. Script engine ready.");
 
@@ -95,9 +96,9 @@ namespace Lench.Scripter
             Game.OnBlockPlaced += (Transform block) => Internal.Scripter.Instance.rebuildIDs = true;
             Game.OnBlockRemoved += () => Internal.Scripter.Instance.rebuildIDs = true;
 
-            LoadBlockLoaderAssembly();
+            Block.LoadBlockLoaderAssembly();
 
-            if (LoadPythonAssembly())
+            if (PythonEnvironment.LoadPythonAssembly())
             {
                 LoadScripter();
             }
@@ -128,47 +129,6 @@ namespace Lench.Scripter
 
             LoadedScripter = false;
             LoadedAPI = false;
-        }
-
-        /// <summary>
-        /// Attempts to load TGYD's BlockLoader assembly.
-        /// </summary>
-        /// <returns>Returns true if successfull.</returns>
-        public static bool LoadBlockLoaderAssembly()
-        {
-            Assembly assembly;
-            try
-            {
-                assembly = Assembly.LoadFrom(Application.dataPath + "/Mods/BlockLoader.dll");
-                Blocks.Block._blockScriptType = assembly.GetType("BlockScript");
-                return Blocks.Block._blockScriptType != null;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Loads Python assemblies.
-        /// </summary>
-        /// <returns>Returns true if successfull.</returns>
-        public static bool LoadPythonAssembly()
-        {
-            try
-            {
-                PythonEnvironment.ironPythonAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/IronPython.dll");
-                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/IronPython.Modules.dll");
-
-                PythonEnvironment.microsoftScriptingAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Scripting.dll");
-                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Scripting.Core.dll");
-                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Dynamic.dll");
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
         }
     }
 }

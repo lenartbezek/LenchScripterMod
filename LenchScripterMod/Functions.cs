@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Lench.Scripter.Blocks;
-using Lench.Scripter.Internal;
 
 namespace Lench.Scripter
 {
@@ -157,7 +156,7 @@ namespace Lench.Scripter
         public static Vector3 GetRaycastHit()
         {
             RaycastHit hit;
-            Ray ray = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 return hit.point;
@@ -190,7 +189,7 @@ namespace Lench.Scripter
         public static TrackedCollider GetRaycastCollider()
         {
             RaycastHit hit;
-            Ray ray = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 return new TrackedCollider(hit.collider, hit.point);

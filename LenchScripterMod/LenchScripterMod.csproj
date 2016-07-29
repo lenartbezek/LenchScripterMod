@@ -86,13 +86,13 @@
     <Compile Include="Internal\IdentifierDisplay.cs" />
     <Compile Include="Functions.cs" />
     <Compile Include="Internal\MachineData.cs" />
-    <Compile Include="Internal\Mark.cs" />
+    <Compile Include="Mark.cs" />
     <Compile Include="Internal\Scripter.cs" />
     <Compile Include="Updater.cs" />
     <Compile Include="PythonEnvironment.cs" />
     <Compile Include="ScripterMod.cs" />
     <Compile Include="Internal\ScriptOptions.cs" />
-    <Compile Include="Internal\TrackedCollider.cs" />
+    <Compile Include="TrackedCollider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Internal\Watchlist.cs" />
   </ItemGroup>

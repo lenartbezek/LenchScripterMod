@@ -5,7 +5,7 @@ using UnityEngine;
 using spaar.ModLoader.UI;
 using System.Collections.Generic;
 
-namespace Lench.Scripter
+namespace Lench.Updater
 {
     /// <summary>
     /// Overridable update checker.
@@ -56,12 +56,12 @@ namespace Lench.Scripter
         /// <summary>
         /// Window visibility.
         /// </summary>
-        public bool Visible { get; private set; } = false;
+        public bool Visible { get; set; } = false;
 
         /// <summary>
         /// GitHub API URL for checking the latest release.
         /// </summary>
-        public string API { get; set; }
+        public string API { get; private set; }
 
         /// <summary>
         /// Update checker window name.
@@ -73,9 +73,12 @@ namespace Lench.Scripter
         /// </summary>
         public List<Link> Links { get; set; }
 
-        private static int opened_checkers = 0;
         private int windowID = spaar.ModLoader.Util.GetWindowID();
-        private Rect windowRect = new Rect(300, 300, 320, 100);
+
+        /// <summary>
+        /// Window Rectangle field for size and position.
+        /// </summary>
+        public Rect WindowRect = new Rect(300, 300, 320, 100);
 
         /// <summary>
         /// Check for update.
@@ -85,7 +88,6 @@ namespace Lench.Scripter
         /// <param name="current">Current version.</param>
         /// <param name="links">Links to be displayed.</param>
         /// <param name="verbose">Verbose mode.</param>
-        /// <returns></returns>
         public void Check(string window_name, string api, Version current, List<Link> links, bool verbose = false)
         {
             WindowName = window_name;
@@ -93,12 +95,6 @@ namespace Lench.Scripter
             CurrentVersion = current;
             Links = links;
             StartCoroutine(Check(verbose));
-        }
-
-        private void OnDestroy()
-        {
-            if (Visible)
-                opened_checkers--;
         }
 
         private IEnumerator Check(bool verbose)
@@ -126,9 +122,6 @@ namespace Lench.Scripter
                 if (verbose) Debug.Log("=> Update available: v" + LatestVersion+": "+LatestReleaseName);
                 UpdateAvailable = true;
                 Visible = true;
-                opened_checkers++;
-                windowRect.x = 100 + opened_checkers * 100;
-                windowRect.y = 100 + opened_checkers * 100;
             }
             else
                 if (verbose) Debug.Log("=> Mod is up to date.");
@@ -143,7 +136,7 @@ namespace Lench.Scripter
                 GUI.skin.window.padding.left = 8;
                 GUI.skin.window.padding.right = 8;
                 GUI.skin.window.padding.bottom = 8;
-                windowRect = GUILayout.Window(windowID, windowRect, DoWindow, WindowName);
+                WindowRect = GUILayout.Window(windowID, WindowRect, DoWindow, WindowName);
             }
         }
 
@@ -165,14 +158,14 @@ namespace Lench.Scripter
             }
 
             // Draw close button
-            if (GUI.Button(new Rect(windowRect.width - 38, 8, 30, 30),
+            if (GUI.Button(new Rect(WindowRect.width - 38, 8, 30, 30),
                 "×", Elements.Buttons.Red))
             {
                 Destroy(this);
             }
 
             // Drag window
-            GUI.DragWindow(new Rect(0, 0, windowRect.width, GUI.skin.window.padding.top));
+            GUI.DragWindow(new Rect(0, 0, WindowRect.width, GUI.skin.window.padding.top));
         }
     }
 }

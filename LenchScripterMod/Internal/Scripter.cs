@@ -21,7 +21,6 @@ namespace Lench.Scripter.Internal
         internal ScriptOptions ScriptOptions;
 
         // Python environment
-        internal PythonEnvironment python;
         internal string scriptFile;
         internal string scriptCode;
 
@@ -39,9 +38,9 @@ namespace Lench.Scripter.Internal
             try
             {
                 if (scriptFile != null)
-                    python.LoadScript(scriptFile);
+                    PythonEnvironment.MainInstance.LoadScript(scriptFile);
                 else if (scriptCode != null)
-                    python.LoadCode(scriptCode);
+                    PythonEnvironment.MainInstance.LoadCode(scriptCode);
                 ScriptOptions.SuccessMessage = "Successfully compiled code.";
             }
             catch (Exception e)
@@ -82,7 +81,7 @@ namespace Lench.Scripter.Internal
 
             try
             {
-                var result = python.Execute(expression);
+                var result = PythonEnvironment.MainInstance.Execute(expression);
                 return result != null ? result.ToString() : "";
             }
             catch (Exception e)
@@ -136,15 +135,15 @@ namespace Lench.Scripter.Internal
 
         private void CheckForModUpdate(bool verbose = false)
         {
-            var updater = gameObject.AddComponent<Updater>();
+            var updater = gameObject.AddComponent<Updater.Updater>();
             updater.Check(
                 "Lench Scripter Mod",
                 "https://api.github.com/repos/lench4991/LenchScripterMod/releases",
                 Assembly.GetExecutingAssembly().GetName().Version,
-                new List<Updater.Link>()
+                new List<Updater.Updater.Link>()
                     {
-                            new Updater.Link() { DisplayName = "Spiderling forum page", URL = "http://forum.spiderlinggames.co.uk/index.php?threads/3003/" },
-                            new Updater.Link() { DisplayName = "GitHub release page", URL = "https://github.com/lench4991/LenchScripterMod/releases/latest" }
+                            new Updater.Updater.Link() { DisplayName = "Spiderling forum page", URL = "http://forum.spiderlinggames.co.uk/index.php?threads/3003/" },
+                            new Updater.Updater.Link() { DisplayName = "GitHub release page", URL = "https://github.com/lench4991/LenchScripterMod/releases/latest" }
                     },
                 verbose);
         }
@@ -154,7 +153,7 @@ namespace Lench.Scripter.Internal
         /// </summary>
         private void CreateScriptingEnvironment()
         {
-            python = new PythonEnvironment();
+            PythonEnvironment.MainInstance = new PythonEnvironment();
             runtime_error = false;
 
             // Find script file
@@ -178,7 +177,7 @@ namespace Lench.Scripter.Internal
         private void DestroyScriptingEnvironment()
         {
             Functions.ClearMarks(false);
-            python = null;
+            PythonEnvironment.MainInstance = null;
         }
 
         /// <summary>
@@ -274,7 +273,7 @@ namespace Lench.Scripter.Internal
             try
             {
                 if (!runtime_error)
-                    python?.CallUpdate();
+                    PythonEnvironment.MainInstance?.CallUpdate();
             }
             catch (Exception e)
             {
@@ -305,7 +304,7 @@ namespace Lench.Scripter.Internal
             try
             {
                 if (!runtime_error)
-                    python?.CallFixedUpdate();
+                    PythonEnvironment.MainInstance?.CallFixedUpdate();
             }
             catch (Exception e)
             {
