@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Lench.Scripter.Internal;
 
 namespace Lench.Scripter.Blocks
 {
@@ -11,6 +10,11 @@ namespace Lench.Scripter.Blocks
     /// </summary>
     public class Block
     {
+        /// <summary>
+        /// BlockLoader BlockScript type for access to modded blocks.
+        /// </summary>
+        internal static Type _blockScriptType;
+
         /// <summary>
         /// Used to convert radians to degrees in all functions returning radians.
         /// If radians are the desired angle unit, it will be set to 1, otherwise Mathf.Rad2Deg.
@@ -70,8 +74,8 @@ namespace Lench.Scripter.Blocks
         internal Block(BlockBehaviour bb)
         {
             this.bb = bb;
-            if (ScripterMod.blockScript != null)
-                bs = bb.GetComponent(ScripterMod.blockScript) as MonoBehaviour;
+            if (_blockScriptType != null)
+                bs = bb.GetComponent(_blockScriptType) as MonoBehaviour;
 
             BlockHandlers.OnUpdate += Update;
             BlockHandlers.OnLateUpdate += LateUpdate;

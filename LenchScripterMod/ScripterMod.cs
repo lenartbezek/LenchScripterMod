@@ -10,6 +10,8 @@ namespace Lench.Scripter
     /// </summary>
     public class ScripterMod : Mod
     {
+
+#pragma warning disable CS1591
         public override string Name { get; } = "LenchScripterMod";
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
@@ -25,8 +27,7 @@ namespace Lench.Scripter
         public override string BesiegeVersion { get; } = "v0.3";
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
-
-        internal static Type blockScript;
+#pragma warning restore CS1591
 
         /// <summary>
         /// Is LenchScripterMod API loaded.
@@ -139,8 +140,8 @@ namespace Lench.Scripter
             try
             {
                 assembly = Assembly.LoadFrom(Application.dataPath + "/Mods/BlockLoader.dll");
-                blockScript = assembly.GetType("BlockScript");
-                return blockScript != null;
+                Blocks.Block._blockScriptType = assembly.GetType("BlockScript");
+                return Blocks.Block._blockScriptType != null;
             }
             catch
             {

@@ -180,6 +180,15 @@ namespace Lench.Scripter
                 }
         }
 
+        /// Wrapper for ScriptScope.GetVariableNames()
+        /// <returns>Returns a list of all variable names in scope.</returns>
+        public IEnumerable<string> GetVariableNames()
+        {
+            return (IEnumerable<string>)scriptScope.GetMethods()
+                .Single(m => m.Name == "GetVariableNames")
+                .Invoke(scope, null);
+        }
+
         /// <summary>
         /// Returns true if the scope contains variable with name.
         /// </summary>
@@ -203,8 +212,8 @@ namespace Lench.Scripter
         /// <summary>
         /// Returns variable with given name of type T.
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <param name="name">Name of the variable.</param>
+        /// <returns>Object of type T.</returns>
         public T GetVariable<T>(string name)
         {
             var method = scriptScope.GetMethods()
