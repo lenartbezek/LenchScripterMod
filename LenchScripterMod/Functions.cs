@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Lench.Scripter.Blocks;
 
@@ -11,21 +10,6 @@ namespace Lench.Scripter
     /// </summary>
     public static class Functions
     {
-        // Measuring time
-        private static float startTime;
-
-        // List of placed marks
-        private static List<Mark> marks;
-
-        /// <summary>
-        /// Instantiates the interface that is passed to Lua as besiege object.
-        /// </summary>
-        static Functions()
-        {
-            marks = new List<Mark>();
-            startTime = Time.time;
-        }
-  
         /// <summary>
         /// Logs message into console.
         /// </summary>
@@ -78,7 +62,7 @@ namespace Lench.Scripter
         /// <returns>Float value.</returns>
         public static float GetTime()
         {
-            return (Time.time - startTime);
+            return Time.time;
         }
 
         /// <summary>
@@ -87,7 +71,7 @@ namespace Lench.Scripter
         /// <param name="name">Name of the global variable.</param>
         public static void Watch(string name)
         {
-            Internal.Scripter.Instance.Watchlist.AddToWatchlist(name, null, true);
+            throw new InvalidOperationException("Watchlist is unavailable in ACM.");
         }
 
         /// <summary>
@@ -97,7 +81,7 @@ namespace Lench.Scripter
         /// <param name="value">Variable value to be reported.</param>
         public static void Watch(string name, object value)
         {
-            Internal.Scripter.Instance.Watchlist.AddToWatchlist(name, value, false);
+            throw new InvalidOperationException("Watchlist is unavailable in ACM.");
         }
 
         /// <summary>
@@ -105,7 +89,7 @@ namespace Lench.Scripter
         /// </summary>
         public static void ClearWatchlist()
         {
-            Internal.Scripter.Instance.Watchlist.ClearWatchlist();
+            throw new InvalidOperationException("Watchlist is unavailable in ACM.");
         }
 
         /// <summary>
@@ -219,15 +203,9 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="pos">Vector3 specifying position.</param>
         /// <returns>Reference to the mark.</returns>
-        public static Mark CreateMark(Vector3 pos)
+        public static void CreateMark(Vector3 pos)
         {
-            GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            obj.name = "Mark";
-            obj.transform.parent = Internal.Scripter.Instance.transform;
-            Mark m = obj.AddComponent<Mark>();
-            m.Move(pos);
-            marks.Add(m);
-            return m;
+            throw new InvalidOperationException("Mark functionality is unavailable in ACM.");
         }
 
         /// <summary>
@@ -236,11 +214,7 @@ namespace Lench.Scripter
         /// </summary>
         public static void ClearMarks(bool manual_call = true)
         {
-            foreach (Mark m in marks)
-            {
-                m.Clear(manual_call);
-            }
-            marks.Clear();
+            throw new InvalidOperationException("Mark functionality is unavailable in ACM.");
         }
     }
 }
