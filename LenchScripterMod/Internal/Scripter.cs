@@ -38,9 +38,9 @@ namespace Lench.Scripter.Internal
             try
             {
                 if (scriptFile != null)
-                    PythonEnvironment.MainInstance.LoadScript(scriptFile);
+                    PythonEnvironment.ScripterEnvironment.LoadScript(scriptFile);
                 else if (scriptCode != null)
-                    PythonEnvironment.MainInstance.LoadCode(scriptCode);
+                    PythonEnvironment.ScripterEnvironment.LoadCode(scriptCode);
                 ScriptOptions.SuccessMessage = "Successfully compiled code.";
             }
             catch (Exception e)
@@ -81,7 +81,7 @@ namespace Lench.Scripter.Internal
 
             try
             {
-                var result = PythonEnvironment.MainInstance.Execute(expression);
+                var result = PythonEnvironment.ScripterEnvironment.Execute(expression);
                 return result != null ? result.ToString() : "";
             }
             catch (Exception e)
@@ -153,7 +153,7 @@ namespace Lench.Scripter.Internal
         /// </summary>
         private void CreateScriptingEnvironment()
         {
-            PythonEnvironment.MainInstance = new PythonEnvironment();
+            PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
             runtime_error = false;
 
             // Find script file
@@ -177,7 +177,7 @@ namespace Lench.Scripter.Internal
         private void DestroyScriptingEnvironment()
         {
             Functions.ClearMarks(false);
-            PythonEnvironment.MainInstance = null;
+            PythonEnvironment.ScripterEnvironment = null;
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace Lench.Scripter.Internal
             try
             {
                 if (!runtime_error)
-                    PythonEnvironment.MainInstance?.CallUpdate();
+                    PythonEnvironment.ScripterEnvironment?.CallUpdate();
             }
             catch (Exception e)
             {
@@ -304,7 +304,7 @@ namespace Lench.Scripter.Internal
             try
             {
                 if (!runtime_error)
-                    PythonEnvironment.MainInstance?.CallFixedUpdate();
+                    PythonEnvironment.ScripterEnvironment?.CallFixedUpdate();
             }
             catch (Exception e)
             {

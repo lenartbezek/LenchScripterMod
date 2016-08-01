@@ -278,9 +278,9 @@ namespace Lench.Scripter.Internal
                 if (!global)
                 { 
                     // Check if global
-                    if (PythonEnvironment.MainInstance.ContainsVariable(name))
+                    if (PythonEnvironment.ScripterEnvironment.ContainsVariable(name))
                     {
-                        object globalValue = PythonEnvironment.MainInstance.GetVariable(name);
+                        object globalValue = PythonEnvironment.ScripterEnvironment.GetVariable(name);
                         global = value.Equals(globalValue);
                     }
                 }  
@@ -304,8 +304,8 @@ namespace Lench.Scripter.Internal
         {
             if (global && Game.IsSimulating)
             {
-                if(PythonEnvironment.MainInstance.ContainsVariable(name))
-                    value = PythonEnvironment.MainInstance.GetVariable(name);
+                if(PythonEnvironment.ScripterEnvironment.ContainsVariable(name))
+                    value = PythonEnvironment.ScripterEnvironment.GetVariable(name);
             }    
             try
             {
@@ -347,9 +347,9 @@ namespace Lench.Scripter.Internal
         /// <param name="value"></param>
         public void SetValue(string value)
         {
-            if (global && PythonEnvironment.MainInstance != null)
+            if (global && PythonEnvironment.ScripterEnvironment != null)
             {
-                PythonEnvironment.MainInstance.Execute(name + " = " + value);
+                PythonEnvironment.ScripterEnvironment.Execute(name + " = " + value);
             }
         }
 

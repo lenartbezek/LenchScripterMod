@@ -71,7 +71,7 @@ namespace Lench.Scripter
         /// Returns PythonEnvironment instance currently used by the scripting mod.
         /// Only instantiated during simulation.
         /// </summary>
-        public static PythonEnvironment MainInstance { get; internal set; }
+        public static PythonEnvironment ScripterEnvironment { get; internal set; }
 
         /// <summary>
         /// Returns last occured exception in Python format.

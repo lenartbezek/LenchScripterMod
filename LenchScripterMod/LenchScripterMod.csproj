@@ -81,6 +81,7 @@
     <Compile Include="Blocks\Rocket.cs" />
     <Compile Include="Blocks\Spring.cs" />
     <Compile Include="Blocks\Steering.cs" />
+    <Compile Include="Blocks\VectorThruster.cs" />
     <Compile Include="Blocks\WaterCannon.cs" />
     <Compile Include="Internal\Configuration.cs" />
     <Compile Include="Internal\IdentifierDisplay.cs" />

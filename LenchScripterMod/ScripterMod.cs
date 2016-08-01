@@ -50,7 +50,7 @@ namespace Lench.Scripter
             LoadedScripter = true;
 
             PythonEnvironment.InitializeEngine();
-            PythonEnvironment.MainInstance = new PythonEnvironment();
+            PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
 
             Debug.Log("[LenchScripterMod]: Python assemblies loaded. Script engine ready.");
 

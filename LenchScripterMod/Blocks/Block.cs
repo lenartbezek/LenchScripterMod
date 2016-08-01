@@ -92,7 +92,7 @@ namespace Lench.Scripter.Blocks
         /// Creates a Block handler.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
-        internal Block(BlockBehaviour bb)
+        public Block(BlockBehaviour bb)
         {
             this.bb = bb;
             if (_blockScriptType != null)
