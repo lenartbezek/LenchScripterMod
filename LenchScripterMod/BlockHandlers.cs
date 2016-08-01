@@ -53,7 +53,8 @@ namespace Lench.Scripter
             {(int)BlockType.SteeringHinge, typeof(Steering)},
             {(int)BlockType.SteeringBlock, typeof(Steering)},
             {(int)BlockType.WaterCannon, typeof(WaterCannon)},
-            {410, typeof(Automatron)}
+            {410, typeof(Automatron)},
+            {790, typeof(VectorThruster) }
         };
 
         /// <summary>
