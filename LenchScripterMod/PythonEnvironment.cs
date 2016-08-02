@@ -177,7 +177,7 @@ namespace Lench.Scripter
             Execute("clr.AddReference(\"System\")");
             Execute("clr.AddReference(\"UnityEngine\")");
             Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode, Color");
-            Execute("clr.AddReference(\""+Assembly.GetExecutingAssembly().GetName().Name+"\")");
+            Execute("clr.AddReference(\"LenchScripterMod\")");
             Execute("from Lench.Scripter import Functions as Besiege");
 
             // Redirect standard output
