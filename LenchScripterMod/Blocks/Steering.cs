@@ -2,7 +2,7 @@
 using System.Reflection;
 using UnityEngine;
 
-namespace Lench.Scripter.Blocks
+namespace Lench.AdvancedControls.Blocks
 {
     /// <summary>
     /// Handler for steering blocks; Steering and Steering Hinge.

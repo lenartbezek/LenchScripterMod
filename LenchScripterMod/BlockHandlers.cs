@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lench.Scripter.Blocks;
+using Lench.AdvancedControls.Blocks;
 
-namespace Lench.Scripter
+namespace Lench.AdvancedControls
 {
     /// <summary>
     /// Block Handlers API of the scripting mod.
@@ -18,8 +18,7 @@ namespace Lench.Scripter
         /// <summary>
         /// Returns True if block handlers are initialised.
         /// </summary>
-        public static bool Initialised { get { return handlersInitialised; } }
-        internal static bool handlersInitialised = false;
+        public static bool Initialised { get; private set; }
 
         // Map: Building GUID -> Sequential ID
         internal static Dictionary<Guid, string> buildingBlocks;
@@ -220,7 +219,7 @@ namespace Lench.Scripter
                 guidToBlockHandler[guid] = b;
             }
 
-            handlersInitialised = true;
+            Initialised = true;
             OnInitialisation?.Invoke();
         }
 
@@ -233,7 +232,7 @@ namespace Lench.Scripter
             idToBlockHandler = null;
             guidToBlockHandler = null;
             bbToBlockHandler = null;
-            handlersInitialised = false;
+            Initialised = false;
         }
 
         /// <summary>
