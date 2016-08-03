@@ -1,11 +1,11 @@
 ﻿using System;
 using UnityEngine;
-using Lench.Scripter.Blocks;
+using Lench.AdvancedControls.Blocks;
 
-namespace Lench.Scripter
+namespace Lench.AdvancedControls
 {
     /// <summary>
-    /// Used as a wrapper for all Lua accessible functions.
+    /// Used as a wrapper for all Python accessible functions.
     /// Instantiated at the start of the simulation.
     /// </summary>
     public static class Functions
@@ -140,7 +140,7 @@ namespace Lench.Scripter
         public static Vector3 GetRaycastHit()
         {
             RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Ray ray = Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 return hit.point;
@@ -173,7 +173,7 @@ namespace Lench.Scripter
         public static TrackedCollider GetRaycastCollider()
         {
             RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Ray ray = Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 return new TrackedCollider(hit.collider, hit.point);

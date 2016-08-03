@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace Lench.Scripter
+namespace Lench.AdvancedControls
 {
     /// <summary>
     /// Class handling Python environment.
@@ -177,26 +177,17 @@ namespace Lench.Scripter
             Execute("clr.AddReference(\"System\")");
             Execute("clr.AddReference(\"UnityEngine\")");
             Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode, Color");
-            Execute("clr.AddReference(\""+Assembly.GetExecutingAssembly().GetName().Name+"\")");
-            Execute("from Lench.Scripter import Functions as Besiege");
+            Execute("clr.AddReference(\"AdvancedControlsMod\")");
+            Execute("from Lench.AdvancedControls import Functions as Besiege");
+            Execute("from Lench.AdvancedControls import AdvancedControls");
+            Execute("from Lench.AdvancedControls.Axes import AxisType");
+            Execute("from Lench.AdvancedControls.Axes.ChainAxis import ChainMethod");
 
             // Redirect standard output
             Execute("import sys");
             SetVariable("pythonenv", this);
             Execute("sys.stdout = pythonenv");
             Execute("del pythonenv");
-
-            // Run additional init statements
-            for (int i = 0; i < init_statements.Count;)
-                try
-                {
-                    Execute(init_statements[i]);
-                    i++;
-                }
-                catch
-                {
-                    init_statements.RemoveAt(i);
-                }
         }
 
         /// Wrapper for ScriptScope.GetVariableNames()

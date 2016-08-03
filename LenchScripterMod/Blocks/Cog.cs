@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Lench.Scripter.Blocks
+namespace Lench.AdvancedControls.Blocks
 {
     /// <summary>
     /// Handler for all wheel and cog blocks.

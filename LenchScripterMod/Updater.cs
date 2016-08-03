@@ -133,9 +133,6 @@ namespace Lench.Updater
             {
                 GUI.skin = ModGUI.Skin;
                 GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
-                GUI.skin.window.padding.left = 8;
-                GUI.skin.window.padding.right = 8;
-                GUI.skin.window.padding.bottom = 8;
                 WindowRect = GUILayout.Window(windowID, WindowRect, DoWindow, WindowName);
             }
         }
