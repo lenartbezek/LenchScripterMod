@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace Lench.AdvancedControls
+namespace Lench.Scripter
 {
     /// <summary>
     /// Class handling Python environment.
@@ -177,20 +177,14 @@ namespace Lench.AdvancedControls
             Execute("clr.AddReference(\"System\")");
             Execute("clr.AddReference(\"UnityEngine\")");
             Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode, Color");
-<<<<<<< HEAD
-            Execute("clr.AddReference(\"AdvancedControlsMod\")");
-            Execute("from Lench.AdvancedControls import Functions as Besiege");
-            Execute("from Lench.AdvancedControls import AdvancedControls");
-            Execute("from Lench.AdvancedControls.Axes import AxisType");
-            Execute("from Lench.AdvancedControls.Axes.ChainAxis import ChainMethod");
-=======
+
             Execute("clr.AddReference(\"LenchScripterMod\")");
             Execute("from Lench.Scripter import Functions as Besiege");
->>>>>>> 01af4f1a3c0e9f8b5d0ebbcf1728278ab3d47992
 
             // Redirect standard output
             Execute("import sys");
             SetVariable("pythonenv", this);
+            Execute("sys.stdin = pythonenv");
             Execute("sys.stdout = pythonenv");
             Execute("del pythonenv");
         }
@@ -362,7 +356,9 @@ namespace Lench.AdvancedControls
         public void write(object s)
         {
             if (s.ToString().Trim().Length != 0)
+            {
                 Debug.Log(s.ToString().TrimEnd());
+            }
         }
     }
 }

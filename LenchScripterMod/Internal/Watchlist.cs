@@ -11,12 +11,12 @@ namespace Lench.Scripter.Internal
     /// <summary>
     /// Displays global Lua variables in a GUI.
     /// </summary>
-    public class Watchlist : MonoBehaviour
+    public class Watchlist : SingleInstance<Watchlist>
     {
         /// <summary>
         /// Name in the Unity Hierarchy.
         /// </summary>
-        public new string name { get { return "Watchlist"; } }
+        public override string Name { get { return "Watchlist"; } }
 
         internal Vector2 ConfigurationPosition;
 

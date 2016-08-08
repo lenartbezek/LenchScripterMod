@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
-using Lench.AdvancedControls.Blocks;
+using Lench.Scripter.Blocks;
+using Lench.Scripter.Internal;
 
-namespace Lench.AdvancedControls
+namespace Lench.Scripter
 {
     /// <summary>
     /// Used as a wrapper for all Python accessible functions.
@@ -10,6 +12,20 @@ namespace Lench.AdvancedControls
     /// </summary>
     public static class Functions
     {
+        // List of placed marks
+        private static List<Mark> marks = new List<Mark>();
+
+        // Measuring time since the start of simulation
+        private static float startTime = 0;
+
+        /// <summary>
+        /// Resets the timer returned by GetTime()
+        /// </summary>
+        public static void ResetTimer()
+        {
+            startTime = Time.time;
+        }
+
         /// <summary>
         /// Logs message into console.
         /// </summary>
@@ -62,7 +78,7 @@ namespace Lench.AdvancedControls
         /// <returns>Float value.</returns>
         public static float GetTime()
         {
-            return Time.time;
+            return Time.time - startTime;
         }
 
         /// <summary>
@@ -71,7 +87,7 @@ namespace Lench.AdvancedControls
         /// <param name="name">Name of the global variable.</param>
         public static void Watch(string name)
         {
-            throw new InvalidOperationException("Watchlist is unavailable in ACM.");
+            Watchlist.Instance.AddToWatchlist(name, null, true);
         }
 
         /// <summary>
@@ -81,7 +97,7 @@ namespace Lench.AdvancedControls
         /// <param name="value">Variable value to be reported.</param>
         public static void Watch(string name, object value)
         {
-            throw new InvalidOperationException("Watchlist is unavailable in ACM.");
+            Watchlist.Instance.AddToWatchlist(name, value, false);
         }
 
         /// <summary>
@@ -89,7 +105,7 @@ namespace Lench.AdvancedControls
         /// </summary>
         public static void ClearWatchlist()
         {
-            throw new InvalidOperationException("Watchlist is unavailable in ACM.");
+            Watchlist.Instance.ClearWatchlist();
         }
 
         /// <summary>
@@ -203,9 +219,15 @@ namespace Lench.AdvancedControls
         /// </summary>
         /// <param name="pos">Vector3 specifying position.</param>
         /// <returns>Reference to the mark.</returns>
-        public static void CreateMark(Vector3 pos)
+        public static Mark CreateMark(Vector3 pos)
         {
-            throw new InvalidOperationException("Mark functionality is unavailable in ACM.");
+            GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            obj.name = "Mark";
+            obj.transform.parent = Internal.Scripter.Instance.transform;
+            Mark m = obj.AddComponent<Mark>();
+            m.Move(pos);
+            marks.Add(m);
+            return m;
         }
 
         /// <summary>
@@ -214,7 +236,11 @@ namespace Lench.AdvancedControls
         /// </summary>
         public static void ClearMarks(bool manual_call = true)
         {
-            throw new InvalidOperationException("Mark functionality is unavailable in ACM.");
+            foreach (Mark m in marks)
+            {
+                m.Clear(manual_call);
+            }
+            marks.Clear();
         }
     }
 }

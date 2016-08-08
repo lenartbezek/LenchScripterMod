@@ -7,8 +7,10 @@ using spaar.ModLoader.UI;
 
 namespace Lench.Scripter.Internal
 {
-    internal class ScriptOptions : MonoBehaviour
+    internal class ScriptOptions : SingleInstance<ScriptOptions>
     {
+        public override string Name { get { return "ScriptOptions"; } }
+
         internal Vector2 ConfigurationPosition;
 
         internal bool Visible { get; set; } = false;

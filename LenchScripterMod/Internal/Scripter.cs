@@ -16,10 +16,6 @@ namespace Lench.Scripter.Internal
         /// </summary>
         public override string Name { get; } = "Lench Scripter";
 
-        internal Watchlist Watchlist;
-        internal IdentifierDisplay IdentifierDisplay;
-        internal ScriptOptions ScriptOptions;
-
         // Python environment
         internal string scriptFile;
         internal string scriptCode;
@@ -41,12 +37,12 @@ namespace Lench.Scripter.Internal
                     PythonEnvironment.ScripterEnvironment.LoadScript(scriptFile);
                 else if (scriptCode != null)
                     PythonEnvironment.ScripterEnvironment.LoadCode(scriptCode);
-                ScriptOptions.SuccessMessage = "Successfully compiled code.";
+                ScriptOptions.Instance.SuccessMessage = "Successfully compiled code.";
             }
             catch (Exception e)
             {
                 if (e.InnerException != null) e = e.InnerException;
-                ScriptOptions.ErrorMessage = "Error while compiling code.\nSee console (Ctrl+K) for more info.";
+                ScriptOptions.Instance.ErrorMessage = "Error while compiling code.\nSee console (Ctrl+K) for more info.";
                 Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
             }
         }
@@ -73,7 +69,9 @@ namespace Lench.Scripter.Internal
         internal string PythonCommand(string[] args, IDictionary<string, string> namedArgs)
         {
             if (args.Length == 0)
+            {
                 return "Executes a Python expression.";
+            }
 
             string expression = "";
             for (int i = 0; i < args.Length; i++)
@@ -159,14 +157,14 @@ namespace Lench.Scripter.Internal
             // Find script file
             if (scriptFile == null)
             {
-                ScriptOptions.CheckForScript();
-                if (ScriptOptions.ScriptSource == "py")
+                ScriptOptions.Instance.CheckForScript();
+                if (ScriptOptions.Instance.ScriptSource == "py")
                 {
-                    scriptFile = ScriptOptions.ScriptPath;
+                    scriptFile = ScriptOptions.Instance.ScriptPath;
                 }
-                if (ScriptOptions.ScriptSource == "bsg")
+                if (ScriptOptions.Instance.ScriptSource == "bsg")
                 {
-                    scriptCode = ScriptOptions.Code;
+                    scriptCode = ScriptOptions.Instance.Code;
                 }
             }
         }
@@ -193,14 +191,14 @@ namespace Lench.Scripter.Internal
 
             hoveredBlock = Game.AddPiece.HoveredBlock;
 
-            IdentifierDisplay.ShowBlock(hoveredBlock);
+            IdentifierDisplay.Instance.ShowBlock(hoveredBlock);
         }
 
         private void Awake()
         {
-            Watchlist = gameObject.AddComponent<Watchlist>();
-            IdentifierDisplay = gameObject.AddComponent<IdentifierDisplay>();
-            ScriptOptions = gameObject.AddComponent<ScriptOptions>();
+            gameObject.AddComponent<Watchlist>();
+            gameObject.AddComponent<IdentifierDisplay>();
+            gameObject.AddComponent<ScriptOptions>();
         }
 
         private void Start()
@@ -216,9 +214,9 @@ namespace Lench.Scripter.Internal
         {
             DestroyScriptingEnvironment();
             PythonEnvironment.DestroyEngine();
-            Destroy(Watchlist);
-            Destroy(IdentifierDisplay);
-            Destroy(ScriptOptions);
+            Destroy(Watchlist.Instance);
+            Destroy(IdentifierDisplay.Instance);
+            Destroy(ScriptOptions.Instance);
         }
 
         /// <summary>
@@ -249,13 +247,13 @@ namespace Lench.Scripter.Internal
             // Toggle watchlist visibility
             if (PythonEnvironment.Loaded && Keybindings.Get("Watchlist").Pressed())
             {
-                Watchlist.Visible = !Watchlist.Visible;
+                Watchlist.Instance.Visible = !Watchlist.Instance.Visible;
             }
 
             // Toggle options visibility
             if (PythonEnvironment.Loaded && Keybindings.Get("Script Options").Pressed())
             {
-                ScriptOptions.Visible = !ScriptOptions.Visible;
+                ScriptOptions.Instance.Visible = !ScriptOptions.Instance.Visible;
             }
 
             if (!Game.IsSimulating)
@@ -279,7 +277,7 @@ namespace Lench.Scripter.Internal
             {
                 runtime_error = true;
                 if (e.InnerException != null) e = e.InnerException;
-                ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
+                ScriptOptions.Instance.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
                 Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
             }
 
@@ -310,7 +308,7 @@ namespace Lench.Scripter.Internal
             {
                 runtime_error = true;
                 if (e.InnerException != null) e = e.InnerException;
-                ScriptOptions.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
+                ScriptOptions.Instance.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
                 Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
             }
 
@@ -324,15 +322,16 @@ namespace Lench.Scripter.Internal
         /// <param name="isSimulating"></param>
         internal void OnSimulationToggle(bool isSimulating)
         {
+            Functions.ResetTimer();
             BlockHandlers.DestroyBlockHandlers();
             if (enableScript && PythonEnvironment.Loaded)
             {
                 DestroyScriptingEnvironment();
                 CreateScriptingEnvironment();
             }
-            ScriptOptions.SuccessMessage = null;
-            ScriptOptions.NoteMessage = null;
-            ScriptOptions.ErrorMessage = null;
+            ScriptOptions.Instance.SuccessMessage = null;
+            ScriptOptions.Instance.NoteMessage = null;
+            ScriptOptions.Instance.ErrorMessage = null;
         }
     }
 }

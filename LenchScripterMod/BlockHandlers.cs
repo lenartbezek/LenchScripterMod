@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lench.AdvancedControls.Blocks;
+using Lench.Scripter.Blocks;
 
-namespace Lench.AdvancedControls
+namespace Lench.Scripter
 {
     /// <summary>
     /// Block Handlers API of the scripting mod.

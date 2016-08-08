@@ -7,8 +7,10 @@ using UnityEngine;
 
 namespace Lench.Scripter.Internal
 {
-    internal class IdentifierDisplay : MonoBehaviour
+    internal class IdentifierDisplay : SingleInstance<IdentifierDisplay>
     {
+        public override string Name { get { return "IdentifierDisplay"; } }
+
         internal Vector2 ConfigurationPosition;
 
         private GenericBlock block;

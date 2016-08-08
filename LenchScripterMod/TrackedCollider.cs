@@ -1,7 +1,7 @@
-﻿using Lench.AdvancedControls.Blocks;
+﻿using Lench.Scripter.Blocks;
 using UnityEngine;
 
-namespace Lench.AdvancedControls
+namespace Lench.Scripter
 {
     /// <summary>
     /// Tracked collider and hit offset.
