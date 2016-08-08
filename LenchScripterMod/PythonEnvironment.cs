@@ -181,6 +181,18 @@ namespace Lench.Scripter
             Execute("clr.AddReference(\"LenchScripterMod\")");
             Execute("from Lench.Scripter import Functions as Besiege");
 
+            // Execute additional init statements
+            for (int i = 0; i < init_statements.Count;)
+                try
+                {
+                    Execute(init_statements[i]);
+                    i++;
+                }
+                catch
+                {
+                    init_statements.RemoveAt(i);
+                }
+
             // Redirect standard output
             Execute("import sys");
             SetVariable("pythonenv", this);
