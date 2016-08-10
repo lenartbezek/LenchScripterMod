@@ -8,9 +8,9 @@ namespace Lench.Scripter.Blocks
     /// </summary>
     public class Cog : Block
     {
-        private static FieldInfo input = typeof(CogMotorController).GetField("input", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo input = typeof(CogMotorControllerHinge).GetField("input", BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private CogMotorController cmc;
+        private CogMotorControllerHinge cmc;
 
         private float desired_input;
         private bool setInputFlag = false;
@@ -21,7 +21,7 @@ namespace Lench.Scripter.Blocks
         /// <param name="bb">BlockBehaviour object.</param>
         public Cog(BlockBehaviour bb) : base(bb)
         {
-            cmc = bb.GetComponent<CogMotorController>();
+            cmc = bb .GetComponent<CogMotorControllerHinge>();
         }
 
         /// <summary>

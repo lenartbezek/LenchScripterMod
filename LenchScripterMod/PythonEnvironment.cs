@@ -196,7 +196,6 @@ namespace Lench.Scripter
             // Redirect standard output
             Execute("import sys");
             SetVariable("pythonenv", this);
-            Execute("sys.stdin = pythonenv");
             Execute("sys.stdout = pythonenv");
             Execute("del pythonenv");
         }

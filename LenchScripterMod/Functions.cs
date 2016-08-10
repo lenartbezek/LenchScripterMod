@@ -221,6 +221,7 @@ namespace Lench.Scripter
         /// <returns>Reference to the mark.</returns>
         public static Mark CreateMark(Vector3 pos)
         {
+            Debug.Log("Creating mark at " + pos);
             GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             obj.name = "Mark";
             obj.transform.parent = Internal.Scripter.Instance.transform;

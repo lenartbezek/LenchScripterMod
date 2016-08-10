@@ -81,6 +81,7 @@ namespace Lench.Scripter.Internal
             }
             catch (FileNotFoundException)
             {
+                ScriptPath = "";
                 ScriptFound = false;
             }
             if (ScriptFound && ScriptSource == "none")

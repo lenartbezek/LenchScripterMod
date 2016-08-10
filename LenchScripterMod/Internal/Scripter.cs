@@ -196,6 +196,7 @@ namespace Lench.Scripter.Internal
 
         private void Awake()
         {
+            gameObject.AddComponent<BlockHandlers>();
             gameObject.AddComponent<Watchlist>();
             gameObject.AddComponent<IdentifierDisplay>();
             gameObject.AddComponent<ScriptOptions>();
@@ -214,6 +215,7 @@ namespace Lench.Scripter.Internal
         {
             DestroyScriptingEnvironment();
             PythonEnvironment.DestroyEngine();
+            Destroy(BlockHandlers.Instance);
             Destroy(Watchlist.Instance);
             Destroy(IdentifierDisplay.Instance);
             Destroy(ScriptOptions.Instance);
@@ -280,19 +282,10 @@ namespace Lench.Scripter.Internal
                 ScriptOptions.Instance.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
                 Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
             }
-
-            // Call OnUpdate event for Block handlers.
-            BlockHandlers.CallUpdate();
-        }
-
-        private void LateUpdate()
-        {
-            // Call OnLateUpdate event for Block handlers.
-            BlockHandlers.CallLateUpdate();
         }
 
         /// <summary>
-        /// Calls Lua functions at a fixed rate.
+        /// Calls Python functions at a fixed rate.
         /// </summary>
         private void FixedUpdate()
         {
@@ -311,9 +304,6 @@ namespace Lench.Scripter.Internal
                 ScriptOptions.Instance.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
                 Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
             }
-
-            // Call OnLateUpdate event for Block handlers.
-            BlockHandlers.CallFixedUpdate();
         }
 
         /// <summary>

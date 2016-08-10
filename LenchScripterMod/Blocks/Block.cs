@@ -104,6 +104,16 @@ namespace Lench.Scripter.Blocks
         }
 
         /// <summary>
+        /// Unsubscribes block handler from Update events.
+        /// </summary>
+        public virtual void Dispose()
+        {
+            BlockHandlers.OnUpdate -= Update;
+            BlockHandlers.OnLateUpdate -= LateUpdate;
+            BlockHandlers.OnFixedUpdate -= FixedUpdate;
+        }
+
+        /// <summary>
         /// Is called at every Update.
         /// </summary>
         protected virtual void Update() { }

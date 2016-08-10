@@ -7,8 +7,13 @@ namespace Lench.Scripter
     /// <summary>
     /// Block Handlers API of the scripting mod.
     /// </summary>
-    public static class BlockHandlers
+    public class BlockHandlers : SingleInstance<BlockHandlers>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        public override string Name { get { return "Block Handlers Controller"; } }
+
         /// <summary>
         /// Event invoked when simulation block handlers are initialised.
         /// Use this instead of OnSimulation if you're relying on block handlers.
@@ -77,7 +82,7 @@ namespace Lench.Scripter
         /// <summary>
         /// Calls Update method of all initialised Block handlers.
         /// </summary>
-        public static void CallUpdate()
+        private void Update()
         {
             OnUpdate?.Invoke();
         }
@@ -85,7 +90,7 @@ namespace Lench.Scripter
         /// <summary>
         /// Calls LateUpdate method of all initialised Block handlers.
         /// </summary>
-        public static void CallLateUpdate()
+        private void LateUpdate()
         {
             OnLateUpdate?.Invoke();
         }
@@ -93,7 +98,7 @@ namespace Lench.Scripter
         /// <summary>
         /// Calls FixedUpdate method of all initialised Block handlers.
         /// </summary>
-        public static void CallFixedUpdate()
+        private void FixedUpdate()
         {
             OnFixedUpdate?.Invoke();
         }
@@ -187,10 +192,10 @@ namespace Lench.Scripter
         {
             var typeCount = new Dictionary<string, int>();
             buildingBlocks = new Dictionary<Guid, string>();
-            for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
+            for (int i = 0; i < ReferenceMaster.BuildingBlocks.Count; i++)
             {
-                GenericBlock block = Machine.Active().BuildingBlocks[i].GetComponent<GenericBlock>();
-                string name = Machine.Active().BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
+                GenericBlock block = ReferenceMaster.BuildingBlocks[i].GetComponent<GenericBlock>();
+                string name = ReferenceMaster.BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
                 buildingBlocks[block.Guid] = name + " " + typeCount[name];
             }
@@ -208,13 +213,13 @@ namespace Lench.Scripter
             guidToBlockHandler = new Dictionary<Guid, Block>();
             bbToBlockHandler = new Dictionary<BlockBehaviour, Block>();
             var typeCount = new Dictionary<string, int>();
-            for (int i = 0; i < Machine.Active().BuildingBlocks.Count; i++)
+            for (int i = 0; i < ReferenceMaster.BuildingBlocks.Count; i++)
             {
-                string name = Machine.Active().BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
+                string name = ReferenceMaster.BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
                 string id = name + " " + typeCount[name];
-                Guid guid = Machine.Active().BuildingBlocks[i].Guid;
-                Block b = CreateBlock(Machine.Active().Blocks[i]);
+                Guid guid = ReferenceMaster.BuildingBlocks[i].Guid;
+                Block b = CreateBlock(ReferenceMaster.SimulationBlocks[i]);
                 idToBlockHandler[id] = b;
                 guidToBlockHandler[guid] = b;
             }
@@ -229,6 +234,9 @@ namespace Lench.Scripter
         /// </summary>
         public static void DestroyBlockHandlers()
         {
+            if (bbToBlockHandler != null)
+                foreach (var entry in bbToBlockHandler)
+                    entry.Value.Dispose();
             idToBlockHandler = null;
             guidToBlockHandler = null;
             bbToBlockHandler = null;

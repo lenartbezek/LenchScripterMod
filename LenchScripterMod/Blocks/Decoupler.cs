@@ -37,7 +37,23 @@
         /// </summary>
         public void Explode()
         {
-            eb.Explode();
+            try
+            {
+                eb.Explode();
+            }
+            catch
+            {
+                // Calling Explode imediatelly after simulation start will throw a NullReferenceException
+            }
+        }
+
+        /// <summary>
+        /// Sets the decoupler explode power.
+        /// </summary>
+        public float ExplodePower
+        {
+            get { return eb.explodePower; }
+            set { eb.explodePower = value; }
         }
     }
 }
