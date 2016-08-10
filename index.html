@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Lench Scripter Mod by lench4991</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Lench Scripter Mod</h1>
+      <h2 class="project-tagline">Besiege Python scripting mod</h2>
+      <a href="https://github.com/lench4991/LenchScripterMod" class="btn">View on GitHub</a>
+      <a href="https://github.com/lench4991/LenchScripterMod/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/lench4991/LenchScripterMod/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <p><a href="https://github.com/lench4991/LenchScripterMod/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/lench4991/LenchScripterMod.svg?style=flat-square" alt="GitHub license"></a>
+<a href="https://github.com/lench4991/LenchScripterMod/releases"><img src="https://img.shields.io/github/release/lench4991/LenchScripterMod.svg?style=flat-square" alt="GitHub release"></a>
+<a href="https://github.com/lench4991/LenchScripterMod/releases"><img src="https://img.shields.io/github/downloads/lench4991/LenchScripterMod/total.svg?style=flat-square" alt="GitHub total downloads"></a></p>
+
+<p>This mod enables you to control your Besiege machine Python scripts.
+Changing sliders or toggles and triggering actions allows you to create controllers, stabilisators, autopilots or anything you can dream up to guide your machines.</p>
+
+<p>Requires <a href="http://forum.spiderlinggames.co.uk/forum/main-forum/besiege-early-access/modding/8432-spaar-s-mod-loader-1-3-3-besiege-v0-27">Spaar's Mod Loader</a>.</p>
+
+<p>Includes an API for modders and enabling integration with other mods.</p>
+
+<p><strong>For documentation and everything else you want to know, see the <a href="https://github.com/lench4991/BesiegeScripterMod/wiki">wiki page</a>.</strong></p>
+
+<hr>
+
+<p>With this guide, I will try to show you how to get started using my scripting mod. I will start with very simple examples with thorough explanation and continue to more advanced machines with only conceptual remarks.</p>
+
+<p>Examples:<br>
+1. <a href="#1-writing-your-first-script">Writing your first script</a><br>
+2. <a href="#2-something-useful">Something useful</a><br>
+3. <a href="#3-controlling-anything">Controlling anything</a><br>
+4. <a href="#4-first-flight">First flight</a>  </p>
+
+<h3>
+<a id="how-it-works" class="anchor" href="#how-it-works" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How it works</h3>
+
+<p>The mod looks for scripts in the <code>/Besiege_Data/Scripts/</code> folder. By default, it will look for a script with the same name as the machine, but you can change that by opening Script options window (Ctrl+U).</p>
+
+<p><img src="http://i.imgur.com/YxUyb8g.jpg" alt="Finding the script file"></p>
+
+<p>If you see the green checkmark near the script file input field, it means that the mod has found your script file and will run it when you start the simulation.</p>
+
+<p>This is how the mod finds the right script to run. Save your machine, create a .py file with a matching name in Scripts folder and you're ready to go.</p>
+
+<p>Alternatively, you can embed the script inside the machine file for sharing on workshop.</p>
+
+<h3>
+<a id="1-writing-your-first-script" class="anchor" href="#1-writing-your-first-script" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1. Writing your first script</h3>
+
+<p>Let's make something simple. We want a vehicle that can run at different speeds. We will do this by changing it's wheel's speed sliders at a key press.</p>
+
+<p>If you looked around in <a href="https://github.com/lench4991/LenchScripterMod/wiki/Block-handlers">Block handlers page</a>, you might have noticed the function called<br>
+ <code>SetSliderValue(string sliderName, float value)</code>. This is what we will be calling.</p>
+
+<hr>
+
+<p>First we need the block we want to manipulate. We get that by calling <code>Besiege.GetBlock(string blockId)</code> function with the block's ID. To get the blocks identifier, point at a block and press <code>LeftShift</code>. You will see the this.</p>
+
+<p><img src="http://i.imgur.com/HjrLMaK.jpg" alt="Block identifiers"></p>
+
+<p>These are actually two block identifiers for the same block. You can use either of those. The first one (name + number) is the sequential identifier. It's the most simple way to select your block, but you must be careful because it's number 
+might change if you place more wheels.</p>
+
+<p>The second identifier is the block's GUID. This one will not change unless you delete the block. It can also be seen in the .bsg file. If you are modifying your machine a lot, you will probably want to use this one.</p>
+
+<p>Let's say we decide to use GUIDs. At the beginning of the script we can get the block references and save them in a variable to avoid typing them again.</p>
+
+<div class="highlight highlight-source-python"><pre>left_wheel <span class="pl-k">=</span> Besiege.GetBlock(<span class="pl-s"><span class="pl-pds">"</span>9d771b0d-d61c-4f35-a4bb-8f5f8daad308<span class="pl-pds">"</span></span>)
+right_wheel <span class="pl-k">=</span> Besiege.GetBlock(<span class="pl-s"><span class="pl-pds">"</span>7b700250-b1fd-4aae-834e-c1db9f8b5d8e<span class="pl-pds">"</span></span>)</pre></div>
+
+<hr>
+
+<p>The first parameter to SetSliderValue function specifies the slider we want to change. Some blocks have multiple sliders, so this is necessary. To select a slider, just look at it's name in the block's mapper window:</p>
+
+<p><img src="http://i.imgur.com/tuxlKOV.jpg" alt="Block mapper"></p>
+
+<p>Now we can set the wheels to super fast, even beyond what you're allowed to in-game.</p>
+
+<div class="highlight highlight-source-python"><pre>left_wheel.SetSliderValue(<span class="pl-s"><span class="pl-pds">"</span>SPEED<span class="pl-pds">"</span></span>, <span class="pl-c1">4</span>)
+right_wheel.SetSliderValue(<span class="pl-s"><span class="pl-pds">"</span>SPEED<span class="pl-pds">"</span></span>, <span class="pl-c1">4</span>)</pre></div>
+
+<hr>
+
+<p>Try running the script. It's not what we want yet. We want the speed to change at the press of a key.</p>
+
+<p>To do this, we need to write a function:</p>
+
+<div class="highlight highlight-source-python"><pre><span class="pl-k">def</span> <span class="pl-en">Update</span>():
+    <span class="pl-c"># handle key press</span></pre></div>
+
+<p>This function will be called on every frame of the simulation. Inside, we can check for key presses and update our slider values.</p>
+
+<p>Let's create a variable called <code>v</code> for speed. Every time we press I, we will increase it, and every time we press K, we will decrease it. Then we update the slider value.</p>
+
+<div class="highlight highlight-source-python"><pre>v <span class="pl-k">=</span> <span class="pl-c1">1</span>
+
+<span class="pl-k">def</span> <span class="pl-en">Update</span>():
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.<span class="pl-c1">I</span>):
+        v <span class="pl-k">+=</span> <span class="pl-c1">0.2</span>
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.<span class="pl-c1">K</span>):
+        v <span class="pl-k">-=</span> <span class="pl-c1">0.2</span>
+    left_wheel.SetSliderValue(<span class="pl-s"><span class="pl-pds">"</span>SPEED<span class="pl-pds">"</span></span>, v)
+    right_wheel.SetSliderValue(<span class="pl-s"><span class="pl-pds">"</span>SPEED<span class="pl-pds">"</span></span>, v)</pre></div>
+
+<p>We checked if key I or K are pressed by calling functions from UnityEngine.Input class. You can read more about how to use it <a href="http://docs.unity3d.com/ScriptReference/Input.html">here</a>.</p>
+
+<p>There we go. We can now change the speed of the car while driving it!<br>
+Want to see how the speed changes? Press <code>Ctrl+I</code> to open the Watchlist, type <code>v</code> into the field and press add.
+You can now see the variable value and even change it by clicking on it.</p>
+
+<h3>
+<a id="2-something-useful" class="anchor" href="#2-something-useful" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2. Something useful</h3>
+
+<p>You know how nice it would be sometimes if steering hinges reset their angle when you stopped pressing the key? We can make that!</p>
+
+<p>Let's upgrade our code from the last example. We will need block handlers for the steering hinges.</p>
+
+<div class="highlight highlight-source-python"><pre>left_hinge <span class="pl-k">=</span> Besiege.GetBlock(<span class="pl-s"><span class="pl-pds">"</span>STEERING HINGE 1<span class="pl-pds">"</span></span>)
+right_hinge <span class="pl-k">=</span> Besiege.GetBlock(<span class="pl-s"><span class="pl-pds">"</span>STEERING HINGE 2<span class="pl-pds">"</span></span>)</pre></div>
+
+<p>The <code>GetBlock()</code> function finds the block by it's identifier and returns the block handler object. Variables <code>left_hinge</code> and <code>right_hinge</code> now contain objects representing our left and right steering hinges. This way, we can use <a href="https://github.com/lench4991/LenchScripterMod/wiki/Block-handlers#steering">features only steering blocks have</a>, like the <code>left_hinge.SetAngle(angle)</code>.</p>
+
+<hr>
+
+<p>Just like the last time, we will check for key presses inside Update() function body, then set the angle of the hinges. Let's check for LeftArrow and RightArrow key presses.</p>
+
+<div class="highlight highlight-source-python"><pre>v <span class="pl-k">=</span> <span class="pl-c1">1</span>
+
+<span class="pl-k">def</span> <span class="pl-en">Update</span>():
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.<span class="pl-c1">I</span>):
+        v <span class="pl-k">+=</span> <span class="pl-c1">0.2</span>
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.<span class="pl-c1">K</span>):
+        v <span class="pl-k">-=</span> <span class="pl-c1">0.2</span>
+
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.LeftArrow):
+        <span class="pl-c"># steer left</span>
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.RightArrow):
+        <span class="pl-c"># steer right</span>
+
+    left_wheel.SetSliderValue(<span class="pl-s"><span class="pl-pds">"</span>SPEED<span class="pl-pds">"</span></span>, v)
+    right_wheel.SetSliderValue(<span class="pl-s"><span class="pl-pds">"</span>SPEED<span class="pl-pds">"</span></span>, v)</pre></div>
+
+<p>We now have the if sentences that will run when the arrow keys are pressed. Now we just need to create a variable that will hold our angle.</p>
+
+<p>A really elegant way to do this is initializing it at the start of the Update function, then increase it or decrease it in the if sentence blocks.</p>
+
+<div class="highlight highlight-source-python"><pre>angle <span class="pl-k">=</span> <span class="pl-c1">0</span>
+<span class="pl-k">if</span> Input.GetKey(KeyCode.LeftArrow):
+    angle <span class="pl-k">+=</span> <span class="pl-c1">40</span>
+<span class="pl-k">if</span> Input.GetKey(KeyCode.RightArrow):
+    angle <span class="pl-k">-=</span> <span class="pl-c1">40</span></pre></div>
+
+<p>This way if no key is pressed, the angle will remain zero. If both keys are pressed simultaneously, the angle will be <code>0 + 40 - 40 = 0</code>.</p>
+
+<p>Now we just call the SetAngle functions and we're done.</p>
+
+<div class="highlight highlight-source-python"><pre>left_wheel.SetAngle(angle)
+right_wheel.SetSliderValue(angle)</pre></div>
+
+<hr>
+
+<h3>
+<a id="3-controlling-anything" class="anchor" href="#3-controlling-anything" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3. Controlling anything</h3>
+
+<p>Now let's try do the same thing, but with a spinning block. This way we'll show how to control your machine indirectly. This approach can be used to control almost anything.</p>
+
+<p>Here's our machine:<br>
+<img src="http://i.imgur.com/VtIdw0Q.jpg" alt="Steering machine"></p>
+
+<hr>
+
+<p>To control the steering angle through a spinning block, we need to set just the right speed for the spinning block to turn to the desired angle.</p>
+
+<p>But to know what speed to apply to the block, we need to know where we are steering first in order to adjust. Our steering angle is the difference between where the car is pointing and where the wheels are pointing.</p>
+
+<p>We need car heading and steering block heading angles. Good way to get them is by using EulerAngles block property.
+This property will return a vector of three angles, one for each axis (x, y, z) in range from 0 to 360.</p>
+
+<div class="highlight highlight-source-python"><pre>starting_block <span class="pl-k">=</span> Besiege.GetBlock(<span class="pl-s"><span class="pl-pds">"</span>STARTING BLOCK 1<span class="pl-pds">"</span></span>)
+spinning_block <span class="pl-k">=</span> Besiege.GetBlock(<span class="pl-s"><span class="pl-pds">"</span>SPINNING 1<span class="pl-pds">"</span></span>)
+
+<span class="pl-k">def</span> <span class="pl-en">Update</span>():
+    car_angles <span class="pl-k">=</span> starting_block.EulerAngles
+    spinning_angles <span class="pl-k">=</span> spinning_block.EulerAngles</pre></div>
+
+<p><img src="http://i.imgur.com/trOQO9y.png" alt="Euler angles"></p>
+
+<p>By toying around with the car a bit, we can see that the values we want are in the vector's <code>y</code> component. Now we need to calculate the angle between them. This is tricky, because we need to get the shortest angle and we can't just substract the smaller from the bigger one. For example, the shortest angle between 330° and 30° is 60° and not 300°.</p>
+
+<p>Good thing is we can access methods from UnityEngine Mathf module. Function Mathf.DeltaAngle will get us what we want.</p>
+
+<div class="highlight highlight-source-python"><pre>car_heading <span class="pl-k">=</span> starting_block.EulerAngles.y
+spinning_heading <span class="pl-k">=</span> spinning_block.EulerAngles.y
+steering_angle <span class="pl-k">=</span> Mathf.DeltaAngle(car_heading, spinning_heading)</pre></div>
+
+<p><img src="http://i.imgur.com/KnS0YmA.png" alt="Negative angle"></p>
+
+<p>Mathf.DeltaAngle calculates the shortest angle from <code>car_heading</code> to <code>spinning_heading</code>. That's why if car_heading is bigger, we get negative value, which means <strong>negative steering angle is left and positive is right</strong>, as you can see on the picture.</p>
+
+<hr>
+
+<p>We have our steering angle. Now we need to know how we want to steer. We will create a variable called <code>target_angle</code>.
+Target angle will be 30 degrees to the left (-30) if we're holding down left arrow and 30 degrees to the right (+30) when we're holding down right arrow. If we let go of the keys, the <code>target_angle</code> will return back to 0.</p>
+
+<p>We will do this the same way as we set the angle in the last example.</p>
+
+<div class="highlight highlight-source-python"><pre>starting_block <span class="pl-k">=</span> Besiege.GetBlock(<span class="pl-s"><span class="pl-pds">"</span>STARTING BLOCK 1<span class="pl-pds">"</span></span>)
+spinning_block <span class="pl-k">=</span> Besiege.GetBlock(<span class="pl-s"><span class="pl-pds">"</span>SPINNING 1<span class="pl-pds">"</span></span>)
+
+<span class="pl-k">def</span> <span class="pl-en">Update</span>():
+    car_heading <span class="pl-k">=</span> starting_block.EulerAngles.y
+    spinning_heading <span class="pl-k">=</span> spinning_block.EulerAngles.y
+    steering_angle <span class="pl-k">=</span> Mathf.DeltaAngle(car_heading, spinning_heading)
+
+    target_angle <span class="pl-k">=</span> <span class="pl-c1">0</span>
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.LeftArrow):
+        target_angle <span class="pl-k">+=</span> <span class="pl-c1">30</span>
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.RightArrow):
+        target_angle <span class="pl-k">-=</span> <span class="pl-c1">30</span>
+</pre></div>
+
+<hr>
+
+<p>Now we need to use the information about our car to calculate which way and how fast to spin our spinning block to make it point in direction of target_angle. To keep it simple for now, let's just try substracting target angle from the current angle. The maximum difference between the angles is 60, so if we divide it by 120, we will get maximum 0.5 speed slider value, keeping the steering smooth.</p>
+
+<div class="highlight highlight-source-python"><pre>speed <span class="pl-k">=</span> (steering_angle <span class="pl-k">-</span> target_angle)<span class="pl-k">/</span><span class="pl-c1">120</span></pre></div>
+
+<p>This way we convert the steering error into spinning block speed. If the angles match, the speed will be zero, meaning the spinning block will hold the angle. If the angles are off, the speed will be right to correct the angle.</p>
+
+<p>Now we only need to set the slider value:</p>
+
+<div class="highlight highlight-source-python"><pre>spinning_block.SetSliderValue(<span class="pl-s"><span class="pl-pds">"</span>SPEED<span class="pl-pds">"</span></span>, speed)</pre></div>
+
+<p><strong><a href="https://gfycat.com/SneakyBrownGnat">The result is satisfying.</a></strong></p>
+
+<h3>
+<a id="4-first-flight" class="anchor" href="#4-first-flight" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4. First flight</h3>
+
+<p>You should be able to do some real scripting by now. And that's what we're going to do.</p>
+
+<p>Here's our next objective:<br>
+<img src="http://i.imgur.com/Ay6wrin.jpg" alt="Drone"></p>
+
+<p>Create a drone with four spinning blocks for propellers. Invert two of those to balance it. We will be writing an autopilot stabilisation script for the drone. It's quite stable on it's own, so it won't be that hard to tune it, but it will teach you the concepts behind it. We will also include a reactionary wheel in the center to turn the drone left and right.</p>
+
+<p>First, find out at what speed of the spinning blocks the drone hovers at the same altitude. With my drone, that speed was 0.9. Save it to a global variable <code>HOVER_SPEED</code>. The speeds we will be applying to the spinning blocks will all be deviations of this value.</p>
+
+<hr>
+
+<p>Similarly to the previous example, we will be matching drones parameters to our target parameters and then adjusting the input with a bit more complex controllers. Let's start by defining target variables and handling input for pitch, roll and altitude.</p>
+
+<div class="highlight highlight-source-python"><pre>target_altitude <span class="pl-k">=</span> <span class="pl-c1">0</span>
+
+<span class="pl-k">def</span> <span class="pl-en">Update</span>():
+    <span class="pl-s"><span class="pl-pds">"""</span></span>
+<span class="pl-s">    Functions in Python have their own local scope.</span>
+<span class="pl-s">    To make sure we are changing global variables instead of creating</span>
+<span class="pl-s">    new local variables with the same name,</span>
+<span class="pl-s">    we use the global keyword.</span>
+<span class="pl-s">    <span class="pl-pds">"""</span></span>
+    <span class="pl-k">global</span> target_altitude
+
+    target_pitch <span class="pl-k">=</span> <span class="pl-c1">0</span>
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.UpArrow):
+        target_pitch <span class="pl-k">=</span> <span class="pl-c1">10</span>
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.DownArrow):
+        target_pitch <span class="pl-k">=</span> <span class="pl-k">-</span><span class="pl-c1">10</span>
+
+    target_roll <span class="pl-k">=</span> <span class="pl-c1">0</span>
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.LeftArrow):
+        target_roll <span class="pl-k">=</span> <span class="pl-c1">10</span>
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.RightArrow):
+        target_roll <span class="pl-k">=</span> <span class="pl-k">-</span><span class="pl-c1">10</span>
+
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.<span class="pl-c1">I</span>):
+        target_altitude <span class="pl-k">=</span> target_altitude <span class="pl-k">+</span> <span class="pl-c1">5</span> <span class="pl-k">*</span> Time.deltaTime
+    <span class="pl-k">if</span> Input.GetKey(KeyCode.<span class="pl-c1">K</span>):
+        target_altitude <span class="pl-k">=</span> target_altitude <span class="pl-k">-</span> <span class="pl-c1">5</span> <span class="pl-k">*</span> Time.deltaTime</pre></div>
+
+<p>As you see, we will be using <code>I</code> and <code>K</code> to move the target altitude. When the key is held, we will be moving it by 5 units per second. We do this by multiplying 5 with <a href="http://docs.unity3d.com/ScriptReference/Time-deltaTime.html">Time.deltaTime</a>.</p>
+
+<p>Arrow keys will be controlling pitch and roll. Each will bank the drone for 10 degrees in it's direction.</p>
+
+<p><img src="http://i.imgur.com/29vbr7H.png" alt="Drone angles"></p>
+
+<hr>
+
+<p>Same as before, the first step is getting machine's parameters: angles and altitude. We need to convert them so they match our target values. Because we will be using more advanced control loop feedback mechanisms (controllers) than last time, we will also need the rate of change (speed) of the machine's parameters.</p>
+
+<div class="highlight highlight-source-python"><pre>position <span class="pl-k">=</span> starting_block.Position
+rotation <span class="pl-k">=</span> starting_block.EulerAngles
+
+machine_altitude <span class="pl-k">=</span> position.y
+vertical_velocity <span class="pl-k">=</span> (machine_altitude <span class="pl-k">-</span> last_altitude) <span class="pl-k">/</span> Time.deltaTime
+
+machine_pitch <span class="pl-k">=</span> rotation.x
+pitch_velocity <span class="pl-k">=</span> Mathf.DeltaAngle(machine_pitch, last_pitch) <span class="pl-k">/</span> Time.deltaTime
+
+machine_roll <span class="pl-k">=</span> rotation.z
+roll_velocity <span class="pl-k">=</span> Mathf.DeltaAngle(machine_roll, last_roll) <span class="pl-k">/</span> Time.deltaTime
+
+last_altitude <span class="pl-k">=</span> machine_altitude
+last_pitch <span class="pl-k">=</span> machine_pitch
+last_roll <span class="pl-k">=</span> machine_roll</pre></div>
+
+<p>Don't forget to initialize last_* variables at the start of the script.</p>
+
+<p>With our machine and target parameters ready, it's time to program our controllers. Real drones do this by implementing <a href="https://en.wikipedia.org/wiki/PID_controller">PID (proportional-integral-derivative) controller</a> and so do we.</p>
+
+<hr>
+
+<p>The PID controller accounts for present values, past values and possible future values. It determines the output based on three components:</p>
+
+<ul>
+<li>proportional error - distance to the target value</li>
+<li>integral error - proportional error accumulated over time</li>
+<li>derivative error - error based on the rate of change (speed)</li>
+</ul>
+
+<p>The proportional error is basically what we used in the previous example - we subtracted the values. For altitude controller, this would be:</p>
+
+<div class="highlight highlight-source-python"><pre>altitude_p_error <span class="pl-k">=</span> target_altitude <span class="pl-k">-</span> machine_altitude</pre></div>
+
+<p>The integral error is accumulated proportional error. A good example of why we need this is if we're lifting heavy loads with the drone. When lifting, greater rotor speeds are required to keep the altitude. The controller would accumulate the error and learn to apply more power to all rotors.</p>
+
+<div class="highlight highlight-source-python"><pre>altitude_i_error <span class="pl-k">=</span> altitude_i_error <span class="pl-k">+</span> altitude_p_error <span class="pl-k">*</span> Time.deltaTime</pre></div>
+
+<p>Finally the derivative component which is simply the speed or rate of change. Accounting for this will greatly help us fix on the target, especially when the controlled value carries momentum, in this case our drone falling or rising rapidly.</p>
+
+<div class="highlight highlight-source-python"><pre>altitude_d_error <span class="pl-k">=</span> <span class="pl-k">-</span> vertical_velocity</pre></div>
+
+<p>The output value will be normalized sum of these components, multiplied by their gain coefficients:</p>
+
+<div class="highlight highlight-source-python"><pre>altitude_p_gain <span class="pl-k">=</span> <span class="pl-c1">1</span>
+altitude_i_gain <span class="pl-k">=</span> <span class="pl-c1">1</span>
+altitude_d_gain <span class="pl-k">=</span> <span class="pl-c1">1</span></pre></div>
+
+<p>For now, we can set them to 1. Later, when tuning the controllers, we will change these values to manipulate how the controllers react to change.</p>
+
+<p>The output value for the altitude controller is now:</p>
+
+<div class="highlight highlight-source-python"><pre>    altitude_adjustment <span class="pl-k">=</span> ( altitude_p_error <span class="pl-k">*</span> altitude_p_gain <span class="pl-k">+</span>
+                            altitude_i_error <span class="pl-k">*</span> altitude_i_gain <span class="pl-k">+</span>
+                            altitude_d_error <span class="pl-k">*</span> altitude_d_gain) <span class="pl-k">/</span> <span class="pl-c1">20</span></pre></div>
+
+<p>The controller returns zero when the machine is on target. By dividing the output value by 20, it's proportional component will now return 1 when 20 units below target or -1 when 20 units above target. With this, we try to normalize the output between -1 (rotors standing still) and +1 (rotors at double hover speed).</p>
+
+<p>We implement similar controllers also for pitch and roll.</p>
+
+<hr>
+
+<p>Now it's time to apply new values.</p>
+
+<p>Altitude adjustment applies to all rotors equally. Positive pitch adjustment means the pitch angle is too big so the drone needs to be tilted forward. When doing that, the rear rotor speeds will be increased and the front decreased. That is why we put negative sign infront of pitch adjustment for front rotors. We do similarly for roll adjustment.</p>
+
+<div class="highlight highlight-source-python"><pre>front_left_speed <span class="pl-k">=</span> <span class="pl-c1">HOVER_SPEED</span> <span class="pl-k">+</span> <span class="pl-c1">HOVER_SPEED</span> <span class="pl-k">*</span> (altitude_adjustment <span class="pl-k">-</span> pitch_adjustment <span class="pl-k">-</span> roll_adjustment)
+front_right_speed <span class="pl-k">=</span> <span class="pl-c1">HOVER_SPEED</span> <span class="pl-k">+</span> <span class="pl-c1">HOVER_SPEED</span> <span class="pl-k">*</span> (altitude_adjustment <span class="pl-k">-</span> pitch_adjustment <span class="pl-k">+</span> roll_adjustment)
+rear_left_speed <span class="pl-k">=</span> <span class="pl-c1">HOVER_SPEED</span> <span class="pl-k">+</span> <span class="pl-c1">HOVER_SPEED</span> <span class="pl-k">*</span> (altitude_adjustment <span class="pl-k">+</span> pitch_adjustment <span class="pl-k">-</span> roll_adjustment)
+rear_right_speed <span class="pl-k">=</span> <span class="pl-c1">HOVER_SPEED</span> <span class="pl-k">+</span> <span class="pl-c1">HOVER_SPEED</span> <span class="pl-k">*</span> (altitude_adjustment <span class="pl-k">+</span> pitch_adjustment <span class="pl-k">+</span> roll_adjustment)</pre></div>
+
+<hr>
+
+<p>With all controllers in place, it is time to tune them.</p>
+
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/c/c0/Change_with_Ki.png" alt="PID tuning"></p>
+
+<p>We watch how far the drone overshoots the target. We want the drone to reach the target as fast as possible, but minimise the overshoot and the wobble that comes after it. Overshooting with altitude could prove extremely problematic, especially when trying to land the drone, as it could slam it into the ground. Overshooting with pitch or roll is more acceptable as we want to keep good responsiveness of the controls.</p>
+
+<p>When tuning the pitch and roll controllers, we notice that it the drone sometimes starts shaking violently. It seems that the drone carries too much rotational inertia, so it just swings over the target value and then comes back with the same speed. To fix it, we will lower the <code>d_gain</code> parameter.</p>
+
+<p>If you tuned your controllers right, the drone should be easy and responsive to fly.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/lench4991/LenchScripterMod">Lench Scripter Mod</a> is maintained by <a href="https://github.com/lench4991">lench4991</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
