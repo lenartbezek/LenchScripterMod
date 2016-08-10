@@ -21,29 +21,31 @@ namespace Lench.Scripter.Internal
         internal bool Visible { get; set; } = false;
 
         private int windowID = Util.GetWindowID();
-        private Rect windowRect;
+        private Rect windowRect = new Rect(0, 0, 200, 360);
 
         private void OnGUI()
         {
-            if (Visible && ModGUI.Skin != null)
+            if (Visible && Elements.IsInitialized && Time.time > 1)
             {
                 GUI.skin = ModGUI.Skin;
                 GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
                 GUI.skin.window.padding.left = 8;
                 GUI.skin.window.padding.right = 8;
                 GUI.skin.window.padding.bottom = 8;
+                windowRect.x = (Screen.width - windowRect.width) / 2;
+                windowRect.y = (Screen.height - 400);
                 windowRect = GUILayout.Window(windowID, windowRect, DoWindow, "Additional assets required",
                     GUILayout.Height(200),
                     GUILayout.Width(360));
-                windowRect.x = (Screen.width - windowRect.width) / 2;
-                windowRect.y = (Screen.height - 400);
             }
         }
 
         private void DoWindow(int id)
         {
+            // Draw info text
             GUILayout.Label(info_text, new GUIStyle(Elements.Labels.Default) { alignment = TextAnchor.MiddleCenter }, GUILayout.MinHeight(120));
 
+            // Draw dowload button
             if (GUILayout.Button(download_button_text) && !downloading_in_progress)
             {
                 InstallIronPython();
@@ -119,8 +121,10 @@ namespace Lench.Scripter.Internal
                                     }
                                     else
                                     {
-                                        download_button_text = "Error";
+                                        download_button_text = "Retry";
+                                        info_text = "<b><color=red>Download failed</color></b>\nFailed to initialize Python engine.";
                                     }
+                                    downloading_in_progress = false;
                                 }
                             }
                         };
