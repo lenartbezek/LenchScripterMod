@@ -86,6 +86,7 @@
     <Compile Include="Internal\Configuration.cs" />
     <Compile Include="Internal\IdentifierDisplay.cs" />
     <Compile Include="Functions.cs" />
+    <Compile Include="Internal\DependencyInstaller.cs" />
     <Compile Include="Internal\MachineData.cs" />
     <Compile Include="Mark.cs" />
     <Compile Include="Internal\Scripter.cs" />

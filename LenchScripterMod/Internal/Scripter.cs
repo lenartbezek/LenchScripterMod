@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Lench.Scripter.Internal
 {
     /// <summary>
-    /// Class representing an instance of the mod.
+    /// Main mod controller.
     /// </summary>
     public class Scripter : SingleInstance<Scripter>
     {
@@ -172,7 +172,7 @@ namespace Lench.Scripter.Internal
         /// <summary>
         /// Called to stop script.
         /// </summary>
-        private void DestroyScriptingEnvironment()
+        public void DestroyScriptingEnvironment()
         {
             Functions.ClearMarks(false);
             PythonEnvironment.ScripterEnvironment = null;
@@ -196,6 +196,7 @@ namespace Lench.Scripter.Internal
 
         private void Awake()
         {
+            gameObject.AddComponent<DependencyInstaller>();
             gameObject.AddComponent<BlockHandlers>();
             gameObject.AddComponent<Watchlist>();
             gameObject.AddComponent<IdentifierDisplay>();
@@ -206,6 +207,8 @@ namespace Lench.Scripter.Internal
         {
             if (PythonEnvironment.Loaded)
                 CreateScriptingEnvironment();
+            else
+                DependencyInstaller.Instance.Visible = true;
 
             if (ModUpdaterEnabled)
                 CheckForModUpdate();
@@ -215,6 +218,7 @@ namespace Lench.Scripter.Internal
         {
             DestroyScriptingEnvironment();
             PythonEnvironment.DestroyEngine();
+            Destroy(DependencyInstaller.Instance);
             Destroy(BlockHandlers.Instance);
             Destroy(Watchlist.Instance);
             Destroy(IdentifierDisplay.Instance);

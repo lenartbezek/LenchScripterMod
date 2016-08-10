@@ -223,7 +223,7 @@ namespace Lench.Scripter.Internal
             DrawEnabledBadge(SaveToBsg);
             GUILayout.EndHorizontal();
 
-            // Draw export script to lua
+            // Draw export script to Python
             GUILayout.Label(" ", Elements.Labels.Title);
             GUILayout.BeginHorizontal();
             GUILayout.Label("Save code to .py", Elements.InputFields.Default);
