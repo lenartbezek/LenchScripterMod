@@ -21,7 +21,7 @@ namespace Lench.Scripter.Blocks
         /// <param name="bb">BlockBehaviour object.</param>
         public Cog(BlockBehaviour bb) : base(bb)
         {
-            cmc = bb .GetComponent<CogMotorControllerHinge>();
+            cmc = bb.GetComponent<CogMotorControllerHinge>();
         }
 
         /// <summary>

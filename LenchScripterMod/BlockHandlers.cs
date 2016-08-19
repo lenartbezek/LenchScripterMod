@@ -205,7 +205,7 @@ namespace Lench.Scripter
         /// Populates dictionary with references to  block handlers.
         /// Used for accessing blocks with GetBlock() while simulating.
         /// If mod is loaded, it gets called automatically at the start of simulation.
-        /// Invokes OnInitialisation event.
+        /// Invokes OnInitialisation event when done.
         /// </summary>
         public static void InitializeBlockHandlers()
         {
@@ -223,7 +223,7 @@ namespace Lench.Scripter
                 idToBlockHandler[id] = b;
                 guidToBlockHandler[guid] = b;
             }
-
+            
             Initialised = true;
             OnInitialisation?.Invoke();
         }

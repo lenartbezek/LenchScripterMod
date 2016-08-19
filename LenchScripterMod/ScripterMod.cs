@@ -47,27 +47,15 @@ namespace Lench.Scripter
         {
             if (LoadedScripter)
                 throw new InvalidOperationException("Mod's scripting features already loaded.");
-            LoadedScripter = true;
+            
+            if (PythonEnvironment.LoadPythonAssembly())
+            {
+                PythonEnvironment.InitializeEngine();
+                PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
 
-            PythonEnvironment.InitializeEngine();
-            PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
-
-            Debug.Log("[LenchScripterMod]: Python assemblies loaded. Script engine ready.");
-
-            XmlSaver.OnSave += Internal.MachineData.Save;
-            XmlLoader.OnLoad += Internal.MachineData.Load;
-
-            Keybindings.AddKeybinding("Show Block ID", new Key(KeyCode.None, KeyCode.LeftShift));
-            Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
-            Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
-
-            Commands.RegisterCommand("lsm", Internal.Scripter.Instance.ConfigurationCommand, "Enter 'lsm' for all available commands.");
-            Commands.RegisterCommand("py", Internal.Scripter.Instance.PythonCommand, "Executes Python expression.");
-            Commands.RegisterCommand("python", Internal.Scripter.Instance.PythonCommand, "Executes Python expression.");
-
-            SettingsMenu.RegisterSettingsButton("SCRIPT", Internal.Scripter.Instance.RunScriptSettingToggle, true, 12);
-
-            Internal.Configuration.Load();
+                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: " + PythonEnvironment.ScripterEnvironment.Execute("sys.version"));
+                LoadedScripter = true;
+            }
         }
 
         /// <summary>
@@ -96,12 +84,22 @@ namespace Lench.Scripter
             Game.OnBlockPlaced += (Transform block) => Internal.Scripter.Instance.rebuildIDs = true;
             Game.OnBlockRemoved += () => Internal.Scripter.Instance.rebuildIDs = true;
 
-            Block.LoadBlockLoaderAssembly();
+            XmlSaver.OnSave += Internal.MachineData.Save;
+            XmlLoader.OnLoad += Internal.MachineData.Load;
 
-            if (PythonEnvironment.LoadPythonAssembly())
-            {
-                LoadScripter();
-            }
+            Keybindings.AddKeybinding("Show Block ID", new Key(KeyCode.None, KeyCode.LeftShift));
+            Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
+            Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
+
+            Commands.RegisterCommand("lsm", Internal.Scripter.Instance.ConfigurationCommand, "Scripter Mod configuration command.");
+            Commands.RegisterCommand("py", Internal.Scripter.Instance.PythonCommand, "Executes Python expression.");
+            Commands.RegisterCommand("python", Internal.Scripter.Instance.PythonCommand, "Executes Python expression.");
+
+            SettingsMenu.RegisterSettingsButton("SCRIPT", Internal.Scripter.Instance.RunScriptSettingToggle, true, 12);
+
+            Internal.Configuration.Load();
+
+            Block.LoadBlockLoaderAssembly();
 
             LoadedAPI = true;
         }
@@ -117,12 +115,10 @@ namespace Lench.Scripter
             Game.OnBlockPlaced -= (Transform block) => Internal.Scripter.Instance.rebuildIDs = true;
             Game.OnBlockRemoved -= () => Internal.Scripter.Instance.rebuildIDs = true;
 
-            if (PythonEnvironment.Loaded)
-            {
-                XmlSaver.OnSave -= Internal.MachineData.Save;
-                XmlLoader.OnLoad -= Internal.MachineData.Load;
-                Internal.Configuration.Save();
-            }
+            XmlSaver.OnSave -= Internal.MachineData.Save;
+            XmlLoader.OnLoad -= Internal.MachineData.Load;
+
+            Internal.Configuration.Save();
 
             UnityEngine.Object.Destroy(Internal.Scripter.Instance);
             UnityEngine.Object.Destroy(GameObject.Find("Lench Scripter").transform.gameObject);

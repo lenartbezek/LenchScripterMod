@@ -1,6 +1,7 @@
 ﻿using spaar.ModLoader;
 using spaar.ModLoader.UI;
 using System;
+using System.Collections;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -115,7 +116,6 @@ namespace Lench.Scripter.Internal
                                     {
                                         download_button_text = "Complete";
                                         ScripterMod.LoadScripter();
-                                        PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
                                         Instance.Visible = false;
                                         Destroy(Instance);
                                     }

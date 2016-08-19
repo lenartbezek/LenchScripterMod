@@ -205,9 +205,9 @@ namespace Lench.Scripter.Internal
 
         private void Start()
         {
-            if (PythonEnvironment.Loaded)
-                CreateScriptingEnvironment();
-            else
+            ScripterMod.LoadScripter();
+
+            if (!PythonEnvironment.Loaded)
                 DependencyInstaller.Instance.Visible = true;
 
             if (ModUpdaterEnabled)

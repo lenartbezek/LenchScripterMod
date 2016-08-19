@@ -128,6 +128,8 @@ namespace Lench.Scripter.Blocks
             {
                 if (speedSlider.Value != 0)
                 {
+                    sw.GetComponent<Rigidbody>()?.WakeUp();
+
                     float speed = desired_input * 100f * sw.targetAngleSpeed * speedSlider.Value;
 
                     float current_angle = (float)angleyToBeField.GetValue(sw);
