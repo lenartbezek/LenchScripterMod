@@ -5,7 +5,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     /// Handler for the Spring and Rope blocks.
     /// </summary>
-    public class Spring : Block
+    public class Spring : BlockHandler
     {
         private SpringCode sc;
 

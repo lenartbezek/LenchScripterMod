@@ -5,7 +5,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     /// Handler for the Water Cannon block.
     /// </summary>
-    public class WaterCannon : Block
+    public class WaterCannon : BlockHandler
     {
         private static FieldInfo holdFieldInfo = typeof(WaterCannonController).GetField("holdToShootToggle", BindingFlags.NonPublic | BindingFlags.Instance);
 

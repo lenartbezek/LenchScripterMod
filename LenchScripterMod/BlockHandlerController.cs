@@ -7,7 +7,7 @@ namespace Lench.Scripter
     /// <summary>
     /// Block Handlers API of the scripting mod.
     /// </summary>
-    public class BlockHandlers : SingleInstance<BlockHandlers>
+    public class BlockHandlerController : SingleInstance<BlockHandlerController>
     {
         /// <summary>
         /// 
@@ -29,13 +29,13 @@ namespace Lench.Scripter
         internal static Dictionary<Guid, string> buildingBlocks;
 
         // Map: BlockBehaviour -> Block handler
-        internal static Dictionary<BlockBehaviour, Block> bbToBlockHandler;
+        internal static Dictionary<BlockBehaviour, BlockHandler> bbToBlockHandler;
 
         // Map: GUID -> Block handler
-        internal static Dictionary<Guid, Block> guidToBlockHandler;
+        internal static Dictionary<Guid, BlockHandler> guidToBlockHandler;
 
         // Map: ID -> Block handler
-        internal static Dictionary<string, Block> idToBlockHandler;
+        internal static Dictionary<string, BlockHandler> idToBlockHandler;
 
         // Map: BlockType -> BlockHandler type
         internal static Dictionary<int, Type> Types = new Dictionary<int, Type>
@@ -109,13 +109,13 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
         /// <returns>LenchScripterMod.Block object.</returns>
-        private static Block CreateBlock(BlockBehaviour bb)
+        private static BlockHandler CreateBlock(BlockBehaviour bb)
         {
-            Block block;
+            BlockHandler block;
             if (Types.ContainsKey(bb.GetBlockID()))
-                block = (Block)Activator.CreateInstance(Types[bb.GetBlockID()], new object[] { bb });
+                block = (BlockHandler)Activator.CreateInstance(Types[bb.GetBlockID()], new object[] { bb });
             else
-                block = new Block(bb);
+                block = new BlockHandler(bb);
             bbToBlockHandler[bb] = block;
             return block;
         }
@@ -125,7 +125,7 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="blockGuid">Block's GUID.</param>
         /// <returns>Returns reference to blocks Block handler object.</returns>
-        public static Block GetBlock(Guid blockGuid)
+        public static BlockHandler GetBlock(Guid blockGuid)
         {
             if (!Initialised) throw new InvalidOperationException("Block handlers are not initialised.");
             if (guidToBlockHandler.ContainsKey(blockGuid))
@@ -138,7 +138,7 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="bb"></param>
         /// <returns></returns>
-        public static Block GetBlock(BlockBehaviour bb)
+        public static BlockHandler GetBlock(BlockBehaviour bb)
         {
             if (!Initialised) throw new InvalidOperationException("Block handlers are not initialised.");
             if (bbToBlockHandler.ContainsKey(bb))
@@ -151,7 +151,7 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="blockId">Block's sequential identifier.</param>
         /// <returns>Returns reference to blocks Block handler object.</returns>
-        public static Block GetBlock(string blockId)
+        public static BlockHandler GetBlock(string blockId)
         {
             if (!Initialised) throw new InvalidOperationException("Block handlers are not initialised.");
             if (idToBlockHandler.ContainsKey(blockId.ToUpper()))
@@ -209,17 +209,17 @@ namespace Lench.Scripter
         /// </summary>
         public static void InitializeBlockHandlers()
         {
-            idToBlockHandler = new Dictionary<string, Block>();
-            guidToBlockHandler = new Dictionary<Guid, Block>();
-            bbToBlockHandler = new Dictionary<BlockBehaviour, Block>();
+            idToBlockHandler = new Dictionary<string, BlockHandler>();
+            guidToBlockHandler = new Dictionary<Guid, BlockHandler>();
+            bbToBlockHandler = new Dictionary<BlockBehaviour, BlockHandler>();
             var typeCount = new Dictionary<string, int>();
             for (int i = 0; i < ReferenceMaster.BuildingBlocks.Count; i++)
             {
-                string name = ReferenceMaster.BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
+                var name = ReferenceMaster.BuildingBlocks[i].GetComponent<MyBlockInfo>().blockName.ToUpper();
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
-                string id = name + " " + typeCount[name];
+                var id = name + " " + typeCount[name];
                 Guid guid = ReferenceMaster.BuildingBlocks[i].Guid;
-                Block b = CreateBlock(ReferenceMaster.SimulationBlocks[i]);
+                var b = CreateBlock(ReferenceMaster.SimulationBlocks[i]);
                 idToBlockHandler[id] = b;
                 guidToBlockHandler[guid] = b;
             }
@@ -246,11 +246,11 @@ namespace Lench.Scripter
         /// <summary>
         /// Retrieve all initialized Block handlers.
         /// </summary>
-        public static List<Block> GetBlocks()
+        public static List<BlockHandler> GetBlocks()
         {
             if (!Initialised) throw new InvalidOperationException("Block handlers are not initialised.");
-            List<Block> blocks = new List<Block>();
-            foreach (KeyValuePair<string, Block> entry in idToBlockHandler)
+            var blocks = new List<BlockHandler>();
+            foreach (KeyValuePair<string, BlockHandler> entry in idToBlockHandler)
             {
                 blocks.Add(entry.Value);
             }

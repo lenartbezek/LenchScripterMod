@@ -3,7 +3,7 @@
     /// <summary>
     /// Handler for the Explosive Decoupler block.
     /// </summary>
-    public class Decoupler : Block
+    public class Decoupler : BlockHandler
     {
         private ExplosiveBolt eb;
 

@@ -5,7 +5,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     /// Handler for the Flamethrower block.
     /// </summary>
-    public class Flamethrower : Block
+    public class Flamethrower : BlockHandler
     {
         private static FieldInfo holdFieldInfo = typeof(FlamethrowerController).GetField("holdToFire", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo keyHeld = typeof(FlamethrowerController).GetField("keyHeld", BindingFlags.NonPublic | BindingFlags.Instance);

@@ -3,7 +3,7 @@
     /// <summary>
     /// Handler for the Grenade block.
     /// </summary>
-    public class Grenade : Block
+    public class Grenade : BlockHandler
     {
         private ControllableBomb cb;
 

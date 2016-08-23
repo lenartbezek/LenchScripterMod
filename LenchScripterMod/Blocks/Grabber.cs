@@ -5,7 +5,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     /// Handler for the Grabber block.
     /// </summary>
-    public class Grabber : Block
+    public class Grabber : BlockHandler
     {
         private static FieldInfo joinFieldInfo = typeof(GrabberBlock).GetField("joinOnTriggerBlock", BindingFlags.NonPublic | BindingFlags.Instance);
 

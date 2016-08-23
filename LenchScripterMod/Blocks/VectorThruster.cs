@@ -6,7 +6,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     /// Block handler for Pixali's VectorThruster block (ID: 790)
     /// </summary>
-    public class VectorThruster : Block
+    public class VectorThruster : BlockHandler
     {
 
         private static Type scriptType;

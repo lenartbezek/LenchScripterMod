@@ -7,7 +7,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     /// Handler for steering blocks; Steering and Steering Hinge.
     /// </summary>
-    public class Steering : Block
+    public class Steering : BlockHandler
     {
         private static FieldInfo angleyToBeField = typeof(SteeringWheel).GetField("angleyToBe", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo speedSliderField = typeof(SteeringWheel).GetField("speedSlider", BindingFlags.NonPublic | BindingFlags.Instance);

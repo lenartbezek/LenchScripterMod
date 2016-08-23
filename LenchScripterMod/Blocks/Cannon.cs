@@ -3,7 +3,7 @@
     /// <summary>
     /// Handler for cannon blocks; Cannon and Shrapnel Cannon.
     /// </summary>
-    public class Cannon : Block
+    public class Cannon : BlockHandler
     {
         private CanonBlock cb;
 

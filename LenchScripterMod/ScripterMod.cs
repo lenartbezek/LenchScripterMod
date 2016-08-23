@@ -99,8 +99,6 @@ namespace Lench.Scripter
 
             Internal.Configuration.Load();
 
-            Block.LoadBlockLoaderAssembly();
-
             LoadedAPI = true;
         }
 

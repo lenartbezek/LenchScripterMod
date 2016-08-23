@@ -3,7 +3,7 @@
     /// <summary>
     /// Handler for spaar's Automatron block.
     /// </summary>
-    public class Automatron : Block
+    public class Automatron : BlockHandler
     {
 
         /// <summary>

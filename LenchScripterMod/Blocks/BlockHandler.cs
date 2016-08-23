@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace Lench.Scripter.Blocks
@@ -9,33 +8,8 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     /// Base class for all block handlers.
     /// </summary>
-    public class Block
+    public class BlockHandler
     {
-        /// <summary>
-        /// BlockLoader BlockScript type for access to modded blocks.
-        /// </summary>
-        public static Type _blockScriptType;
-
-        /// <summary>
-        /// Attempts to load TGYD's BlockLoader assembly.
-        /// Retrieves BlockScript Type for access to modded blocks.
-        /// </summary>
-        /// <returns>Returns true if successfull.</returns>
-        public static bool LoadBlockLoaderAssembly()
-        {
-            Assembly assembly;
-            try
-            {
-                assembly = Assembly.LoadFrom(Application.dataPath + "/Mods/BlockLoader.dll");
-                _blockScriptType = assembly.GetType("BlockScript");
-                return _blockScriptType != null;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         /// <summary>
         /// Used to convert radians to degrees in all functions returning radians.
         /// If radians are the desired angle unit, it will be set to 1, otherwise Mathf.Rad2Deg.
@@ -92,15 +66,14 @@ namespace Lench.Scripter.Blocks
         /// Creates a Block handler.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
-        public Block(BlockBehaviour bb)
+        public BlockHandler(BlockBehaviour bb)
         {
             this.bb = bb;
-            if (_blockScriptType != null)
-                bs = bb.GetComponent(_blockScriptType) as MonoBehaviour;
+            this.bs = bb.GetComponent<BlockScript>();
 
-            BlockHandlers.OnUpdate += Update;
-            BlockHandlers.OnLateUpdate += LateUpdate;
-            BlockHandlers.OnFixedUpdate += FixedUpdate;
+            BlockHandlerController.OnUpdate += Update;
+            BlockHandlerController.OnLateUpdate += LateUpdate;
+            BlockHandlerController.OnFixedUpdate += FixedUpdate;
         }
 
         /// <summary>
@@ -108,9 +81,9 @@ namespace Lench.Scripter.Blocks
         /// </summary>
         public virtual void Dispose()
         {
-            BlockHandlers.OnUpdate -= Update;
-            BlockHandlers.OnLateUpdate -= LateUpdate;
-            BlockHandlers.OnFixedUpdate -= FixedUpdate;
+            BlockHandlerController.OnUpdate -= Update;
+            BlockHandlerController.OnLateUpdate -= LateUpdate;
+            BlockHandlerController.OnFixedUpdate -= FixedUpdate;
         }
 
         /// <summary>

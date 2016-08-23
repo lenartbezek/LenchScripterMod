@@ -90,7 +90,7 @@ namespace Lench.Scripter.Internal
 
             try
             {
-                sequential_id = BlockHandlers.GetID(block.Guid);
+                sequential_id = BlockHandlerController.GetID(block.Guid);
             }
             catch (KeyNotFoundException)
             {

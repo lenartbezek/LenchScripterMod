@@ -6,7 +6,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     /// Handler for all wheel and cog blocks.
     /// </summary>
-    public class Cog : Block
+    public class Cog : BlockHandler
     {
         private static FieldInfo input = typeof(CogMotorControllerHinge).GetField("input", BindingFlags.NonPublic | BindingFlags.Instance);
 

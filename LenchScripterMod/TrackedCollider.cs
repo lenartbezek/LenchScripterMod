@@ -9,7 +9,7 @@ namespace Lench.Scripter
     public class TrackedCollider
     {
         private Collider c;
-        private Block block;
+        private BlockHandler block;
         private Vector3 offset;
         private Vector3 lastPosition;
 
@@ -20,7 +20,7 @@ namespace Lench.Scripter
             lastPosition = Position;
             var bb = c.transform.parent.gameObject.GetComponent<BlockBehaviour>();
             if (bb != null)
-                block = BlockHandlers.GetBlock(bb);
+                block = BlockHandlerController.GetBlock(bb);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Lench.Scripter
         /// Returns block represented by the collider.
         /// </summary>
         /// <returns></returns>
-        public Block Block
+        public BlockHandler Block
         {
             get { return block; }
         }

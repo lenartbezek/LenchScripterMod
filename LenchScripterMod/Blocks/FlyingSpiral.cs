@@ -6,7 +6,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     /// Handler for the Flying Spiral block.
     /// </summary>
-    public class FlyingSpiral : Block
+    public class FlyingSpiral : BlockHandler
     {
         private static FieldInfo flying = typeof(FlyingController).GetField("flying", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo speedToGo = typeof(FlyingController).GetField("speedToGo", BindingFlags.NonPublic | BindingFlags.Instance);

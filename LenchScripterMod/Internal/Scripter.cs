@@ -197,7 +197,7 @@ namespace Lench.Scripter.Internal
         private void Awake()
         {
             gameObject.AddComponent<DependencyInstaller>();
-            gameObject.AddComponent<BlockHandlers>();
+            gameObject.AddComponent<BlockHandlerController>();
             gameObject.AddComponent<Watchlist>();
             gameObject.AddComponent<IdentifierDisplay>();
             gameObject.AddComponent<ScriptOptions>();
@@ -219,7 +219,7 @@ namespace Lench.Scripter.Internal
             DestroyScriptingEnvironment();
             PythonEnvironment.DestroyEngine();
             Destroy(DependencyInstaller.Instance);
-            Destroy(BlockHandlers.Instance);
+            Destroy(BlockHandlerController.Instance);
             Destroy(Watchlist.Instance);
             Destroy(IdentifierDisplay.Instance);
             Destroy(ScriptOptions.Instance);
@@ -232,14 +232,14 @@ namespace Lench.Scripter.Internal
         private void Update()
         {
             // Initialize block handlers
-            if (Game.IsSimulating && !BlockHandlers.Initialised)
-                BlockHandlers.InitializeBlockHandlers();
+            if (Game.IsSimulating && !BlockHandlerController.Initialised)
+                BlockHandlerController.InitializeBlockHandlers();
 
             // Initialize block identifiers
             if (!Game.IsSimulating && rebuildIDs)
             {
                 rebuildIDs = false;
-                BlockHandlers.InitializeBuildingBlockIDs();
+                BlockHandlerController.InitializeBuildingBlockIDs();
             }
 
             // Execute code on first call
@@ -317,7 +317,7 @@ namespace Lench.Scripter.Internal
         internal void OnSimulationToggle(bool isSimulating)
         {
             Functions.ResetTimer();
-            BlockHandlers.DestroyBlockHandlers();
+            BlockHandlerController.DestroyBlockHandlers();
             if (enableScript && PythonEnvironment.Loaded)
             {
                 DestroyScriptingEnvironment();

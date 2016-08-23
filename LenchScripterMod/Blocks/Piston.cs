@@ -6,7 +6,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     /// Handler for the Piston block.
     /// </summary>
-    public class Piston : Block
+    public class Piston : BlockHandler
     {
         private static FieldInfo toggleFieldInfo = typeof(SliderCompress).GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo extendFieldInfo = typeof(SliderCompress).GetField("extendKey", BindingFlags.NonPublic | BindingFlags.Instance);
