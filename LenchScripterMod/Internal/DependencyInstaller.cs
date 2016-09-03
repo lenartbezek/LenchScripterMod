@@ -63,8 +63,8 @@ namespace Lench.Scripter.Internal
             downloading_in_progress = true;
             download_button_text = "0.0 %";
             info_text = "<b>Please wait</b>\n";
-            if (!Directory.Exists(Application.dataPath + @"\Mods\Resources\LenchScripter\lib\"))
-                Directory.CreateDirectory(Application.dataPath + @"\Mods\Resources\LenchScripter\lib\");
+            if (!Directory.Exists(Application.dataPath + "/Mods/Resources/LenchScripter/lib/"))
+                Directory.CreateDirectory(Application.dataPath + "/Mods/Resources/LenchScripter/lib/");
             try
             {
                 for (int file_index = 0; file_index < files_required; file_index++)
@@ -91,9 +91,9 @@ namespace Lench.Scripter.Internal
                             if (e.Error != null)
                             {
                                 // set error messages
-                                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: Error downloading file:" + file_paths[i].Split('\\').Last());
+                                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: Error downloading file:" + file_paths[i].Split('/').Last());
                                 ModConsole.AddMessage(LogType.Error, "\t" + e.Error.Message);
-                                info_text = file_paths[i].Split('\\').Last() + " <color=red>✘</color>" +
+                                info_text = file_paths[i].Split('/').Last() + " <color=red>✘</color>" +
                                             "\n\n<b><color=red>Download failed</color></b>\n" + e.Error.Message;
 
                                 downloading_in_progress = false;
@@ -105,8 +105,8 @@ namespace Lench.Scripter.Internal
                             }
                             else
                             {
-                                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: File downloaded: " + file_paths[i].Split('\\').Last());
-                                info_text += "\n" + file_paths[i].Split('\\').Last() + " <color=green>✓</color>";
+                                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: File downloaded: " + file_paths[i].Split('/').Last());
+                                info_text += "\n" + file_paths[i].Split('/').Last() + " <color=green>✓</color>";
 
                                 files_downloaded++;
                                 if (files_downloaded == files_required)
@@ -169,11 +169,11 @@ namespace Lench.Scripter.Internal
         };
         private static string[] file_paths = new string[]
         {
-            @"\Mods\Resources\LenchScripter\lib\IronPython.dll",
-            @"\Mods\Resources\LenchScripter\lib\IronPython.Modules.dll",
-            @"\Mods\Resources\LenchScripter\lib\Microsoft.Dynamic.dll",
-            @"\Mods\Resources\LenchScripter\lib\Microsoft.Scripting.dll",
-            @"\Mods\Resources\LenchScripter\lib\Microsoft.Scripting.Core.dll"
+            "/Mods/Resources/LenchScripter/lib/IronPython.dll",
+            "/Mods/Resources/LenchScripter/lib/IronPython.Modules.dll",
+            "/Mods/Resources/LenchScripter/lib/Microsoft.Dynamic.dll",
+            "/Mods/Resources/LenchScripter/lib/Microsoft.Scripting.dll",
+            "/Mods/Resources/LenchScripter/lib/Microsoft.Scripting.Core.dll"
         };
     }
 }
