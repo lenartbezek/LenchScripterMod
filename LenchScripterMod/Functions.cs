@@ -157,7 +157,7 @@ namespace Lench.Scripter
         public static Vector3 GetRaycastHit()
         {
             RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 return hit.point;
@@ -190,7 +190,7 @@ namespace Lench.Scripter
         public static TrackedCollider GetRaycastCollider()
         {
             RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 return new TrackedCollider(hit.collider, hit.point);
@@ -222,7 +222,6 @@ namespace Lench.Scripter
         /// <returns>Reference to the mark.</returns>
         public static Mark CreateMark(Vector3 pos)
         {
-            Debug.Log("Creating mark at " + pos);
             GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             obj.name = "Mark";
             obj.transform.parent = Internal.Scripter.Instance.transform;

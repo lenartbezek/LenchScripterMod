@@ -112,14 +112,14 @@ namespace Lench.Updater
 
             string response = www.text;
 
-            var releases = JSON.Parse(response);
-            LatestVersion = new Version(releases[0]["tag_name"].Value.Trim('v'));
-            LatestReleaseName = releases[0]["name"].Value;
-            LatestReleaseBody = releases[0]["body"].Value.Replace(@"\r\n", "\n");
+            var release = JSON.Parse(response);
+            LatestVersion = new Version(release["tag_name"].Value.Trim('v'));
+            LatestReleaseName = release["name"].Value;
+            LatestReleaseBody = release["body"].Value.Replace(@"\r\n", "\n");
 
             if (LatestVersion > CurrentVersion)
             {
-                if (verbose) Debug.Log("=> Update available: v" + LatestVersion+": "+LatestReleaseName);
+                if (verbose) Debug.Log("=> Update available: v" + LatestVersion + ": " + LatestReleaseName);
                 UpdateAvailable = true;
                 Visible = true;
             }
