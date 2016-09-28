@@ -40,7 +40,7 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>Block object.</returns>
-        public static Lench.Scripter.Blocks.BlockHandler GetBlock(string blockId)
+        public static BlockHandler GetBlock(string blockId)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace Lench.Scripter
         {
             try
             {
-                Lench.Scripter.Blocks.BlockHandler b = GetBlock(blockId);
+                BlockHandler b = GetBlock(blockId);
                 return b.Exists;
             }
             catch (Exception)
@@ -113,7 +113,7 @@ namespace Lench.Scripter
         /// </summary>
         public static void UseDegrees()
         {
-            Lench.Scripter.Blocks.BlockHandler.UseDegrees();
+            BlockHandler.UseDegrees();
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Lench.Scripter
         /// </summary>
         public static void UseRadians()
         {
-            Lench.Scripter.Blocks.BlockHandler.UseRadians();
+            BlockHandler.UseRadians();
             
         }
 

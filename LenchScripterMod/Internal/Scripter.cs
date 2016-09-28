@@ -136,7 +136,7 @@ namespace Lench.Scripter.Internal
             var updater = gameObject.AddComponent<Updater.Updater>();
             updater.Check(
                 "Lench Scripter Mod",
-                "https://api.github.com/repos/lench4991/LenchScripterMod/releases",
+                "https://api.github.com/repos/lench4991/LenchScripterMod/releases/latest",
                 Assembly.GetExecutingAssembly().GetName().Version,
                 new List<Updater.Updater.Link>()
                     {
