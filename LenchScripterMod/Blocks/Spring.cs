@@ -61,14 +61,7 @@ namespace Lench.Scripter.Blocks
             }
             else
             {
-                try
-                {
-                    sc.Contract(rate);
-                }
-                catch (System.Exception)
-                {
-                    
-                }
+                sc.Contract(rate, sc.startPoint.position, sc.endPoint.position);
             }
         }
 
@@ -77,7 +70,7 @@ namespace Lench.Scripter.Blocks
         /// </summary>
         public void Contract(float rate = 1)
         {
-            sc.Contract(rate);
+            sc.Contract(rate, sc.startPoint.position, sc.endPoint.position);
         }
 
         /// <summary>
