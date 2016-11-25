@@ -3,13 +3,44 @@
 [![GitHub total downloads](https://img.shields.io/github/downloads/lench4991/LenchScripterMod/total.svg)](https://github.com/lench4991/LenchScripterMod/releases)
 
 # Lench Scripter Mod
-Python scripting mod for Besiege v0.3
 
-This mod enables you to control your Besiege machine Python scripts.
-Changing sliders or toggles and triggering actions allows you to create controllers, stabilisators, autopilots or anything you can dream up to guide your machines.
+Python scripting mod for Besiege allows you to control machines with Python scripts. It runs on [IronPython](http://ironpython.net/) engine. This enables you to create controllers, stabilizators, autopilots, bots and more.
 
-Requires [Spaar's Mod Loader](http://forum.spiderlinggames.co.uk/forum/main-forum/besiege-early-access/modding/8432-spaar-s-mod-loader-1-3-3-besiege-v0-27).
+### Installation
 
-Includes an API for modders and enabling integration with other mods.
+You will need [Spaar's ModLoader](https://github.com/spaar/besiege-modloader) to use this mod.
+To install, place LenchScripterMod.dll in Besiege_Data/Mods folder. All mod assets will be downloaded automatically when needed.
 
-**For documentation and everything else you want to know, see the [wiki page](https://github.com/lench4991/BesiegeScripterMod/wiki).**
+### How to use
+
+By default the mod loads and runs script file from `Besiege_Data/Scripts` with the same name as your saved machine on simulation start. To change this, open the script options window (Ctrl+U). You can also embed code directly into bsg files to be shared on workshop.
+
+If you defined a function named `Update` or `FixedUpdate`, it will be called on every frame or at a fixed rate.
+
+```py
+# get block reference
+wheel = Besiege.GetBlock("WHEEL 1")
+direction = 1
+
+# set wheel toggle mode
+wheel.SetToggleMode("AUTOMATIC", True)
+
+def Update():
+""" updates the speed on every frame """
+  # direction variable is defined globally
+  global direction
+
+  # if U is held down, speed is 1
+  if Input.GetKey(KeyCode.U):
+    speed = 1 # set speed to 1 if U is pressed down
+  else:
+    speed = 0
+    
+  # invert direction if I is pressed
+  if Input.GetKeyDown(KeyCode.I):
+    direction *= -1
+  # set wheel speed slider
+    wheel.SetSliderValue("SPEED", speed * direction)
+```
+
+For more information, see the [wiki pages](https://github.com/lench4991/LenchScripterMod/wiki).
