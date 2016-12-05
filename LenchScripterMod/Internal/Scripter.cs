@@ -118,6 +118,49 @@ namespace Lench.Scripter.Internal
                         {
                             return "Missing argument [check/enable/disable]. Enter 'lsm' for all available commands.";
                         }
+                    case "python":
+                        if (args.Length > 1)
+                        {
+                            switch (args[1].ToLower())
+                            {
+                                case "version":
+                                    return (string)PythonEnvironment.ScripterEnvironment.Execute("sys.version");
+                                case "2.7":
+                                    DependencyInstaller.PythonVersion = "ironpython2.7/";
+                                    if (PythonEnvironment.LoadPythonAssembly())
+                                    {
+                                        PythonEnvironment.InitializeEngine();
+                                        PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
+                                        return (string)PythonEnvironment.ScripterEnvironment.Execute("sys.version");
+                                    }
+                                    else
+                                    {
+                                        PythonEnvironment.DestroyEngine();
+                                        DependencyInstaller.InstallIronPython();
+                                        return null;
+                                    }
+                                case "3.0":
+                                    DependencyInstaller.PythonVersion = "ironpython3.0/";
+                                    if (PythonEnvironment.LoadPythonAssembly())
+                                    {
+                                        PythonEnvironment.InitializeEngine();
+                                        PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
+                                        return (string)PythonEnvironment.ScripterEnvironment.Execute("sys.version");
+                                    }
+                                    else
+                                    {
+                                        PythonEnvironment.DestroyEngine();
+                                        DependencyInstaller.InstallIronPython();
+                                        return null;
+                                    }
+                                default:
+                                    return "Invalid argument [version/2.7/3.0]. Enter 'lsm' for all available commands.";
+                            }
+                        }
+                        else
+                        {
+                            return "Missing argument [version/2.7/3.0]. Enter 'lsm' for all available commands.";
+                        }
                     default:
                         return "Invalid command. Enter 'lsm' for all available commands.";
                 }
@@ -127,7 +170,10 @@ namespace Lench.Scripter.Internal
                 return "Available commands:\n" +
                     "  lsm modupdate check  \t Checks for mod update.\n" +
                     "  lsm modupdate enable \t Enables update checker.\n" +
-                    "  lsm modupdate disable\t Disables update checker.\n";
+                    "  lsm modupdate disable\t Disables update checker.\n" +
+                    "  lsm python version   \t Current Python version.\n" +
+                    "  lsm python 2.7       \t Switches to IronPython 2.7.\n" +
+                    "  lsm python 3.0       \t Switches to IronPython 3.0.\n";
             }
         }
 

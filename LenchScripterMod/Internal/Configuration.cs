@@ -19,6 +19,8 @@ namespace Lench.Scripter.Internal
             ScriptOptions.Instance.ConfigurationPosition = new Vector2();
             ScriptOptions.Instance.ConfigurationPosition.x = spaar.ModLoader.Configuration.GetFloat("ScriptOptionsXPos", -380);
             ScriptOptions.Instance.ConfigurationPosition.y = spaar.ModLoader.Configuration.GetFloat("ScriptOptionsYPos", -400);
+
+            DependencyInstaller.PythonVersion = spaar.ModLoader.Configuration.GetString("PythonVersion", "ironpython2.7/");
         }
 
         internal static void Save()
@@ -33,6 +35,8 @@ namespace Lench.Scripter.Internal
 
             spaar.ModLoader.Configuration.SetFloat("ScriptOptionsXPos", ScriptOptions.Instance.ConfigurationPosition.x);
             spaar.ModLoader.Configuration.SetFloat("ScriptOptionsYPos", ScriptOptions.Instance.ConfigurationPosition.y);
+
+            spaar.ModLoader.Configuration.SetString("PythonVersion", DependencyInstaller.PythonVersion);
 
             spaar.ModLoader.Configuration.Save();
         }

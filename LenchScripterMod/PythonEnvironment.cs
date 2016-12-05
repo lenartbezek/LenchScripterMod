@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Lench.Scripter.Internal;
 using UnityEngine;
 
 namespace Lench.Scripter
@@ -43,12 +44,12 @@ namespace Lench.Scripter
         {
             try
             {
-                _ironPythonAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/IronPython.dll");
-                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/IronPython.Modules.dll");
+                _ironPythonAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/" + DependencyInstaller.PythonVersion + "IronPython.dll");
+                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/" + DependencyInstaller.PythonVersion + "IronPython.Modules.dll");
 
-                _microsoftScriptingAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Scripting.dll");
-                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Scripting.Core.dll");
-                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/Microsoft.Dynamic.dll");
+                _microsoftScriptingAssembly = Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/" + DependencyInstaller.PythonVersion + "Microsoft.Scripting.dll");
+                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/" + DependencyInstaller.PythonVersion + "Microsoft.Scripting.Core.dll");
+                Assembly.LoadFrom(Application.dataPath + "/Mods/Resources/LenchScripter/lib/" + DependencyInstaller.PythonVersion + "Microsoft.Dynamic.dll");
                 return true;
             }
             catch

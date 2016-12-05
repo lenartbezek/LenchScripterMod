@@ -42,11 +42,8 @@ namespace Lench.Scripter
         /// <summary>
         /// Loads mod's scripting features.
         /// </summary>
-        public static void LoadScripter()
+        public static bool LoadScripter()
         {
-            if (LoadedScripter)
-                throw new InvalidOperationException("Mod's scripting features already loaded.");
-            
             if (PythonEnvironment.LoadPythonAssembly())
             {
                 PythonEnvironment.InitializeEngine();
@@ -54,7 +51,9 @@ namespace Lench.Scripter
 
                 ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: " + PythonEnvironment.ScripterEnvironment.Execute("sys.version"));
                 LoadedScripter = true;
+                return true;
             }
+            return false;
         }
 
         /// <summary>
