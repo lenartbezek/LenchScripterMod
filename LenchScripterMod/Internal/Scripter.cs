@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+// ReSharper disable UnusedMember.Local
 
 namespace Lench.Scripter.Internal
 {
@@ -17,26 +18,26 @@ namespace Lench.Scripter.Internal
         public override string Name { get; } = "Lench Scripter";
 
         // Python environment
-        internal string scriptFile;
-        internal string scriptCode;
+        internal string ScriptFile;
+        internal string ScriptCode;
 
-        internal bool enableScript = true;
-        internal bool rebuildIDs = false;
-        internal bool runtime_error = false;
+        internal bool EnableScript = true;
+        internal bool RebuildIDs;
+        internal bool RuntimeError;
 
-        internal bool ModUpdaterEnabled = false;
+        internal bool ModUpdaterEnabled;
 
         // Hovered block for ID dumping
-        private GenericBlock hoveredBlock;
+        private GenericBlock _hoveredBlock;
 
         private void LoadScript()
         {
             try
             {
-                if (scriptFile != null)
-                    PythonEnvironment.ScripterEnvironment.LoadScript(scriptFile);
-                else if (scriptCode != null)
-                    PythonEnvironment.ScripterEnvironment.LoadCode(scriptCode);
+                if (ScriptFile != null)
+                    PythonEnvironment.ScripterEnvironment.LoadScript(ScriptFile);
+                else if (ScriptCode != null)
+                    PythonEnvironment.ScripterEnvironment.LoadCode(ScriptCode);
                 ScriptOptions.Instance.SuccessMessage = "Successfully compiled code.";
             }
             catch (Exception e)
@@ -53,8 +54,8 @@ namespace Lench.Scripter.Internal
         /// <param name="active"></param>
         internal void RunScriptSettingToggle(bool active)
         {
-            enableScript = active;
-            if (Game.IsSimulating && enableScript && PythonEnvironment.Loaded)
+            EnableScript = active;
+            if (Game.IsSimulating && EnableScript && PythonEnvironment.Loaded)
                 CreateScriptingEnvironment();
             else
                 DestroyScriptingEnvironment();
@@ -126,7 +127,7 @@ namespace Lench.Scripter.Internal
                                 case "version":
                                     return (string)PythonEnvironment.ScripterEnvironment.Execute("sys.version");
                                 case "2.7":
-                                    DependencyInstaller.PythonVersion = "ironpython2.7/";
+                                    PythonEnvironment.Version = "ironpython2.7";
                                     if (PythonEnvironment.LoadPythonAssembly())
                                     {
                                         PythonEnvironment.InitializeEngine();
@@ -140,7 +141,7 @@ namespace Lench.Scripter.Internal
                                         return null;
                                     }
                                 case "3.0":
-                                    DependencyInstaller.PythonVersion = "ironpython3.0/";
+                                    PythonEnvironment.Version = "ironpython3.0";
                                     if (PythonEnvironment.LoadPythonAssembly())
                                     {
                                         PythonEnvironment.InitializeEngine();
@@ -198,19 +199,19 @@ namespace Lench.Scripter.Internal
         private void CreateScriptingEnvironment()
         {
             PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
-            runtime_error = false;
+            RuntimeError = false;
 
             // Find script file
-            if (scriptFile == null)
+            if (ScriptFile == null)
             {
                 ScriptOptions.Instance.CheckForScript();
                 if (ScriptOptions.Instance.ScriptSource == "py")
                 {
-                    scriptFile = ScriptOptions.Instance.ScriptPath;
+                    ScriptFile = ScriptOptions.Instance.ScriptPath;
                 }
                 if (ScriptOptions.Instance.ScriptSource == "bsg")
                 {
-                    scriptCode = ScriptOptions.Instance.Code;
+                    ScriptCode = ScriptOptions.Instance.Code;
                 }
             }
         }
@@ -231,15 +232,15 @@ namespace Lench.Scripter.Internal
         {
             if (Game.AddPiece == null || Game.AddPiece.HoveredBlock == null)
             {
-                hoveredBlock = null;
+                _hoveredBlock = null;
                 return;
             }
 
-            hoveredBlock = Game.AddPiece.HoveredBlock;
+            _hoveredBlock = Game.AddPiece.HoveredBlock;
 
-            IdentifierDisplay.Instance.ShowBlock(hoveredBlock);
+            IdentifierDisplay.Instance.ShowBlock(_hoveredBlock);
         }
-
+        
         private void Awake()
         {
             gameObject.AddComponent<DependencyInstaller>();
@@ -248,7 +249,7 @@ namespace Lench.Scripter.Internal
             gameObject.AddComponent<IdentifierDisplay>();
             gameObject.AddComponent<ScriptOptions>();
         }
-
+        
         private void Start()
         {
             ScripterMod.LoadScripter();
@@ -282,18 +283,18 @@ namespace Lench.Scripter.Internal
                 BlockHandlerController.InitializeBlockHandlers();
 
             // Initialize block identifiers
-            if (!Game.IsSimulating && rebuildIDs)
+            if (!Game.IsSimulating && RebuildIDs)
             {
-                rebuildIDs = false;
+                RebuildIDs = false;
                 BlockHandlerController.InitializeBuildingBlockIDs();
             }
 
             // Execute code on first call
-            if (Game.IsSimulating && PythonEnvironment.Loaded && enableScript && (scriptFile != null || scriptCode != null))
+            if (Game.IsSimulating && PythonEnvironment.Loaded && EnableScript && (ScriptFile != null || ScriptCode != null))
             {
                 LoadScript();
-                scriptFile = null;
-                scriptCode = null;
+                ScriptFile = null;
+                ScriptCode = null;
             }
 
             // Toggle watchlist visibility
@@ -322,12 +323,12 @@ namespace Lench.Scripter.Internal
             // Call script update.
             try
             {
-                if (!runtime_error)
+                if (!RuntimeError)
                     PythonEnvironment.ScripterEnvironment?.CallUpdate();
             }
             catch (Exception e)
             {
-                runtime_error = true;
+                RuntimeError = true;
                 if (e.InnerException != null) e = e.InnerException;
                 ScriptOptions.Instance.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
                 Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
@@ -344,12 +345,12 @@ namespace Lench.Scripter.Internal
             // Call script update.
             try
             {
-                if (!runtime_error)
+                if (!RuntimeError)
                     PythonEnvironment.ScripterEnvironment?.CallFixedUpdate();
             }
             catch (Exception e)
             {
-                runtime_error = true;
+                RuntimeError = true;
                 if (e.InnerException != null) e = e.InnerException;
                 ScriptOptions.Instance.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
                 Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
@@ -364,7 +365,7 @@ namespace Lench.Scripter.Internal
         {
             Functions.ResetTimer();
             BlockHandlerController.DestroyBlockHandlers();
-            if (enableScript && PythonEnvironment.Loaded)
+            if (EnableScript && PythonEnvironment.Loaded)
             {
                 DestroyScriptingEnvironment();
                 CreateScriptingEnvironment();

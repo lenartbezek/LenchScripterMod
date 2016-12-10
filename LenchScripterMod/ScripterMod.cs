@@ -32,12 +32,12 @@ namespace Lench.Scripter
         /// <summary>
         /// Is LenchScripterMod API loaded.
         /// </summary>
-        public static bool LoadedAPI { get; private set; } = false;
+        public static bool LoadedAPI { get; private set; }
 
         /// <summary>
         /// Is LenchScripterMod full scripter loaded.
         /// </summary>
-        public static bool LoadedScripter { get; private set; } = false;
+        public static bool LoadedScripter { get; private set; }
 
         /// <summary>
         /// Loads mod's scripting features.
@@ -53,6 +53,7 @@ namespace Lench.Scripter
                 LoadedScripter = true;
                 return true;
             }
+            LoadedScripter = false;
             return false;
         }
 
@@ -79,8 +80,8 @@ namespace Lench.Scripter
         {
             UnityEngine.Object.DontDestroyOnLoad(Internal.Scripter.Instance);
             Game.OnSimulationToggle += Internal.Scripter.Instance.OnSimulationToggle;
-            Game.OnBlockPlaced += (Transform block) => Internal.Scripter.Instance.rebuildIDs = true;
-            Game.OnBlockRemoved += () => Internal.Scripter.Instance.rebuildIDs = true;
+            Game.OnBlockPlaced += (Transform block) => Internal.Scripter.Instance.RebuildIDs = true;
+            Game.OnBlockRemoved += () => Internal.Scripter.Instance.RebuildIDs = true;
 
             XmlSaver.OnSave += Internal.MachineData.Save;
             XmlLoader.OnLoad += Internal.MachineData.Load;
@@ -108,8 +109,8 @@ namespace Lench.Scripter
         {
             Game.OnSimulationToggle -= Internal.Scripter.Instance.OnSimulationToggle;
             Internal.Scripter.Instance.OnSimulationToggle(false);
-            Game.OnBlockPlaced -= (Transform block) => Internal.Scripter.Instance.rebuildIDs = true;
-            Game.OnBlockRemoved -= () => Internal.Scripter.Instance.rebuildIDs = true;
+            Game.OnBlockPlaced -= (Transform block) => Internal.Scripter.Instance.RebuildIDs = true;
+            Game.OnBlockRemoved -= () => Internal.Scripter.Instance.RebuildIDs = true;
 
             XmlSaver.OnSave -= Internal.MachineData.Save;
             XmlLoader.OnLoad -= Internal.MachineData.Load;

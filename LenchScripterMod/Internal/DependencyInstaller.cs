@@ -10,18 +10,19 @@ namespace Lench.Scripter.Internal
 {
     internal class DependencyInstaller : SingleInstance<DependencyInstaller>
     {
-        public override string Name { get { return "Dependency Installer"; } }
+        public override string Name => "Dependency Installer";
 
-        private static bool _downloadingInProgress = false;
+        private static bool _downloadingInProgress;
         private static string _downloadButtonText = "Download";
         private static string _infoText = "<b>Lench Scripter Mod</b> needs to download additional assets.\n" +
                                           "Files will be placed in Mods/Resources/LenchScripter.";
 
-        public bool Visible { get; set; } = false;
-        public static string PythonVersion { get; set; } = "ironpython2.7/";
-        private int _windowId = Util.GetWindowID();
+        public bool Visible { get; set; }
+        private readonly int _windowId = Util.GetWindowID();
         private Rect _windowRect = new Rect(0, 0, 200, 360);
 
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
         private void OnGUI()
         {
             if (Visible && Elements.IsInitialized && Time.time > 1)
@@ -62,26 +63,26 @@ namespace Lench.Scripter.Internal
             _downloadingInProgress = true;
             _downloadButtonText = "0.0 %";
             _infoText = "<b>Please wait</b>\n";
-            if (!Directory.Exists(Application.dataPath + "/Mods/Resources/LenchScripter/lib/" + PythonVersion))
-                Directory.CreateDirectory(Application.dataPath + "/Mods/Resources/LenchScripter/lib/" + PythonVersion);
+            if (!Directory.Exists(PythonEnvironment.LibPath))
+                Directory.CreateDirectory(PythonEnvironment.LibPath);
             try
             {
-                for (int file_index = 0; file_index < _filesRequired; file_index++)
+                for (var fileIndex = 0; fileIndex < _filesRequired; fileIndex++)
                 {
                     using (var client = new WebClient())
                     {
-                        var i = file_index;
+                        var i = fileIndex;
 
                         // delete existing file
-                        if (File.Exists(Application.dataPath + _libPath + PythonVersion + _fileNames[i]))
-                            File.Delete(Application.dataPath + _libPath + PythonVersion + _fileNames[i]);
+                        if (File.Exists(PythonEnvironment.LibPath + FileNames[i]))
+                            File.Delete(PythonEnvironment.LibPath + FileNames[i]);
 
                         // progress handler
                         client.DownloadProgressChanged += (sender, e) =>
                         {
-                            _receivedSize[i] = e.BytesReceived;
-                            _totalSize[i] = e.TotalBytesToReceive;
-                            var progress = Convert.ToSingle(_receivedSize.Sum()) / Convert.ToSingle(_totalSize.Sum()) * 100f;
+                            ReceivedSize[i] = e.BytesReceived;
+                            TotalSize[i] = e.TotalBytesToReceive;
+                            var progress = Convert.ToSingle(ReceivedSize.Sum()) / Convert.ToSingle(TotalSize.Sum()) * 100f;
                             _downloadButtonText = progress.ToString("0.0") + " %";
                         };
 
@@ -91,22 +92,22 @@ namespace Lench.Scripter.Internal
                             if (e.Error != null)
                             {
                                 // set error messages
-                                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: Error downloading file:" + _fileNames[i]);
+                                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: Error downloading file:" + FileNames[i]);
                                 ModConsole.AddMessage(LogType.Error, "\t" + e.Error.Message);
-                                _infoText = _fileNames[i] + " <color=red>✘</color>" +
+                                _infoText = FileNames[i] + " <color=red>✘</color>" +
                                             "\n\n<b><color=red>Download failed</color></b>\n" + e.Error.Message;
 
                                 _downloadingInProgress = false;
                                 _downloadButtonText = "Retry";
 
                                 // delete failed file
-                                if (File.Exists(Application.dataPath + _libPath + PythonVersion + _fileNames[i]))
-                                    File.Delete(Application.dataPath + _libPath + PythonVersion + _fileNames[i]);
+                                if (File.Exists(PythonEnvironment.LibPath + FileNames[i]))
+                                    File.Delete(PythonEnvironment.LibPath + FileNames[i]);
                             }
                             else
                             {
-                                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: File downloaded: " + _fileNames[i]);
-                                _infoText += "\n" + _fileNames[i] + " <color=green>✓</color>";
+                                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: File downloaded: " + FileNames[i]);
+                                _infoText += "\n" + FileNames[i] + " <color=green>✓</color>";
 
                                 _filesDownloaded++;
                                 if (_filesDownloaded == _filesRequired)
@@ -129,8 +130,8 @@ namespace Lench.Scripter.Internal
 
                         // start download
                         client.DownloadFileAsync(
-                            new Uri(_baseUri + PythonVersion + _fileNames[i]),
-                            Application.dataPath + _libPath + PythonVersion + _fileNames[i]);
+                            new Uri(BaseUri + PythonEnvironment.Version + "/" + FileNames[i]),
+                            PythonEnvironment.LibPath + FileNames[i]);
                     }
                 }
             }
@@ -147,12 +148,11 @@ namespace Lench.Scripter.Internal
         private static int _filesDownloaded;
         private static readonly int _filesRequired = 5;
 
-        private static long[] _receivedSize = new long[_filesRequired];
-        private static long[] _totalSize = new long[_filesRequired];
+        private static readonly long[] ReceivedSize = new long[_filesRequired];
+        private static readonly long[] TotalSize = new long[_filesRequired];
 
-        private static readonly string _baseUri = "http://lench4991.github.io/LenchScripterMod/files/";
-        private static readonly string _libPath = "/Mods/Resources/LenchScripter/lib/";
-        private static readonly string[] _fileNames =
+        private static readonly string BaseUri = "http://lench4991.github.io/LenchScripterMod/files/";
+        private static readonly string[] FileNames =
         {
             "IronPython.dll",
             "IronPython.Modules.dll",
