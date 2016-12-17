@@ -3,14 +3,14 @@
 namespace Lench.Scripter.Blocks
 {
     /// <summary>
-    /// Handler for the Spring and Rope blocks.
+    ///     Handler for the Spring and Rope blocks.
     /// </summary>
     public class Spring : BlockHandler
     {
-        private SpringCode sc;
+        private readonly SpringCode sc;
 
         /// <summary>
-        /// Creates a Block handler.
+        ///     Creates a Block handler.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
         public Spring(BlockBehaviour bb) : base(bb)
@@ -19,54 +19,57 @@ namespace Lench.Scripter.Blocks
         }
 
         /// <summary>
-        /// Invokes the block's action.
-        /// Throws ActionNotFoundException if the block does not posess such action.
+        ///     Invokes the block's action.
+        ///     Throws ActionNotFoundException if the block does not posess such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
         public override void Action(string actionName)
         {
             actionName = actionName.ToUpper();
-            if (!sc.winchMode && actionName == "CONTRACT")
+            if (sc.winchMode)
             {
-                Contract();
-                return;
+                switch (actionName)
+                {
+                    case "WIND":
+                        Wind();
+                        return;
+                    case "UNWIND":
+                        Unwind();
+                        return;
+                }
             }
-            if (sc.winchMode && actionName == "WIND")
+            else
             {
-                Wind();
-                return;
+                switch (actionName)
+                {
+                    case "CONTRACT":
+                        Contract();
+                        return;
+                }
             }
-            if (sc.winchMode && actionName == "UNWIND")
-            {
-                Unwind();
-                return;
-            }
+            
             throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
-        /// Controls the spring / winch. Contracts if rate is positive and unwinds if negative.
-        /// Springs cannot be unwound.
+        ///     Controls the spring / winch. Contracts if rate is positive and unwinds if negative.
+        ///     Springs cannot be unwound.
         /// </summary>
         /// <param name="rate">Rate of movement.</param>
         public void SetInput(float rate = 1)
         {
             if (Mathf.Abs(rate) < 0.02) return;
             if (sc.winchMode)
-            {
                 if (rate > 0)
                     sc.WinchContract(rate);
                 else
                     sc.WinchUnwind(-rate);
-            }
             else
-            {
                 sc.Contract(rate, sc.startPoint.position, sc.endPoint.position);
-            }
         }
 
         /// <summary>
-        /// Contracts the spring.
+        ///     Contracts the spring.
         /// </summary>
         public void Contract(float rate = 1)
         {
@@ -74,7 +77,7 @@ namespace Lench.Scripter.Blocks
         }
 
         /// <summary>
-        /// Winds the winch.
+        ///     Winds the winch.
         /// </summary>
         public void Wind(float rate = 1)
         {
@@ -82,7 +85,7 @@ namespace Lench.Scripter.Blocks
         }
 
         /// <summary>
-        /// Unwinds the winch.
+        ///     Unwinds the winch.
         /// </summary>
         public void Unwind(float rate = 1)
         {

@@ -4,104 +4,105 @@ using UnityEngine;
 namespace Lench.Scripter.Blocks
 {
     /// <summary>
-    /// Handler for the Flying Spiral block.
+    ///     Handler for the Flying Spiral block.
     /// </summary>
     public class FlyingSpiral : BlockHandler
     {
-        private static FieldInfo flying = typeof(FlyingController).GetField("flying", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo speedToGo = typeof(FlyingController).GetField("speedToGo", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo lerpySpeed = typeof(FlyingController).GetField("lerpySpeed", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo lerpedSpeed = typeof(FlyingController).GetField("lerpedSpeed", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo automaticFieldInfo = typeof(FlyingController).GetField("automaticToggle", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo toggleFieldInfo = typeof(FlyingController).GetField("toggleMode", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo reverseFieldInfo = typeof(FlyingController).GetField("reverseToggle", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo rigidbodyFieldInfo = typeof(FlyingController).GetField("myRigidbody", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo Flying = typeof(FlyingController).GetField("flying",
+            BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private FlyingController fc;
+        private static readonly FieldInfo SpeedToGo = typeof(FlyingController).GetField("speedToGo",
+            BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private MToggle automaticToggle;
-        private MToggle toggleMode;
-        private MToggle reverseToggle;
-        private Rigidbody rigidbody;
+        private static readonly FieldInfo LerpySpeed = typeof(FlyingController).GetField("lerpySpeed",
+            BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private bool setFlyingFlag = false;
-        private bool lastFlyingFlag = false;
+        private static readonly FieldInfo ToggleFieldInfo = typeof(FlyingController).GetField("toggleMode",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        private static readonly FieldInfo RigidbodyFieldInfo = typeof(FlyingController).GetField("myRigidbody",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        private readonly FlyingController _fc;
+        private bool _lastFlyingFlag;
+        private readonly Rigidbody _rigidbody;
+
+        private bool _setFlyingFlag;
+        private readonly MToggle _toggleMode;
 
         /// <summary>
-        /// Creates a Block handler.
+        ///     Creates a Block handler.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
         public FlyingSpiral(BlockBehaviour bb) : base(bb)
         {
-            fc = bb.GetComponent<FlyingController>();
-            automaticToggle = automaticFieldInfo.GetValue(fc) as MToggle;
-            toggleMode = toggleFieldInfo.GetValue(fc) as MToggle;
-            reverseToggle = reverseFieldInfo.GetValue(fc) as MToggle;
-            rigidbody = rigidbodyFieldInfo.GetValue(fc) as Rigidbody;
+            _fc = bb.GetComponent<FlyingController>();
+            _toggleMode = ToggleFieldInfo.GetValue(_fc) as MToggle;
+            _rigidbody = RigidbodyFieldInfo.GetValue(_fc) as Rigidbody;
         }
 
         /// <summary>
-        /// Invokes the block's action.
-        /// Throws ActionNotFoundException if the block does not posess such action.
+        ///     Invokes the block's action.
+        ///     Throws ActionNotFoundException if the block does not posess such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
         public override void Action(string actionName)
         {
             actionName = actionName.ToUpper();
-            if (actionName == "SPIN")
+            switch (actionName)
             {
-                Spin();
-                return;
+                case "SPIN":
+                    Spin();
+                    return;
             }
             throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
-        /// Spin the Flying Spiral.
+        ///     Spin the Flying Spiral.
         /// </summary>
         public void Spin()
         {
-            setFlyingFlag = true;
+            _setFlyingFlag = true;
         }
 
         private void Fly(bool f)
         {
-            if (f && !fc.isFrozen && fc.canFly)
+            if (f && !_fc.isFrozen && _fc.canFly)
             {
-                speedToGo.SetValue(fc, fc.speed);
-                lerpySpeed.SetValue(fc, fc.lerpSpeed + Random.Range(-2, 3));
-                rigidbody.drag = 1.5f;
-                flying.SetValue(fc, true);
+                SpeedToGo.SetValue(_fc, _fc.speed);
+                LerpySpeed.SetValue(_fc, _fc.lerpSpeed + Random.Range(-2, 3));
+                _rigidbody.drag = 1.5f;
+                Flying.SetValue(_fc, true);
             }
             else
             {
-                speedToGo.SetValue(fc, Vector3.zero);
-                rigidbody.drag = 0.5f;
-                flying.SetValue(fc, false);
+                SpeedToGo.SetValue(_fc, Vector3.zero);
+                _rigidbody.drag = 0.5f;
+                Flying.SetValue(_fc, false);
             }
         }
 
         /// <summary>
-        /// Sets the speed and drag of the block to make it fly.
+        ///     Sets the speed and drag of the block to make it fly.
         /// </summary>
         protected override void Update()
         {
-            if (setFlyingFlag)
+            if (_setFlyingFlag)
             {
-                if (toggleMode.IsActive)
-                    Fly(!(bool)flying.GetValue(fc));
+                if (_toggleMode.IsActive)
+                    Fly(!(bool) Flying.GetValue(_fc));
                 else
                     Fly(true);
-                setFlyingFlag = false;
-                lastFlyingFlag = true;
+                _setFlyingFlag = false;
+                _lastFlyingFlag = true;
             }
-            else if (lastFlyingFlag)
+            else if (_lastFlyingFlag)
             {
-                if (!toggleMode.IsActive)
+                if (!_toggleMode.IsActive)
                     Fly(false);
-                lastFlyingFlag = false;
+                _lastFlyingFlag = false;
             }
         }
     }
-
 }

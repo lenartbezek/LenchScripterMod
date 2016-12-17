@@ -3,93 +3,84 @@
 namespace Lench.Scripter.Blocks
 {
     /// <summary>
-    /// Handler for the Flamethrower block.
+    ///     Handler for the Flamethrower block.
     /// </summary>
     public class Flamethrower : BlockHandler
     {
-        private static FieldInfo holdFieldInfo = typeof(FlamethrowerController).GetField("holdToFire", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo keyHeld = typeof(FlamethrowerController).GetField("keyHeld", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo HoldFieldInfo = typeof(FlamethrowerController).GetField("holdToFire",
+            BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private FlamethrowerController fc;
-        private MToggle holdToFire;
+        private static readonly FieldInfo KeyHeld = typeof(FlamethrowerController).GetField("keyHeld",
+            BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private bool setIgniteFlag = false;
-        private bool lastIgniteFlag = false;
+        private readonly FlamethrowerController _fc;
+        private readonly MToggle _holdToFire;
+        private bool _lastIgniteFlag;
+        private bool _setIgniteFlag;
 
         /// <summary>
-        /// Creates a Block handler.
+        ///     Creates a Block handler.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
         public Flamethrower(BlockBehaviour bb) : base(bb)
         {
-            fc = bb.GetComponent<FlamethrowerController>();
-            holdToFire = holdFieldInfo.GetValue(fc) as MToggle;
+            _fc = bb.GetComponent<FlamethrowerController>();
+            _holdToFire = HoldFieldInfo.GetValue(_fc) as MToggle;
         }
 
         /// <summary>
-        /// Invokes the block's action.
-        /// Throws ActionNotFoundException if the block does not posess such action.
+        ///     Remaining time of the flamethrower.
+        /// </summary>
+        public float RemainingTime
+        {
+            get { return 10 - _fc.timey; }
+            set { _fc.timey = 10 - value; }
+        }
+
+        /// <summary>
+        ///     Invokes the block's action.
+        ///     Throws ActionNotFoundException if the block does not posess such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
         public override void Action(string actionName)
         {
             actionName = actionName.ToUpper();
-            if (actionName == "IGNITE")
+            switch (actionName)
             {
-                Ignite();
-                return;
+                case "IGNITE":
+                    Ignite();
+                    return;
             }
             throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
-        /// Ignite the flamethrower.
+        ///     Ignite the flamethrower.
         /// </summary>
         public void Ignite()
         {
-            setIgniteFlag = true;
+            _setIgniteFlag = true;
         }
 
         /// <summary>
-        /// Remaining time of the flamethrower.
-        /// </summary>
-        public float RemainingTime
-        {
-            get
-            {
-                return 10 - fc.timey;
-            }
-            set
-            {
-                fc.timey = 10 - value;
-            }
-        }
-
-        /// <summary>
-        /// Handles igniting the Flamethrower.
+        ///     Handles igniting the Flamethrower.
         /// </summary>
         protected override void LateUpdate()
         {
-            if (setIgniteFlag)
+            if (_setIgniteFlag)
             {
-                if (!fc.timeOut || StatMaster.GodTools.InfiniteAmmoMode)
-                {
-                    if (holdToFire.IsActive)
-                    {
-                        fc.FlameOn();
-                    }
+                if (!_fc.timeOut || StatMaster.GodTools.InfiniteAmmoMode)
+                    if (_holdToFire.IsActive)
+                        _fc.FlameOn();
                     else
-                    {
-                        fc.Flame();
-                    }
-                }
-                setIgniteFlag = false;
-                lastIgniteFlag = true;
+                        _fc.Flame();
+                _setIgniteFlag = false;
+                _lastIgniteFlag = true;
             }
-            else if(lastIgniteFlag)
+            else if (_lastIgniteFlag)
             {
-                keyHeld.SetValue(fc, true);
-                lastIgniteFlag = false;
+                KeyHeld.SetValue(_fc, true);
+                _lastIgniteFlag = false;
             }
         }
     }

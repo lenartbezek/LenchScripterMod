@@ -3,72 +3,73 @@
 namespace Lench.Scripter.Blocks
 {
     /// <summary>
-    /// Handler for the Water Cannon block.
+    ///     Handler for the Water Cannon block.
     /// </summary>
     public class WaterCannon : BlockHandler
     {
-        private static FieldInfo holdFieldInfo = typeof(WaterCannonController).GetField("holdToShootToggle", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo HoldFieldInfo = typeof(WaterCannonController).GetField("holdToShootToggle",
+            BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private WaterCannonController wcc;
-
-        private bool setShootFlag = false;
-        private bool lastShootFlag = false;
-        private MToggle holdToShootToggle;
-        private bool realHoldToShootToggle;
+        private readonly MToggle _holdToShootToggle;
+        private bool _setShootFlag;
+        private bool _lastShootFlag;
+        private bool _realHoldToShootToggle;
+        private readonly WaterCannonController _wcc;
 
         /// <summary>
-        /// Creates a Block handler.
+        ///     Creates a Block handler.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
         public WaterCannon(BlockBehaviour bb) : base(bb)
         {
-            wcc = bb.GetComponent<WaterCannonController>();
+            _wcc = bb.GetComponent<WaterCannonController>();
 
-            holdToShootToggle = holdFieldInfo.GetValue(wcc) as MToggle;
+            _holdToShootToggle = HoldFieldInfo.GetValue(_wcc) as MToggle;
         }
 
         /// <summary>
-        /// Invokes the block's action.
-        /// Throws ActionNotFoundException if the block does not posess such action.
+        ///     Invokes the block's action.
+        ///     Throws ActionNotFoundException if the block does not posess such action.
         /// </summary>
         /// <param name="actionName">Display name of the action.</param>
         public override void Action(string actionName)
         {
             actionName = actionName.ToUpper();
-            if (actionName == "SHOOT")
+            switch (actionName)
             {
-                Shoot();
-                return;
+                case "SHOOT":
+                    Shoot();
+                    return;
             }
             throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
         }
 
         /// <summary>
-        /// Shoots the water cannon.
+        ///     Shoots the water cannon.
         /// </summary>
         public void Shoot()
         {
-            setShootFlag = true;
+            _setShootFlag = true;
         }
 
         /// <summary>
-        /// Handles shooting the water cannon.
+        ///     Handles shooting the water cannon.
         /// </summary>
         protected override void Update()
         {
-            if (setShootFlag)
+            if (_setShootFlag)
             {
-                realHoldToShootToggle = realHoldToShootToggle ? realHoldToShootToggle : wcc.isActive;
-                holdToShootToggle.IsActive = false;
-                wcc.isActive = realHoldToShootToggle ? true : !wcc.isActive;
-                lastShootFlag = realHoldToShootToggle;
-                setShootFlag = false;
+                _realHoldToShootToggle = _realHoldToShootToggle ? _realHoldToShootToggle : _wcc.isActive;
+                _holdToShootToggle.IsActive = false;
+                _wcc.isActive = _realHoldToShootToggle || !_wcc.isActive;
+                _lastShootFlag = _realHoldToShootToggle;
+                _setShootFlag = false;
             }
-            else if (lastShootFlag)
+            else if (_lastShootFlag)
             {
-                holdToShootToggle.IsActive = realHoldToShootToggle;
-                wcc.isActive = false;
-                lastShootFlag = false;
+                _holdToShootToggle.IsActive = _realHoldToShootToggle;
+                _wcc.isActive = false;
+                _lastShootFlag = false;
             }
         }
     }

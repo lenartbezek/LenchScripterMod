@@ -1,34 +1,36 @@
-﻿using spaar.ModLoader;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using spaar.ModLoader;
 using UnityEngine;
+
 // ReSharper disable UnusedMember.Local
 
 namespace Lench.Scripter.Internal
 {
     /// <summary>
-    /// Main mod controller.
+    ///     Main mod controller.
     /// </summary>
     public class Scripter : SingleInstance<Scripter>
     {
-        /// <summary>
-        /// Name in the Unity hierarchy.
-        /// </summary>
-        public override string Name { get; } = "Lench Scripter";
+        // Hovered block for ID dumping
+        private GenericBlock _hoveredBlock;
+
+        internal bool EnableScript = true;
+
+        internal bool ModUpdaterEnabled;
+        internal bool RebuildIDs;
+        internal bool RuntimeError;
+        internal string ScriptCode;
 
         // Python environment
         internal string ScriptFile;
-        internal string ScriptCode;
 
-        internal bool EnableScript = true;
-        internal bool RebuildIDs;
-        internal bool RuntimeError;
-
-        internal bool ModUpdaterEnabled;
-
-        // Hovered block for ID dumping
-        private GenericBlock _hoveredBlock;
+        /// <summary>
+        ///     Name in the Unity hierarchy.
+        /// </summary>
+        public override string Name { get; } = "Lench Scripter";
 
         private void LoadScript()
         {
@@ -44,12 +46,13 @@ namespace Lench.Scripter.Internal
             {
                 if (e.InnerException != null) e = e.InnerException;
                 ScriptOptions.Instance.ErrorMessage = "Error while compiling code.\nSee console (Ctrl+K) for more info.";
-                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
+                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" +
+                          PythonEnvironment.FormatException(e));
             }
         }
 
         /// <summary>
-        /// Called on setting toggle.
+        ///     Called on setting toggle.
         /// </summary>
         /// <param name="active"></param>
         internal void RunScriptSettingToggle(bool active)
@@ -62,7 +65,7 @@ namespace Lench.Scripter.Internal
         }
 
         /// <summary>
-        /// Called on python console command.
+        ///     Called on python console command.
         /// </summary>
         /// <param name="args"></param>
         /// <param name="namedArgs"></param>
@@ -70,131 +73,116 @@ namespace Lench.Scripter.Internal
         internal string PythonCommand(string[] args, IDictionary<string, string> namedArgs)
         {
             if (args.Length == 0)
-            {
                 return "Executes a Python expression.";
-            }
 
-            string expression = "";
-            for (int i = 0; i < args.Length; i++)
-                expression += args[i] + " ";
+            var expression = args.Aggregate("", (current, t) => current + (t + " "));
 
             try
             {
                 var result = PythonEnvironment.ScripterEnvironment.Execute(expression);
-                return result != null ? result.ToString() : "";
+                return result?.ToString() ?? "";
             }
             catch (Exception e)
             {
                 if (e.InnerException != null) e = e.InnerException;
-                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
+                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" +
+                          PythonEnvironment.FormatException(e));
                 return "";
             }
         }
 
         internal string ConfigurationCommand(string[] args, IDictionary<string, string> namedArgs)
         {
-            if (args.Length > 0)
-            {
-                switch (args[0].ToLower())
-                {
-                    case "modupdate":
-                        if (args.Length > 1)
-                        {
-                            switch (args[1].ToLower())
-                            {
-                                case "check":
-                                    CheckForModUpdate(true);
-                                    return "Checking for mod updates ...";
-                                case "enable":
-                                    ModUpdaterEnabled = true;
-                                    return "Mod update checker enabled.";
-                                case "disable":
-                                    ModUpdaterEnabled = false;
-                                    return "Mod update checker disabled.";
-                                default:
-                                    return "Invalid argument [check/enable/disable]. Enter 'lsm' for all available commands.";
-                            }
-                        }
-                        else
-                        {
-                            return "Missing argument [check/enable/disable]. Enter 'lsm' for all available commands.";
-                        }
-                    case "python":
-                        if (args.Length > 1)
-                        {
-                            switch (args[1].ToLower())
-                            {
-                                case "version":
-                                    return (string)PythonEnvironment.ScripterEnvironment.Execute("sys.version");
-                                case "2.7":
-                                    PythonEnvironment.Version = "ironpython2.7";
-                                    if (PythonEnvironment.LoadPythonAssembly())
-                                    {
-                                        PythonEnvironment.InitializeEngine();
-                                        PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
-                                        return (string)PythonEnvironment.ScripterEnvironment.Execute("sys.version");
-                                    }
-                                    else
-                                    {
-                                        PythonEnvironment.DestroyEngine();
-                                        DependencyInstaller.InstallIronPython();
-                                        return null;
-                                    }
-                                case "3.0":
-                                    PythonEnvironment.Version = "ironpython3.0";
-                                    if (PythonEnvironment.LoadPythonAssembly())
-                                    {
-                                        PythonEnvironment.InitializeEngine();
-                                        PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
-                                        return (string)PythonEnvironment.ScripterEnvironment.Execute("sys.version");
-                                    }
-                                    else
-                                    {
-                                        PythonEnvironment.DestroyEngine();
-                                        DependencyInstaller.InstallIronPython();
-                                        return null;
-                                    }
-                                default:
-                                    return "Invalid argument [version/2.7/3.0]. Enter 'lsm' for all available commands.";
-                            }
-                        }
-                        else
-                        {
-                            return "Missing argument [version/2.7/3.0]. Enter 'lsm' for all available commands.";
-                        }
-                    default:
-                        return "Invalid command. Enter 'lsm' for all available commands.";
-                }
-            }
-            else
-            {
+            if (args.Length <= 0)
                 return "Available commands:\n" +
-                    "  lsm modupdate check  \t Checks for mod update.\n" +
-                    "  lsm modupdate enable \t Enables update checker.\n" +
-                    "  lsm modupdate disable\t Disables update checker.\n" +
-                    "  lsm python version   \t Current Python version.\n" +
-                    "  lsm python 2.7       \t Switches to IronPython 2.7.\n" +
-                    "  lsm python 3.0       \t Switches to IronPython 3.0.\n";
+                       "  lsm modupdate check  \t Checks for mod update.\n" +
+                       "  lsm modupdate enable \t Enables update checker.\n" +
+                       "  lsm modupdate disable\t Disables update checker.\n" +
+                       "  lsm python version   \t Current Python version.\n" +
+                       "  lsm python 2.7       \t Switches to IronPython 2.7.\n" +
+                       "  lsm python 3.0       \t Switches to IronPython 3.0.\n";
+            switch (args[0].ToLower())
+            {
+                case "modupdate":
+                    if (args.Length > 1)
+                        switch (args[1].ToLower())
+                        {
+                            case "check":
+                                CheckForModUpdate(true);
+                                return "Checking for mod updates ...";
+                            case "enable":
+                                ModUpdaterEnabled = true;
+                                return "Mod update checker enabled.";
+                            case "disable":
+                                ModUpdaterEnabled = false;
+                                return "Mod update checker disabled.";
+                            default:
+                                return
+                                    "Invalid argument [check/enable/disable]. Enter 'lsm' for all available commands.";
+                        }
+                    return "Missing argument [check/enable/disable]. Enter 'lsm' for all available commands.";
+                case "python":
+                    if (args.Length > 1)
+                        switch (args[1].ToLower())
+                        {
+                            case "version":
+                                return (string) PythonEnvironment.ScripterEnvironment.Execute("sys.version");
+                            case "2.7":
+                                PythonEnvironment.Version = "ironpython2.7";
+                                if (PythonEnvironment.LoadPythonAssembly())
+                                {
+                                    PythonEnvironment.InitializeEngine();
+                                    PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
+                                    return (string) PythonEnvironment.ScripterEnvironment.Execute("sys.version");
+                                }
+                                PythonEnvironment.DestroyEngine();
+                                DependencyInstaller.InstallIronPython();
+                                return null;
+                            case "3.0":
+                                PythonEnvironment.Version = "ironpython3.0";
+                                if (PythonEnvironment.LoadPythonAssembly())
+                                {
+                                    PythonEnvironment.InitializeEngine();
+                                    PythonEnvironment.ScripterEnvironment = new PythonEnvironment();
+                                    return (string) PythonEnvironment.ScripterEnvironment.Execute("sys.version");
+                                }
+                                PythonEnvironment.DestroyEngine();
+                                DependencyInstaller.InstallIronPython();
+                                return null;
+                            default:
+                                return "Invalid argument [version/2.7/3.0]. Enter 'lsm' for all available commands.";
+                        }
+                    return "Missing argument [version/2.7/3.0]. Enter 'lsm' for all available commands.";
+                default:
+                    return "Invalid command. Enter 'lsm' for all available commands.";
             }
         }
 
         private void CheckForModUpdate(bool verbose = false)
         {
-            var updater = gameObject.AddComponent<Updater.Updater>();
+            var updater = gameObject.AddComponent<Updater>();
             updater.Check(
                 "Lench Scripter Mod",
                 "https://api.github.com/repos/lench4991/LenchScripterMod/releases/latest",
                 Assembly.GetExecutingAssembly().GetName().Version,
-                new List<Updater.Updater.Link>()
+                new List<Updater.Link>
+                {
+                    new Updater.Link
                     {
-                            new Updater.Updater.Link() { DisplayName = "Spiderling forum page", URL = "http://forum.spiderlinggames.co.uk/index.php?threads/3003/" },
-                            new Updater.Updater.Link() { DisplayName = "GitHub release page", URL = "https://github.com/lench4991/LenchScripterMod/releases/latest" }
+                        DisplayName = "Spiderling forum page",
+                        URL = "http://forum.spiderlinggames.co.uk/index.php?threads/3003/"
                     },
+                    new Updater.Link
+                    {
+                        DisplayName = "GitHub release page",
+                        URL = "https://github.com/lench4991/LenchScripterMod/releases/latest"
+                    }
+                },
                 verbose);
         }
 
         /// <summary>
-        /// Creates environment. Looks for script to load.
+        ///     Creates environment. Looks for script to load.
         /// </summary>
         private void CreateScriptingEnvironment()
         {
@@ -206,18 +194,14 @@ namespace Lench.Scripter.Internal
             {
                 ScriptOptions.Instance.CheckForScript();
                 if (ScriptOptions.Instance.ScriptSource == "py")
-                {
                     ScriptFile = ScriptOptions.Instance.ScriptPath;
-                }
                 if (ScriptOptions.Instance.ScriptSource == "bsg")
-                {
                     ScriptCode = ScriptOptions.Instance.Code;
-                }
             }
         }
 
         /// <summary>
-        /// Called to stop script.
+        ///     Called to stop script.
         /// </summary>
         public void DestroyScriptingEnvironment()
         {
@@ -226,7 +210,7 @@ namespace Lench.Scripter.Internal
         }
 
         /// <summary>
-        /// Finds hovered block in buildingBlocks dictionary and shows identifier display.
+        ///     Finds hovered block in buildingBlocks dictionary and shows identifier display.
         /// </summary>
         private void ShowBlockIdentifiers()
         {
@@ -240,7 +224,7 @@ namespace Lench.Scripter.Internal
 
             IdentifierDisplay.Instance.ShowBlock(_hoveredBlock);
         }
-        
+
         private void Awake()
         {
             gameObject.AddComponent<DependencyInstaller>();
@@ -249,7 +233,7 @@ namespace Lench.Scripter.Internal
             gameObject.AddComponent<IdentifierDisplay>();
             gameObject.AddComponent<ScriptOptions>();
         }
-        
+
         private void Start()
         {
             ScripterMod.LoadScripter();
@@ -273,8 +257,8 @@ namespace Lench.Scripter.Internal
         }
 
         /// <summary>
-        /// Mod functionality.
-        /// Calls Python functions.
+        ///     Mod functionality.
+        ///     Calls Python functions.
         /// </summary>
         private void Update()
         {
@@ -290,7 +274,8 @@ namespace Lench.Scripter.Internal
             }
 
             // Execute code on first call
-            if (Game.IsSimulating && PythonEnvironment.Loaded && EnableScript && (ScriptFile != null || ScriptCode != null))
+            if (Game.IsSimulating && PythonEnvironment.Loaded && EnableScript &&
+                (ScriptFile != null || ScriptCode != null))
             {
                 LoadScript();
                 ScriptFile = null;
@@ -299,24 +284,15 @@ namespace Lench.Scripter.Internal
 
             // Toggle watchlist visibility
             if (PythonEnvironment.Loaded && Keybindings.Get("Watchlist").Pressed())
-            {
                 Watchlist.Instance.Visible = !Watchlist.Instance.Visible;
-            }
 
             // Toggle options visibility
             if (PythonEnvironment.Loaded && Keybindings.Get("Script Options").Pressed())
-            {
                 ScriptOptions.Instance.Visible = !ScriptOptions.Instance.Visible;
-            }
 
             if (!Game.IsSimulating)
-            {
-                // Show block identifiers
                 if (PythonEnvironment.Loaded && Keybindings.Get("Show Block ID").IsDown())
-                {
                     ShowBlockIdentifiers();
-                }
-            }
 
             if (!Game.IsSimulating) return;
 
@@ -331,12 +307,13 @@ namespace Lench.Scripter.Internal
                 RuntimeError = true;
                 if (e.InnerException != null) e = e.InnerException;
                 ScriptOptions.Instance.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
-                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
+                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" +
+                          PythonEnvironment.FormatException(e));
             }
         }
 
         /// <summary>
-        /// Calls Python functions at a fixed rate.
+        ///     Calls Python functions at a fixed rate.
         /// </summary>
         private void FixedUpdate()
         {
@@ -353,12 +330,13 @@ namespace Lench.Scripter.Internal
                 RuntimeError = true;
                 if (e.InnerException != null) e = e.InnerException;
                 ScriptOptions.Instance.ErrorMessage = "Runtime error.\nSee console (Ctrl+K) for more info.";
-                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" + PythonEnvironment.FormatException(e));
+                Debug.Log("<b><color=#FF0000>Python error: " + e.Message + "</color></b>\n" +
+                          PythonEnvironment.FormatException(e));
             }
         }
 
         /// <summary>
-        /// Handles starting and stopping of the simulation.
+        ///     Handles starting and stopping of the simulation.
         /// </summary>
         /// <param name="isSimulating"></param>
         internal void OnSimulationToggle(bool isSimulating)

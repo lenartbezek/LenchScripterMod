@@ -5,8 +5,7 @@ using System.Reflection;
 namespace Lench.Scripter.Internal
 {
     internal static class MachineData
-    { 
-
+    {
         internal static void Load(MachineInfo machineInfo)
         {
             ScriptOptions.Instance.ScriptName = machineInfo.Name;
@@ -19,9 +18,9 @@ namespace Lench.Scripter.Internal
             {
                 var version = new Version(machineInfo.MachineData.ReadString("LenchScripterMod-Version").TrimStart('v'));
                 if (version > Assembly.GetExecutingAssembly().GetName().Version)
-                    ScriptOptions.Instance.NoteMessage = "Loaded code is from a newer (v" + version + ") version.\nSome features might be incompatible.";
+                    ScriptOptions.Instance.NoteMessage = $"Loaded code is from a newer version v{version}.\nSome features might be incompatible.";
                 if (new Version(2, 0, 0) > version)
-                    ScriptOptions.Instance.ErrorMessage = "Loaded code is from version v" + version + ".\nLua code is no longer supported.";
+                    ScriptOptions.Instance.ErrorMessage = $"Loaded code is from version v{version}.\nLua code is no longer supported.";
                 var code = machineInfo.MachineData.ReadString("LenchScripterMod-Code");
                 ScriptOptions.Instance.Code = code;
                 ScriptOptions.Instance.BsgHasCode = true;
@@ -38,7 +37,8 @@ namespace Lench.Scripter.Internal
             {
                 ScriptOptions.Instance.CheckForScript();
                 var code = File.ReadAllText(ScriptOptions.Instance.ScriptPath);
-                machineInfo.MachineData.Write("LenchScripterMod-Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                machineInfo.MachineData.Write("LenchScripterMod-Version",
+                    Assembly.GetExecutingAssembly().GetName().Version.ToString());
                 machineInfo.MachineData.Write("LenchScripterMod-Code", code);
                 ScriptOptions.Instance.Code = code;
                 ScriptOptions.Instance.BsgHasCode = true;

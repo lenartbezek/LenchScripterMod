@@ -4,80 +4,50 @@ using UnityEngine;
 namespace Lench.Scripter
 {
     /// <summary>
-    /// Tracked collider and hit offset.
+    ///     Tracked collider and hit offset.
     /// </summary>
     public class TrackedCollider
     {
-        private Collider c;
-        private BlockHandler block;
-        private Vector3 offset;
-        private Vector3 lastPosition;
+        private readonly Collider _c;
+        private Vector3 _lastPosition;
+        private readonly Vector3 _offset;
 
         internal TrackedCollider(Collider hitCollider, Vector3 hitPoint)
         {
-            c = hitCollider;
-            offset = c.transform.InverseTransformPoint(hitPoint);
-            lastPosition = Position;
-            var bb = c.transform.parent.gameObject.GetComponent<BlockBehaviour>();
+            _c = hitCollider;
+            _offset = _c.transform.InverseTransformPoint(hitPoint);
+            _lastPosition = Position;
+            var bb = _c.transform.parent.gameObject.GetComponent<BlockBehaviour>();
             if (bb != null)
-                block = BlockHandlerController.GetBlock(bb);
+                Block = BlockHandlerController.GetBlock(bb);
         }
 
         /// <summary>
-        /// Implicit conversion to Vector3.
+        ///     Returns true if the collider still exists.
         /// </summary>
-        /// <param name="tc"></param>
-        static public implicit operator Vector3(TrackedCollider tc)
-        {
-            return tc.Position;
-        }
+        public bool Exists => _c != null;
 
         /// <summary>
-        /// Explicit conversion to string.
+        ///     Returns true if the collider represents a building block.
         /// </summary>
-        public override string ToString()
-        {
-            return Position.ToString();
-        }
+        public bool IsBlock => Block != null;
 
         /// <summary>
-        /// Returns true if the collider still exists.
-        /// </summary>
-        public bool Exists
-        {
-            get { return c != null; }
-        }
-
-        /// <summary>
-        /// Returns true if the collider represents a building block.
-        /// </summary>
-        public bool IsBlock
-        {
-            get { return block != null; }
-        }
-
-        /// <summary>
-        /// Returns block represented by the collider.
+        ///     Returns block represented by the collider.
         /// </summary>
         /// <returns></returns>
-        public BlockHandler Block
-        {
-            get { return block; }
-        }
+        public BlockHandler Block { get; }
 
         /// <summary>
-        /// Returns the name of the object represented by the collider.
-        /// Intended for identifying game objects.
+        ///     Returns the name of the object represented by the collider.
+        ///     Intended for identifying game objects.
         /// </summary>
         /// <returns></returns>
-        public string Name
-        {
-            get { return c.transform.parent.name; }
-        }
+        public string Name => _c.transform.parent.name;
 
         /// <summary>
-        /// Position of the tracked collider with it's offset.
-        /// If the collider no longer exists, returns it's last position.
+        ///     Position of the tracked collider with it's offset.
+        ///     If the collider no longer exists, returns it's last position.
         /// </summary>
         /// <returns>Vector3 position.</returns>
         public Vector3 Position
@@ -85,11 +55,26 @@ namespace Lench.Scripter
             get
             {
                 if (Exists)
-                {
-                    lastPosition = c.transform.TransformPoint(offset);
-                }
-                return lastPosition;
+                    _lastPosition = _c.transform.TransformPoint(_offset);
+                return _lastPosition;
             }
+        }
+
+        /// <summary>
+        ///     Implicit conversion to Vector3.
+        /// </summary>
+        /// <param name="tc"></param>
+        public static implicit operator Vector3(TrackedCollider tc)
+        {
+            return tc.Position;
+        }
+
+        /// <summary>
+        ///     Explicit conversion to string.
+        /// </summary>
+        public override string ToString()
+        {
+            return Position.ToString();
         }
     }
 }

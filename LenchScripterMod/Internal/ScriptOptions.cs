@@ -1,24 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using UnityEngine;
 using spaar.ModLoader;
 using spaar.ModLoader.UI;
+using UnityEngine;
+// ReSharper disable UnusedMember.Local
+// ReSharper disable PossibleLossOfFraction
 
 namespace Lench.Scripter.Internal
 {
     internal class ScriptOptions : SingleInstance<ScriptOptions>
     {
-        public override string Name { get { return "ScriptOptions"; } }
-
         internal Vector2 ConfigurationPosition;
+        private bool _init;
 
-        internal bool Visible { get; set; } = false;
+        private float _timer;
+
+        private readonly int _windowID = Util.GetWindowID();
+        private Rect _windowRect;
+
+        public override string Name => "ScriptOptions";
+
+        internal bool Visible { get; set; }
         internal string ScriptName { get; set; } = "";
         internal string ScriptPath { get; set; } = "";
         internal string ScriptSource { get; set; } = "none";
-        internal bool ScriptFound { get; set; } = false;
-        internal bool SaveToBsg { get; set; } = false;
+        internal bool ScriptFound { get; set; }
+        internal bool SaveToBsg { get; set; }
         internal bool BsgHasCode { get; set; } = false;
         internal string Code { get; set; }
 
@@ -26,14 +34,8 @@ namespace Lench.Scripter.Internal
         internal string NoteMessage { get; set; }
         internal string ErrorMessage { get; set; }
 
-        private float timer = 0;
-        private bool init = false;
-
-        private int windowID = Util.GetWindowID();
-        private Rect windowRect;
-
         /// <summary>
-        /// Render window.
+        ///     Render window.
         /// </summary>
         private void OnGUI()
         {
@@ -46,30 +48,30 @@ namespace Lench.Scripter.Internal
                 GUI.skin.window.padding.left = 8;
                 GUI.skin.window.padding.right = 8;
                 GUI.skin.window.padding.bottom = 8;
-                windowRect = GUILayout.Window(windowID, windowRect, DoWindow, "Script Options",
+                _windowRect = GUILayout.Window(_windowID, _windowRect, DoWindow, "Script Options",
                     GUILayout.Height(200),
                     GUILayout.Width(320));
 
-                ConfigurationPosition.x = windowRect.x < Screen.width / 2 ? windowRect.x : windowRect.x - Screen.width;
-                ConfigurationPosition.y = windowRect.y < Screen.height / 2 ? windowRect.y : windowRect.y - Screen.height;
+                ConfigurationPosition.x = _windowRect.x < Screen.width / 2 ? _windowRect.x : _windowRect.x - Screen.width;
+                ConfigurationPosition.y = _windowRect.y < Screen.height / 2 ? _windowRect.y : _windowRect.y - Screen.height;
             }
         }
 
         /// <summary>
-        /// Checks for script file every second.
+        ///     Checks for script file every second.
         /// </summary>
         private void Update()
         {
-            timer += Time.deltaTime;
-            if (timer > 1)
+            _timer += Time.deltaTime;
+            if (_timer > 1)
             {
-                timer -= 1;
+                _timer -= 1;
                 CheckForScript();
             }
         }
 
         /// <summary>
-        /// Checks for script and sets properties.
+        ///     Checks for script and sets properties.
         /// </summary>
         internal void CheckForScript(string path = null)
         {
@@ -91,7 +93,7 @@ namespace Lench.Scripter.Internal
         }
 
         /// <summary>
-        /// Saves machine data code to lua script.
+        ///     Saves machine data code to lua script.
         /// </summary>
         internal void SaveToScript()
         {
@@ -115,13 +117,13 @@ namespace Lench.Scripter.Internal
         }
 
         /// <summary>
-        /// Attempts to find the script file.
+        ///     Attempts to find the script file.
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
         internal string FindScript(string path)
         {
-            List<string> possibleFiles = new List<string>()
+            var possibleFiles = new List<string>
             {
                 path,
                 string.Concat(Application.dataPath, "/Scripts/", path, ".py"),
@@ -129,42 +131,38 @@ namespace Lench.Scripter.Internal
                 string.Concat(path, ".py")
             };
 
-            foreach (string p in possibleFiles)
-            {
+            foreach (var p in possibleFiles)
                 if (File.Exists(p))
                     return p;
-            }
             throw new FileNotFoundException("Script file not found: " + path);
         }
 
         /// <summary>
-        /// Initialises main window Rect on first call.
-        /// Intended to set the position from the configuration.
+        ///     Initialises main window Rect on first call.
+        ///     Intended to set the position from the configuration.
         /// </summary>
         private void InitialiseWindowRect()
         {
-            if (init) return;
+            if (_init) return;
 
-            windowRect = new Rect();
-            windowRect.width = 320;
-            windowRect.height = 200;
-            if (ConfigurationPosition != null)
+            _windowRect = new Rect
             {
-                windowRect.x = ConfigurationPosition.x >= 0 ? ConfigurationPosition.x : Screen.width + ConfigurationPosition.x;
-                windowRect.y = ConfigurationPosition.y >= 0 ? ConfigurationPosition.y : Screen.height + ConfigurationPosition.y;
-            }
-            else
-            {
-                windowRect.x = Screen.width - windowRect.width - 60;
-                windowRect.y = Screen.height - windowRect.height - 120;
-            }
+                width = 320,
+                height = 200,
+                x = ConfigurationPosition.x >= 0
+                    ? ConfigurationPosition.x
+                    : Screen.width + ConfigurationPosition.x,
+                y = ConfigurationPosition.y >= 0
+                    ? ConfigurationPosition.y
+                    : Screen.height + ConfigurationPosition.y
+            };
 
-            init = true;
+            _init = true;
         }
 
-        private void DrawEnabledBadge(bool enabled)
+        public void DrawEnabledBadge(bool e)
         {
-            if (enabled)
+            if (e)
             {
                 var oldColor = GUI.backgroundColor;
                 GUI.backgroundColor = new Color(0f, 1f, 0f, 1f);
@@ -192,7 +190,7 @@ namespace Lench.Scripter.Internal
             // Draw open folder button
             if (GUILayout.Button("Open Scripts folder", Elements.Buttons.ComponentField))
             {
-                string dir = Application.dataPath + "/Scripts/";
+                var dir = Application.dataPath + "/Scripts/";
                 if (!Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
                 Application.OpenURL(dir);
@@ -202,23 +200,26 @@ namespace Lench.Scripter.Internal
             GUILayout.Label(" ", Elements.Labels.Title);
             GUILayout.Label("Script source", Elements.Labels.Title);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(".bsg", ScriptSource == "bsg" ? Elements.Buttons.Default : Elements.Buttons.Disabled) && BsgHasCode)
-            {
+            if (
+                GUILayout.Button(".bsg", ScriptSource == "bsg" ? Elements.Buttons.Default : Elements.Buttons.Disabled) &&
+                BsgHasCode)
                 ScriptSource = "bsg";
-            }
-            if (GUILayout.Button(".py", ScriptSource == "py" ? Elements.Buttons.Default : Elements.Buttons.Disabled) && ScriptFound)
-            {
+            if (GUILayout.Button(".py", ScriptSource == "py" ? Elements.Buttons.Default : Elements.Buttons.Disabled) &&
+                ScriptFound)
                 ScriptSource = "py";
-            }
             GUILayout.EndHorizontal();
 
             // Draw import script to bsg toggle
             GUILayout.Label(" ", Elements.Labels.Title);
             GUILayout.BeginHorizontal();
             GUILayout.Label("Save code to .bsg", Elements.InputFields.Default);
-            var b = GUILayout.Toggle(SaveToBsg, "Import", ScriptFound ? Elements.Buttons.Default : Elements.Buttons.Disabled, GUILayout.Width(100)) && ScriptFound;
+            var b =
+                GUILayout.Toggle(SaveToBsg, "Import", ScriptFound ? Elements.Buttons.Default : Elements.Buttons.Disabled,
+                    GUILayout.Width(100)) && ScriptFound;
             if (b != SaveToBsg)
-                NoteMessage = b ? "Code will be saved to .bsg when you\n save the machine." : "Code will not be saved to .bsg when you\n save the machine.";
+                NoteMessage = b
+                    ? "Code will be saved to .bsg when you\n save the machine."
+                    : "Code will not be saved to .bsg when you\n save the machine.";
             SaveToBsg = b;
             DrawEnabledBadge(SaveToBsg);
             GUILayout.EndHorizontal();
@@ -227,10 +228,9 @@ namespace Lench.Scripter.Internal
             GUILayout.Label(" ", Elements.Labels.Title);
             GUILayout.BeginHorizontal();
             GUILayout.Label("Save code to .py", Elements.InputFields.Default);
-            if(GUILayout.Button("Export", BsgHasCode ? Elements.Buttons.Default : Elements.Buttons.Disabled, GUILayout.Width(100)))
-            {
+            if (GUILayout.Button("Export", BsgHasCode ? Elements.Buttons.Default : Elements.Buttons.Disabled,
+                GUILayout.Width(100)))
                 SaveToScript();
-            }
             DrawEnabledBadge(BsgHasCode);
             GUILayout.EndHorizontal();
 
@@ -238,27 +238,28 @@ namespace Lench.Scripter.Internal
             GUILayout.Label(" ", Elements.Labels.Title);
             if (SuccessMessage != null)
             {
-                GUILayout.Label("\n<color=#00FF00>Success</color>", new GUIStyle(Elements.Labels.Title) { richText = true });
+                GUILayout.Label("\n<color=#00FF00>Success</color>",
+                    new GUIStyle(Elements.Labels.Title) {richText = true});
                 GUILayout.Label(SuccessMessage);
             }
             if (NoteMessage != null)
             {
-                GUILayout.Label("\n<color=#FFFF00>Note</color>", new GUIStyle(Elements.Labels.Title) { richText = true });
+                GUILayout.Label("\n<color=#FFFF00>Note</color>", new GUIStyle(Elements.Labels.Title) {richText = true});
                 GUILayout.Label(NoteMessage);
             }
             if (ErrorMessage != null)
             {
-                GUILayout.Label("\n<color=#FF0000>Error</color>", new GUIStyle(Elements.Labels.Title) { richText = true });
+                GUILayout.Label("\n<color=#FF0000>Error</color>", new GUIStyle(Elements.Labels.Title) {richText = true});
                 GUILayout.Label(ErrorMessage);
             }
 
             // Draw close button
-            if (GUI.Button(new Rect(windowRect.width - 38, 8, 30, 30),
+            if (GUI.Button(new Rect(_windowRect.width - 38, 8, 30, 30),
                 "×", Elements.Buttons.Red))
                 Visible = false;
 
             // Drag window
-            GUI.DragWindow(new Rect(0, 0, windowRect.width, GUI.skin.window.padding.top));
+            GUI.DragWindow(new Rect(0, 0, _windowRect.width, GUI.skin.window.padding.top));
         }
     }
 }

@@ -1,25 +1,43 @@
-﻿using spaar.ModLoader;
-using spaar.ModLoader.UI;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using spaar.ModLoader;
+using spaar.ModLoader.UI;
 using UnityEngine;
 
 namespace Lench.Scripter.Internal
 {
     internal class DependencyInstaller : SingleInstance<DependencyInstaller>
     {
-        public override string Name => "Dependency Installer";
-
         private static bool _downloadingInProgress;
         private static string _downloadButtonText = "Download";
+
         private static string _infoText = "<b>Lench Scripter Mod</b> needs to download additional assets.\n" +
                                           "Files will be placed in Mods/Resources/LenchScripter.";
 
-        public bool Visible { get; set; }
+        private static int _filesDownloaded;
+        private const int FilesRequired = 5;
+
+        private static readonly long[] ReceivedSize = new long[FilesRequired];
+        private static readonly long[] TotalSize = new long[FilesRequired];
+
+        private const string BaseUri = "http://lench4991.github.io/LenchScripterMod/files/";
+
+        private static readonly string[] FileNames =
+        {
+            "IronPython.dll",
+            "IronPython.Modules.dll",
+            "Microsoft.Dynamic.dll",
+            "Microsoft.Scripting.dll",
+            "Microsoft.Scripting.Core.dll"
+        };
+
         private readonly int _windowId = Util.GetWindowID();
         private Rect _windowRect = new Rect(0, 0, 200, 360);
+        public override string Name => "Dependency Installer";
+
+        public bool Visible { get; set; }
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once UnusedMember.Local
@@ -33,7 +51,7 @@ namespace Lench.Scripter.Internal
                 GUI.skin.window.padding.right = 8;
                 GUI.skin.window.padding.bottom = 8;
                 _windowRect.x = (Screen.width - _windowRect.width) / 2;
-                _windowRect.y = (Screen.height - 400);
+                _windowRect.y = Screen.height - 400;
                 _windowRect = GUILayout.Window(_windowId, _windowRect, DoWindow, "Additional assets required",
                     GUILayout.Height(200),
                     GUILayout.Width(360));
@@ -43,13 +61,12 @@ namespace Lench.Scripter.Internal
         private void DoWindow(int id)
         {
             // Draw info text
-            GUILayout.Label(_infoText, new GUIStyle(Elements.Labels.Default) { alignment = TextAnchor.MiddleCenter }, GUILayout.MinHeight(120));
+            GUILayout.Label(_infoText, new GUIStyle(Elements.Labels.Default) {alignment = TextAnchor.MiddleCenter},
+                GUILayout.MinHeight(120));
 
             // Draw dowload button
             if (GUILayout.Button(_downloadButtonText) && !_downloadingInProgress)
-            {
                 InstallIronPython();
-            }
 
             // Draw close button
             if (GUI.Button(new Rect(_windowRect.width - 38, 8, 30, 30),
@@ -67,8 +84,7 @@ namespace Lench.Scripter.Internal
                 Directory.CreateDirectory(PythonEnvironment.LibPath);
             try
             {
-                for (var fileIndex = 0; fileIndex < _filesRequired; fileIndex++)
-                {
+                for (var fileIndex = 0; fileIndex < FilesRequired; fileIndex++)
                     using (var client = new WebClient())
                     {
                         var i = fileIndex;
@@ -82,7 +98,8 @@ namespace Lench.Scripter.Internal
                         {
                             ReceivedSize[i] = e.BytesReceived;
                             TotalSize[i] = e.TotalBytesToReceive;
-                            var progress = Convert.ToSingle(ReceivedSize.Sum()) / Convert.ToSingle(TotalSize.Sum()) * 100f;
+                            var progress = Convert.ToSingle(ReceivedSize.Sum()) / Convert.ToSingle(TotalSize.Sum()) *
+                                           100f;
                             _downloadButtonText = progress.ToString("0.0") + " %";
                         };
 
@@ -92,7 +109,8 @@ namespace Lench.Scripter.Internal
                             if (e.Error != null)
                             {
                                 // set error messages
-                                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: Error downloading file:" + FileNames[i]);
+                                ModConsole.AddMessage(LogType.Log,
+                                    "[LenchScripterMod]: Error downloading file:" + FileNames[i]);
                                 ModConsole.AddMessage(LogType.Error, "\t" + e.Error.Message);
                                 _infoText = FileNames[i] + " <color=red>✘</color>" +
                                             "\n\n<b><color=red>Download failed</color></b>\n" + e.Error.Message;
@@ -106,11 +124,12 @@ namespace Lench.Scripter.Internal
                             }
                             else
                             {
-                                ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: File downloaded: " + FileNames[i]);
+                                ModConsole.AddMessage(LogType.Log,
+                                    "[LenchScripterMod]: File downloaded: " + FileNames[i]);
                                 _infoText += "\n" + FileNames[i] + " <color=green>✓</color>";
 
                                 _filesDownloaded++;
-                                if (_filesDownloaded == _filesRequired)
+                                if (_filesDownloaded == FilesRequired)
                                 {
                                     // finish download and load assemblies
                                     _downloadButtonText = "Loading";
@@ -121,7 +140,8 @@ namespace Lench.Scripter.Internal
                                     else
                                     {
                                         _downloadButtonText = "Retry";
-                                        _infoText = "<b><color=red>Download failed</color></b>\nFailed to initialize Python engine.";
+                                        _infoText =
+                                            "<b><color=red>Download failed</color></b>\nFailed to initialize Python engine.";
                                     }
                                     _downloadingInProgress = false;
                                 }
@@ -133,7 +153,6 @@ namespace Lench.Scripter.Internal
                             new Uri(BaseUri + PythonEnvironment.Version + "/" + FileNames[i]),
                             PythonEnvironment.LibPath + FileNames[i]);
                     }
-                }
             }
             catch (Exception e)
             {
@@ -144,21 +163,5 @@ namespace Lench.Scripter.Internal
                 _infoText = "<b><color=red>Download failed</color></b>\n" + e.Message;
             }
         }
-
-        private static int _filesDownloaded;
-        private static readonly int _filesRequired = 5;
-
-        private static readonly long[] ReceivedSize = new long[_filesRequired];
-        private static readonly long[] TotalSize = new long[_filesRequired];
-
-        private static readonly string BaseUri = "http://lench4991.github.io/LenchScripterMod/files/";
-        private static readonly string[] FileNames =
-        {
-            "IronPython.dll",
-            "IronPython.Modules.dll",
-            "Microsoft.Dynamic.dll",
-            "Microsoft.Scripting.dll",
-            "Microsoft.Scripting.Core.dll"
-        };
     }
 }
