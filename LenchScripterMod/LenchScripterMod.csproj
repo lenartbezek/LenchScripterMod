@@ -90,6 +90,7 @@
     <Compile Include="Internal\MachineData.cs" />
     <Compile Include="Mark.cs" />
     <Compile Include="Internal\Scripter.cs" />
+    <Compile Include="UI\Toolbar.cs" />
     <Compile Include="Updater.cs" />
     <Compile Include="PythonEnvironment.cs" />
     <Compile Include="ScripterMod.cs" />

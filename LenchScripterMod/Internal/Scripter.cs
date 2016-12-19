@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Lench.Scripter.UI;
 using spaar.ModLoader;
 using UnityEngine;
 
@@ -26,6 +27,9 @@ namespace Lench.Scripter.Internal
 
         // Python environment
         internal string ScriptFile;
+
+        // UI Toolbar
+        internal Toolbar Toolbar;
 
         /// <summary>
         ///     Name in the Unity hierarchy.
@@ -243,6 +247,7 @@ namespace Lench.Scripter.Internal
 
             if (ModUpdaterEnabled)
                 CheckForModUpdate();
+
         }
 
         private void OnDestroy()
