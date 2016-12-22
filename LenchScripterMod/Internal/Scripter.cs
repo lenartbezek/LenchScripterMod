@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Lench.Scripter.UI;
 using spaar.ModLoader;
+using spaar.ModLoader.UI;
 using UnityEngine;
 
 // ReSharper disable UnusedMember.Local
@@ -287,13 +288,32 @@ namespace Lench.Scripter.Internal
                 ScriptCode = null;
             }
 
-            // Toggle watchlist visibility
-            if (PythonEnvironment.Loaded && Keybindings.Get("Watchlist").Pressed())
-                Watchlist.Instance.Visible = !Watchlist.Instance.Visible;
+            // Create toolbar
+            if (Toolbar == null && Elements.IsInitialized)
+                Toolbar = new Toolbar(
+                    gameObject,
+                    gameObject.transform)
+                {
+                    Text = "Py",
+                    Position = spaar.ModLoader.Configuration.GetFloat("toolbar-pos", 600),
+                    Buttons =
+                    {
+                        new Toolbar.Button
+                        {
+                            Text = "W",
+                            OnClick = () => { Watchlist.Instance.Visible = true; }
+                        },
+                        new Toolbar.Button
+                        {
+                            Text = "O",
+                            OnClick = () => { ScriptOptions.Instance.Visible = true; }
+                        }
+                    }
+                };
 
-            // Toggle options visibility
-            if (PythonEnvironment.Loaded && Keybindings.Get("Script Options").Pressed())
-                ScriptOptions.Instance.Visible = !ScriptOptions.Instance.Visible;
+            // Control toolbar visibility
+            if (Toolbar != null)
+                Toolbar.Visible = Game.AddPiece != null && !StatMaster.isSimulating;
 
             if (!Game.IsSimulating)
                 if (PythonEnvironment.Loaded && Keybindings.Get("Show Block ID").IsDown())
