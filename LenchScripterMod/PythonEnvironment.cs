@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
 using UnityEngine;
 
 // ReSharper disable UseMethodAny.2
@@ -15,8 +15,8 @@ namespace Lench.Scripter
     /// </summary>
     public class PythonEnvironment
     {
-        internal static Assembly IronPythonAssembly;
-        internal static Assembly MicrosoftScriptingAssembly;
+        private static Assembly _ironPythonAssembly;
+        private static Assembly _microsoftScriptingAssembly;
 
         private static string _version = "ironpython2.7";
 
@@ -35,10 +35,8 @@ namespace Lench.Scripter
         private static object _eo;
         private static object _engine;
 
-        private static readonly List<string> InitStatements = new List<string>();
         private readonly object _scope;
         private Action _fixedupdate;
-
         private Action _update;
 
         /// <summary>
@@ -66,26 +64,46 @@ namespace Lench.Scripter
             Execute("clr.AddReference(\"LenchScripterMod\")");
             Execute("from Lench.Scripter import Functions as Besiege");
 
-            // Execute additional init statements
-            for (var i = 0; i < InitStatements.Count;)
-                try
-                {
-                    Execute(InitStatements[i]);
-                    i++;
-                }
-                catch
-                {
-                    InitStatements.RemoveAt(i);
-                }
-
             // Redirect standard output
             Execute("import sys");
-            SetVariable("pythonenv", this);
+            this["pythonenv"] = this;
             Execute("sys.stdout = pythonenv");
             Execute("del pythonenv");
+
+            OnInitialization?.Invoke(this);
         }
 
-        internal static string Version
+        /// <summary>
+        ///     Invoked on scope creation. Use this to import modules into default script scope.
+        ///     Called for every PythonEnvironment instance. PythonEnvironment is passed to the delegate as an argument.
+        /// </summary>
+        public static event Action<PythonEnvironment> OnInitialization;
+
+        /// <summary>
+        ///     Wrapper for `OnInitialization += python => python.Execute(expression);` to simplify reflection calls.
+        /// </summary>
+        /// <param name="expression">Python expression.</param>
+        [Obsolete("If you see this, you should probably be using the OnInitialization event instead.")]
+        public static void AddInitStatement([NotNull] string expression)
+        {
+            if (expression == null) throw new ArgumentNullException(nameof(expression));
+            OnInitialization += python =>
+            {
+                try
+                {
+                    python.Execute(expression);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log($"<b><color=#FF0000>Python error during initialization statement:\n{e.Message}</color></b>\n{FormatException(e)}");
+                }
+            };
+        }
+
+        /// <summary>
+        ///     Currently selected ironpython version. Can only be "ironpython2.7" or "ironpython3.0".
+        /// </summary>
+        public static string Version
         {
             get { return _version; }
             set
@@ -98,23 +116,20 @@ namespace Lench.Scripter
             }
         }
 
-        internal static string LibPath => Application.dataPath + "/Mods/Resources/LenchScripter/lib/" + Version + "/";
+        /// <summary>
+        ///     Points to the directory where IronPython assemblies are located.
+        /// </summary>
+        public static string LibPath => $"{Application.dataPath}/Mods/Resources/LenchScripter/lib/{Version}/";
 
         /// <summary>
         ///     Are Python assemblies loaded and engine ready to be initialised.
         /// </summary>
-        public static bool Loaded => !(IronPythonAssembly == null || MicrosoftScriptingAssembly == null);
+        public static bool Loaded => !(_ironPythonAssembly == null || _microsoftScriptingAssembly == null);
 
         /// <summary>
         ///     Is script enabled to be ran on simulation start.
         /// </summary>
         public static bool Enabled { get; set; }
-
-        /// <summary>
-        ///     Returns PythonEnvironment instance currently used by the scripting mod.
-        ///     Only instantiated during simulation.
-        /// </summary>
-        public static PythonEnvironment ScripterEnvironment { get; internal set; }
 
         /// <summary>
         ///     Loads Python assemblies.
@@ -124,17 +139,16 @@ namespace Lench.Scripter
         {
             try
             {
-                IronPythonAssembly = Assembly.LoadFrom(LibPath + "IronPython.dll");
-                MicrosoftScriptingAssembly = Assembly.LoadFrom(LibPath + "Microsoft.Scripting.dll");
-                Assembly.LoadFrom(LibPath + "IronPython.Modules.dll");
-                Assembly.LoadFrom(LibPath + "Microsoft.Scripting.Core.dll");
-                Assembly.LoadFrom(LibPath + "Microsoft.Dynamic.dll");
+                _ironPythonAssembly = Assembly.LoadFile(LibPath + "IronPython.dll");
+                _microsoftScriptingAssembly = Assembly.LoadFile(LibPath + "Microsoft.Scripting.dll");
+                Assembly.LoadFile(LibPath + "IronPython.Modules.dll");
+                Assembly.LoadFile(LibPath + "Microsoft.Scripting.Core.dll");
+                Assembly.LoadFile(LibPath + "Microsoft.Dynamic.dll");
 
                 return true;
             }
-            catch (FileNotFoundException e)
+            catch
             {
-                Debug.LogException(e);
                 return false;
             }
         }
@@ -164,30 +178,20 @@ namespace Lench.Scripter
         }
 
         /// <summary>
-        ///     Adds a statement to the list of initialisation statements
-        ///     to be executed every time when creating an environment.
-        /// </summary>
-        /// <param name="s">Python expression.</param>
-        public static void AddInitStatement(string s)
-        {
-            InitStatements.Add(s);
-        }
-
-        /// <summary>
         ///     Initializes IronPython engine.
         /// </summary>
         public static void InitializeEngine()
         {
-            if (IronPythonAssembly == null || MicrosoftScriptingAssembly == null)
+            if (_ironPythonAssembly == null || _microsoftScriptingAssembly == null)
                 throw new InvalidOperationException("IronPython assemblies not loaded. Script engine not available.");
 
-            _python = IronPythonAssembly.GetType("IronPython.Hosting.Python");
-            _scriptEngine = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptEngine");
-            _scriptScope = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptScope");
-            _scriptRuntime = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptRuntime");
-            _scriptSource = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptSource");
-            _compiledCode = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.CompiledCode");
-            _exceptionOperations = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ExceptionOperations");
+            _python = _ironPythonAssembly.GetType("IronPython.Hosting.Python");
+            _scriptEngine = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptEngine");
+            _scriptScope = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptScope");
+            _scriptRuntime = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptRuntime");
+            _scriptSource = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptSource");
+            _compiledCode = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.CompiledCode");
+            _exceptionOperations = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ExceptionOperations");
 
             _executeMethod = _scriptEngine.GetMethods()
                 .Single(method =>
@@ -241,19 +245,9 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public bool ContainsVariable(string name)
+        public bool Contains(string name)
         {
             return (bool) _containsVariableMethod.Invoke(_scope, new object[] {name});
-        }
-
-        /// <summary>
-        ///     Returns variable with given name.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public object GetVariable(string name)
-        {
-            return _getVariableMethod.Invoke(_scope, new object[] {name});
         }
 
         /// <summary>
@@ -271,17 +265,23 @@ namespace Lench.Scripter
                     m.GetParameters()[0].ParameterType == typeof(string))
                 .MakeGenericMethod(typeof(T));
 
-            return (T) method.Invoke(_scope, new object[] {name});
+            return (T)method.Invoke(_scope, new object[] { name });
         }
 
         /// <summary>
-        ///     Sets the value of the variable with given name in current scope.
+        ///     Access global variables by their name.
         /// </summary>
-        /// <param name="name">Name of the variable.</param>
-        /// <param name="value">Value of the variable.</param>
-        public void SetVariable(string name, object value)
+        /// <param name="key">Variable name</param>
+        public object this[string key]
         {
-            _setVariableMethod.Invoke(_scope, new[] {name, value});
+            get
+            {
+                return _getVariableMethod.Invoke(_scope, new object[] { key });
+            }
+            set
+            {
+                _setVariableMethod.Invoke(_scope, new[] { key, value });
+            }
         }
 
         /// <summary>
@@ -362,7 +362,6 @@ namespace Lench.Scripter
         /// <summary>
         ///     Calls Python FixedUpdate function.
         ///     Does nothing if currently loaded script has no FixedUpdate function.
-        ///     In case of exception stops execution and returns false.
         /// </summary>
         /// <returns></returns>
         public void CallFixedUpdate()
@@ -371,11 +370,10 @@ namespace Lench.Scripter
         }
 
         /// <summary>
-        ///     Evaluates Python expression and saves the result in an output parameter.
-        ///     Returns true if expression was executed with no errors.
+        ///     Evaluates Python expression and returns result.
         /// </summary>
         /// <param name="expression">Python expression.</param>
-        /// <returns>Successfull execution.</returns>
+        /// <returns>Value of the expression.</returns>
         public object Execute(string expression)
         {
             return _executeMethod.Invoke(_engine, new[] {expression, _scope});
@@ -383,15 +381,16 @@ namespace Lench.Scripter
 
         private void GetFunctions()
         {
-            if (ContainsVariable("Update"))
+            if (Contains("Update"))
                 _update = GetVariable<Action>("Update");
 
-            if (ContainsVariable("FixedUpdate"))
+            if (Contains("FixedUpdate"))
                 _fixedupdate = GetVariable<Action>("FixedUpdate");
         }
 
         /// <summary>
-        ///     Used by the Python engine as standard output;
+        ///     Used by the Python engine as standard output.
+        ///     Not intended to be called.
         /// </summary>
         /// <param name="s">Message to be sent.</param>
         // ReSharper disable once InconsistentNaming
@@ -399,14 +398,6 @@ namespace Lench.Scripter
         {
             if (s.ToString().Trim().Length != 0)
                 Debug.Log(s.ToString().TrimEnd());
-        }
-    }
-
-    internal class Proxy : MarshalByRefObject
-    {
-        public Assembly Load(string assemblyPath)
-        {
-            return Assembly.LoadFile(assemblyPath);
         }
     }
 }
