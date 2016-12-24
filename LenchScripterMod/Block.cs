@@ -4,12 +4,12 @@ using System.Linq;
 using UnityEngine;
 // ReSharper disable SpecifyStringComparison
 
-namespace Lench.Scripter.Blocks
+namespace Lench.Scripter
 {
     /// <summary>
     ///     Base class for all block handlers.
     /// </summary>
-    public class BlockHandler
+    public partial class Block
     {
         /// <summary>
         ///     Used to convert radians to degrees in all functions returning radians.
@@ -37,14 +37,14 @@ namespace Lench.Scripter.Blocks
         ///     Creates a Block handler.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
-        public BlockHandler(BlockBehaviour bb)
+        public Block(BlockBehaviour bb)
         {
             Bb = bb;
             Bs = bb.GetComponent<BlockScript>();
 
-            BlockHandlerController.OnUpdate += Update;
-            BlockHandlerController.OnLateUpdate += LateUpdate;
-            BlockHandlerController.OnFixedUpdate += FixedUpdate;
+            OnUpdate += Update;
+            OnLateUpdate += LateUpdate;
+            OnFixedUpdate += FixedUpdate;
         }
 
         /// <summary>
@@ -181,9 +181,9 @@ namespace Lench.Scripter.Blocks
         /// </summary>
         public virtual void Dispose()
         {
-            BlockHandlerController.OnUpdate -= Update;
-            BlockHandlerController.OnLateUpdate -= LateUpdate;
-            BlockHandlerController.OnFixedUpdate -= FixedUpdate;
+            OnUpdate -= Update;
+            OnLateUpdate -= LateUpdate;
+            OnFixedUpdate -= FixedUpdate;
         }
 
         /// <summary>

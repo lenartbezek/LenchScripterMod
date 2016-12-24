@@ -2,38 +2,42 @@
 using System.Collections.Generic;
 using System.Linq;
 using Lench.Scripter.Blocks;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
 // ReSharper disable UnusedMember.Local
 // ReSharper disable PossibleNullReferenceException
 
 namespace Lench.Scripter
 {
     /// <summary>
-    ///     Block Handlers API of the scripting mod.
+    ///     Block handlers API of the scripting mod.
     /// </summary>
-    public class BlockHandlerController : SingleInstance<BlockHandlerController>
+    public partial class Block
     {
-        /// <summary>
-        ///     Event invoked when simulation block handlers are initialised.
-        /// </summary>
-        public delegate void InitialisationDelegate();
-
         /// <summary>
         ///     Event invoked when simulation block handlers are initialised.
         ///     Use this instead of OnSimulation if you're relying on block handlers.
         /// </summary>
-        public static InitialisationDelegate OnInitialisation;
+        public static event Action OnInitialisation;
+
+        internal static event Action OnUpdate;
+
+        internal static event Action OnLateUpdate;
+
+        internal static event Action OnFixedUpdate;
 
         // Map: Building GUID -> Sequential ID
         internal static Dictionary<Guid, string> BuildingBlocks;
 
         // Map: BlockBehaviour -> Block handler
-        internal static Dictionary<BlockBehaviour, BlockHandler> BbToBlockHandler;
+        internal static Dictionary<BlockBehaviour, Block> BbToBlockHandler;
 
         // Map: GUID -> Block handler
-        internal static Dictionary<Guid, BlockHandler> GUIDToBlockHandler;
+        internal static Dictionary<Guid, Block> GUIDToBlockHandler;
 
         // Map: ID -> Block handler
-        internal static Dictionary<string, BlockHandler> IDToBlockHandler;
+        internal static Dictionary<string, Block> IDToBlockHandler;
 
         // Map: BlockType -> BlockHandler type
         internal static Dictionary<int, Type> Types = new Dictionary<int, Type>
@@ -61,40 +65,29 @@ namespace Lench.Scripter
         };
 
         /// <summary>
-        /// </summary>
-        public override string Name => "Block Handlers Controller";
-
-        /// <summary>
         ///     Returns True if block handlers are initialised.
         /// </summary>
         public static bool Initialised { get; private set; }
 
-        internal static event UpdateEventHandler OnUpdate;
-        internal static event LateUpdateEventHandler OnLateUpdate;
-        internal static event FixedUpdateEventHandler OnFixedUpdate;
+        private static BlockHandlerControllerComponent _component;
 
-        /// <summary>
-        ///     Calls Update method of all initialised Block handlers.
-        /// </summary>
-        private void Update()
+        // ReSharper disable once ClassNeverInstantiated.Local
+        private class BlockHandlerControllerComponent : MonoBehaviour
         {
-            OnUpdate?.Invoke();
-        }
+            private void Update()
+            {
+                OnUpdate?.Invoke();
+            }
 
-        /// <summary>
-        ///     Calls LateUpdate method of all initialised Block handlers.
-        /// </summary>
-        private void LateUpdate()
-        {
-            OnLateUpdate?.Invoke();
-        }
+            private void LateUpdate()
+            {
+                OnLateUpdate?.Invoke();
+            }
 
-        /// <summary>
-        ///     Calls FixedUpdate method of all initialised Block handlers.
-        /// </summary>
-        private void FixedUpdate()
-        {
-            OnFixedUpdate?.Invoke();
+            private void FixedUpdate()
+            {
+                OnFixedUpdate?.Invoke();
+            }
         }
 
         /// <summary>
@@ -103,13 +96,13 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
         /// <returns>LenchScripterMod.Block object.</returns>
-        private static BlockHandler CreateBlock(BlockBehaviour bb)
+        private static Block Create(BlockBehaviour bb)
         {
-            BlockHandler block;
+            Block block;
             if (Types.ContainsKey(bb.GetBlockID()))
-                block = (BlockHandler) Activator.CreateInstance(Types[bb.GetBlockID()], new object[] {bb});
+                block = (Block) Activator.CreateInstance(Types[bb.GetBlockID()], new object[] {bb});
             else
-                block = new BlockHandler(bb);
+                block = new Block(bb);
             BbToBlockHandler[bb] = block;
             return block;
         }
@@ -119,7 +112,7 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="blockGuid">Block's GUID.</param>
         /// <returns>Returns reference to blocks Block handler object.</returns>
-        public static BlockHandler GetBlock(Guid blockGuid)
+        public static Block Get(Guid blockGuid)
         {
             if (!Initialised) throw new InvalidOperationException("Block handlers are not initialised.");
             if (GUIDToBlockHandler.ContainsKey(blockGuid))
@@ -132,7 +125,7 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="bb"></param>
         /// <returns></returns>
-        public static BlockHandler GetBlock(BlockBehaviour bb)
+        public static Block Get(BlockBehaviour bb)
         {
             if (!Initialised) throw new InvalidOperationException("Block handlers are not initialised.");
             if (BbToBlockHandler.ContainsKey(bb))
@@ -145,7 +138,7 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="blockId">Block's sequential identifier.</param>
         /// <returns>Returns reference to blocks Block handler object.</returns>
-        public static BlockHandler GetBlock(string blockId)
+        public static Block Get(string blockId)
         {
             if (!Initialised) throw new InvalidOperationException("Block handlers are not initialised.");
             if (IDToBlockHandler.ContainsKey(blockId.ToUpper()))
@@ -161,7 +154,7 @@ namespace Lench.Scripter
         public static string GetID(GenericBlock block)
         {
             if (BuildingBlocks == null || !BuildingBlocks.ContainsKey(block.Guid))
-                InitializeBuildingBlockIDs();
+                InitializeIDs();
             return BuildingBlocks[block.Guid];
         }
 
@@ -173,16 +166,23 @@ namespace Lench.Scripter
         public static string GetID(Guid guid)
         {
             if (BuildingBlocks == null || !BuildingBlocks.ContainsKey(guid))
-                InitializeBuildingBlockIDs();
+                InitializeIDs();
             return BuildingBlocks[guid];
+        }
+
+        /// <summary>
+        ///     Notifies the block handler controller of change to rebuild block IDs.
+        /// </summary>
+        public static void FlagForIDRebuild()
+        {
+            
         }
 
         /// <summary>
         ///     Populates dictionary with references to building blocks.
         ///     Used for dumping block IDs while building.
-        ///     Called at first DumpBlockID after machine change.
         /// </summary>
-        public static void InitializeBuildingBlockIDs()
+        public static void InitializeIDs()
         {
             var typeCount = new Dictionary<string, int>();
             BuildingBlocks = new Dictionary<Guid, string>();
@@ -197,15 +197,17 @@ namespace Lench.Scripter
 
         /// <summary>
         ///     Populates dictionary with references to  block handlers.
-        ///     Used for accessing blocks with GetBlock() while simulating.
+        ///     Used for accessing blocks with Get() while simulating.
         ///     If mod is loaded, it gets called automatically at the start of simulation.
         ///     Invokes OnInitialisation event when done.
         /// </summary>
-        public static void InitializeBlockHandlers()
+        public static void Initialize()
         {
-            IDToBlockHandler = new Dictionary<string, BlockHandler>();
-            GUIDToBlockHandler = new Dictionary<Guid, BlockHandler>();
-            BbToBlockHandler = new Dictionary<BlockBehaviour, BlockHandler>();
+            _component = Mod.GameObject.AddComponent<BlockHandlerControllerComponent>();
+
+            IDToBlockHandler = new Dictionary<string, Block>();
+            GUIDToBlockHandler = new Dictionary<Guid, Block>();
+            BbToBlockHandler = new Dictionary<BlockBehaviour, Block>();
             var typeCount = new Dictionary<string, int>();
             for (var i = 0; i < ReferenceMaster.BuildingBlocks.Count; i++)
             {
@@ -213,7 +215,7 @@ namespace Lench.Scripter
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
                 var id = name + " " + typeCount[name];
                 var guid = ReferenceMaster.BuildingBlocks[i].Guid;
-                var b = CreateBlock(ReferenceMaster.SimulationBlocks[i]);
+                var b = Create(ReferenceMaster.SimulationBlocks[i]);
                 IDToBlockHandler[id] = b;
                 GUIDToBlockHandler[guid] = b;
             }
@@ -226,7 +228,7 @@ namespace Lench.Scripter
         ///     Destroys dictionary of block handler references.
         ///     Called at the end of the simulation.
         /// </summary>
-        public static void DestroyBlockHandlers()
+        public static void Destroy()
         {
             if (BbToBlockHandler != null)
                 foreach (var entry in BbToBlockHandler)
@@ -235,12 +237,14 @@ namespace Lench.Scripter
             GUIDToBlockHandler = null;
             BbToBlockHandler = null;
             Initialised = false;
+
+            Object.Destroy(_component);
         }
 
         /// <summary>
         ///     Retrieve all initialized Block handlers.
         /// </summary>
-        public static List<BlockHandler> GetBlocks()
+        public static List<Block> GetAll()
         {
             if (!Initialised) throw new InvalidOperationException("Block handlers are not initialised.");
             return IDToBlockHandler.Select(entry => entry.Value).ToList();
@@ -252,22 +256,15 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="blockType">Block type ID.</param>
         /// <param name="blockHandler">Type of your Block handler.</param>
-        public static void AddBlockHandler(int blockType, Type blockHandler)
+        public static void MapTypeToID(int blockType, Type blockHandler)
         {
-            if (!blockHandler.IsSubclassOf(typeof(Block)))
+            if (!blockHandler.IsSubclassOf(typeof(global::Block)))
                 throw new ArgumentException(blockHandler + " is not a subclass of Block.");
             if (Types.ContainsKey(blockType))
                 Types[blockType] = blockHandler;
             else
                 Types.Add(blockType, blockHandler);
         }
-
-        // Events invoked on updates
-        internal delegate void UpdateEventHandler();
-
-        internal delegate void LateUpdateEventHandler();
-
-        internal delegate void FixedUpdateEventHandler();
     }
 
 

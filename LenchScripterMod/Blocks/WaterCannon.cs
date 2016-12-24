@@ -5,7 +5,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     ///     Handler for the Water Cannon block.
     /// </summary>
-    public class WaterCannon : BlockHandler
+    public class WaterCannon : Block
     {
         private static readonly FieldInfo HoldFieldInfo = typeof(WaterCannonController).GetField("holdToShootToggle",
             BindingFlags.NonPublic | BindingFlags.Instance);
@@ -41,7 +41,7 @@ namespace Lench.Scripter.Blocks
                     Shoot();
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

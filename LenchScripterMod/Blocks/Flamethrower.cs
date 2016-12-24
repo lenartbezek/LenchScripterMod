@@ -5,7 +5,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     ///     Handler for the Flamethrower block.
     /// </summary>
-    public class Flamethrower : BlockHandler
+    public class Flamethrower : Block
     {
         private static readonly FieldInfo HoldFieldInfo = typeof(FlamethrowerController).GetField("holdToFire",
             BindingFlags.NonPublic | BindingFlags.Instance);
@@ -51,7 +51,7 @@ namespace Lench.Scripter.Blocks
                     Ignite();
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

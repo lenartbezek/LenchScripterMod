@@ -5,7 +5,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     ///     Handler for the Grabber block.
     /// </summary>
-    public class Grabber : BlockHandler
+    public class Grabber : Block
     {
         private static readonly FieldInfo JoinFieldInfo = typeof(GrabberBlock).GetField("joinOnTriggerBlock",
             BindingFlags.NonPublic | BindingFlags.Instance);
@@ -36,7 +36,7 @@ namespace Lench.Scripter.Blocks
                     Detach();
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

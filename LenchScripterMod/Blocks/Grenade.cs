@@ -3,7 +3,7 @@
     /// <summary>
     ///     Handler for the Grenade block.
     /// </summary>
-    public class Grenade : BlockHandler
+    public class Grenade : Block
     {
         private readonly ControllableBomb _cb;
 
@@ -30,7 +30,7 @@
                     Detonate();
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

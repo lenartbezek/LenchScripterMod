@@ -3,7 +3,7 @@
     /// <summary>
     ///     Handler for spaar's Automatron block.
     /// </summary>
-    public class Automatron : BlockHandler
+    public class Automatron : Block
     {
         /// <summary>
         ///     Creates a Block handler.
@@ -27,7 +27,7 @@
                     Activate();
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

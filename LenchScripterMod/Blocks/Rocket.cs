@@ -5,7 +5,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     ///     Handler for the Rocket block.
     /// </summary>
-    public class Rocket : BlockHandler
+    public class Rocket : Block
     {
         private readonly TimedRocket _tr;
 
@@ -42,7 +42,7 @@ namespace Lench.Scripter.Blocks
                     Launch();
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

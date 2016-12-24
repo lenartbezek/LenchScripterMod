@@ -3,7 +3,7 @@
     /// <summary>
     ///     Handler for the Explosive Decoupler block.
     /// </summary>
-    public class Decoupler : BlockHandler
+    public class Decoupler : Block
     {
         private readonly ExplosiveBolt _eb;
 
@@ -39,7 +39,7 @@
                     Explode();
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

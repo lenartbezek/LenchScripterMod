@@ -6,7 +6,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     ///     Handler for the Flying Spiral block.
     /// </summary>
-    public class FlyingSpiral : BlockHandler
+    public class FlyingSpiral : Block
     {
         private static readonly FieldInfo Flying = typeof(FlyingController).GetField("flying",
             BindingFlags.NonPublic | BindingFlags.Instance);
@@ -55,7 +55,7 @@ namespace Lench.Scripter.Blocks
                     Spin();
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

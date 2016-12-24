@@ -6,7 +6,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     ///     Handler for all wheel and cog blocks.
     /// </summary>
-    public class Cog : BlockHandler
+    public class Cog : Block
     {
         private static readonly FieldInfo Input = typeof(CogMotorControllerHinge).GetField("input",
             BindingFlags.NonPublic | BindingFlags.Instance);
@@ -42,7 +42,7 @@ namespace Lench.Scripter.Blocks
                     SetInput(-1);
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

@@ -7,7 +7,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     ///     Handler for the Piston block.
     /// </summary>
-    public class Piston : BlockHandler
+    public class Piston : Block
     {
         private static readonly FieldInfo ToggleFieldInfo = typeof(SliderCompress).GetField("toggleMode",
             BindingFlags.NonPublic | BindingFlags.Instance);
@@ -54,7 +54,7 @@ namespace Lench.Scripter.Blocks
                     Extend();
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

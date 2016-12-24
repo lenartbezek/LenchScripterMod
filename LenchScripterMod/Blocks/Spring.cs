@@ -5,7 +5,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     ///     Handler for the Spring and Rope blocks.
     /// </summary>
-    public class Spring : BlockHandler
+    public class Spring : Block
     {
         private readonly SpringCode sc;
 
@@ -47,8 +47,8 @@ namespace Lench.Scripter.Blocks
                         return;
                 }
             }
-            
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

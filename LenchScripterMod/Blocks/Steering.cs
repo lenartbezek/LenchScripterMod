@@ -8,7 +8,7 @@ namespace Lench.Scripter.Blocks
     /// <summary>
     ///     Handler for steering blocks; Steering and Steering Hinge.
     /// </summary>
-    public class Steering : BlockHandler
+    public class Steering : Block
     {
         private static readonly FieldInfo AngleyToBeField = typeof(SteeringWheel).GetField("angleyToBe",
             BindingFlags.NonPublic | BindingFlags.Instance);
@@ -55,7 +55,7 @@ namespace Lench.Scripter.Blocks
                     SetInput(-1);
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

@@ -3,7 +3,7 @@
     /// <summary>
     ///     Handler for cannon blocks; Cannon and Shrapnel Cannon.
     /// </summary>
-    public class Cannon : BlockHandler
+    public class Cannon : Block
     {
         private readonly CanonBlock _cb;
 
@@ -30,7 +30,7 @@
                     Shoot();
                     return;
             }
-            throw new ActionNotFoundException("Block " + BlockName + " has no " + actionName + " action.");
+            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>
