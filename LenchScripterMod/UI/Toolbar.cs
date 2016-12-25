@@ -13,17 +13,17 @@ namespace Lench.Scripter.UI
     /// <summary>
     ///     Extending toolbar along the left screen edge.
     /// </summary>
-    public class Toolbar
+    internal class Toolbar
     {
         /// <summary>
         ///     Component that the toolbar object is added to.
         /// </summary>
-        public static GameObject DefaultParentComponent = Internal.Scripter.Instance.gameObject;
+        public static GameObject DefaultParentComponent => Mod.Controller;
 
         /// <summary>
         ///     Transform that is assigned as toolbars parent.
         /// </summary>
-        public static Transform DefaultParentTransform = Internal.Scripter.Instance.transform;
+        public static Transform DefaultParentTransform => Mod.Controller.transform;
 
         /// <summary>
         ///     List containing all buttons in the toolbar.
@@ -109,7 +109,7 @@ namespace Lench.Scripter.UI
             /// <summary>
             ///     Button style.
             /// </summary>
-            public GUIStyle Style = Elements.Buttons.Disabled;
+            public GUIStyle Style;
 
             /// <summary>
             ///     Texture that overrides text.
@@ -121,9 +121,9 @@ namespace Lench.Scripter.UI
             /// </summary>
             public bool Draw(Rect rect)
             {
-                return Texture == null 
-                    ? GUI.Button(rect, Texture, Style) 
-                    : GUI.Button(rect, Text, Style);
+                return Texture != null 
+                    ? GUI.Button(rect, Texture, Style ?? Elements.Buttons.Disabled) 
+                    : GUI.Button(rect, Text, Style ?? Elements.Buttons.Disabled);
             }
         }
 
