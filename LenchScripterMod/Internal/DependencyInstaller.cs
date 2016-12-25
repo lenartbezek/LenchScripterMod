@@ -133,7 +133,7 @@ namespace Lench.Scripter.Internal
                                 {
                                     // finish download and load assemblies
                                     _downloadButtonText = "Loading";
-                                    if (ScripterMod.LoadScripter())
+                                    if (Script.LoadEngine())
                                     {
                                         Instance.Visible = false;
                                     }

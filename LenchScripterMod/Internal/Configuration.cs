@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using static spaar.ModLoader.Configuration;
 
 namespace Lench.Scripter.Internal
 {
@@ -6,47 +7,43 @@ namespace Lench.Scripter.Internal
     {
         internal static void Load()
         {
-            Scripter.Instance.ModUpdaterEnabled = spaar.ModLoader.Configuration.GetBool("mod-updater-enabled", true);
+            Mod.UpdateCheckerEnabled = GetBool("mod-updater-enabled", true);
 
-            Watchlist.Instance.ConfigurationPosition = new Vector2
+            Mod.WatchlistWindow.Position = new Vector2
             {
-                x = spaar.ModLoader.Configuration.GetFloat("WatchlistXPos", -380),
-                y = spaar.ModLoader.Configuration.GetFloat("WatchlistYPos", 200)
+                x = GetFloat("WatchlistXPos", -380),
+                y = GetFloat("WatchlistYPos", 200)
             };
 
-            IdentifierDisplay.Instance.ConfigurationPosition = new Vector2
+            Mod.IdentifierDisplayWindow.Position = new Vector2
             {
-                x = spaar.ModLoader.Configuration.GetFloat("IdentifierDisplayXPos", 900),
-                y = spaar.ModLoader.Configuration.GetFloat("IdentifierDisplayYPos", -240)
+                x = GetFloat("IdentifierDisplayXPos", 900),
+                y = GetFloat("IdentifierDisplayYPos", -240)
             };
 
-            ScriptOptions.Instance.ConfigurationPosition = new Vector2
+            Mod.ScriptOptionsWindow.Position = new Vector2
             {
-                x = spaar.ModLoader.Configuration.GetFloat(
-                    "ScriptOptionsXPos", -380),
-                y = spaar.ModLoader.Configuration.GetFloat(
-                    "ScriptOptionsYPos", -400)
+                x = GetFloat("ScriptOptionsXPos", -380),
+                y = GetFloat("ScriptOptionsYPos", -400)
             };
 
-            PythonEnvironment.Version = spaar.ModLoader.Configuration.GetString("PythonVersion", "ironpython2.7");
+            PythonEnvironment.Version = GetString("PythonVersion", "ironpython2.7");
         }
 
         internal static void Save()
         {
-            spaar.ModLoader.Configuration.SetBool("mod-updater-enabled", Scripter.Instance.ModUpdaterEnabled);
+            SetBool("mod-updater-enabled", Mod.UpdateCheckerEnabled);
 
-            spaar.ModLoader.Configuration.SetFloat("WatchlistXPos", Watchlist.Instance.ConfigurationPosition.x);
-            spaar.ModLoader.Configuration.SetFloat("WatchlistYPos", Watchlist.Instance.ConfigurationPosition.y);
+            SetFloat("WatchlistXPos", Mod.WatchlistWindow.Position.x);
+            SetFloat("WatchlistYPos", Mod.WatchlistWindow.Position.y);
 
-            spaar.ModLoader.Configuration.SetFloat("IdentifierDisplayXPos",
-                IdentifierDisplay.Instance.ConfigurationPosition.x);
-            spaar.ModLoader.Configuration.SetFloat("IdentifierDisplayYPos",
-                IdentifierDisplay.Instance.ConfigurationPosition.y);
+            SetFloat("IdentifierDisplayXPos", Mod.IdentifierDisplayWindow.Position.x);
+            SetFloat("IdentifierDisplayYPos", Mod.IdentifierDisplayWindow.Position.y);
 
-            spaar.ModLoader.Configuration.SetFloat("ScriptOptionsXPos", ScriptOptions.Instance.ConfigurationPosition.x);
-            spaar.ModLoader.Configuration.SetFloat("ScriptOptionsYPos", ScriptOptions.Instance.ConfigurationPosition.y);
+            SetFloat("ScriptOptionsXPos", Mod.ScriptOptionsWindow.Position.x);
+            SetFloat("ScriptOptionsYPos", Mod.ScriptOptionsWindow.Position.y);
 
-            spaar.ModLoader.Configuration.SetString("PythonVersion", PythonEnvironment.Version);
+            SetString("PythonVersion", PythonEnvironment.Version);
 
             spaar.ModLoader.Configuration.Save();
         }

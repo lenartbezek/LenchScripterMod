@@ -1,5 +1,4 @@
-﻿using Lench.Scripter.Blocks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Lench.Scripter
 {
@@ -19,7 +18,7 @@ namespace Lench.Scripter
             _lastPosition = Position;
             var bb = _c.transform.parent.gameObject.GetComponent<BlockBehaviour>();
             if (bb != null)
-                Block = BlockHandlerController.GetBlock(bb);
+                Block = Block.Get(bb);
         }
 
         /// <summary>
@@ -36,13 +35,13 @@ namespace Lench.Scripter
         ///     Returns block represented by the collider.
         /// </summary>
         /// <returns></returns>
-        public BlockHandler Block { get; }
+        public Block Block { get; }
 
         /// <summary>
         ///     Returns the name of the object represented by the collider.
         ///     Intended for identifying game objects.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Name of the parent transform of the collider.</returns>
         public string Name => _c.transform.parent.name;
 
         /// <summary>
@@ -63,7 +62,6 @@ namespace Lench.Scripter
         /// <summary>
         ///     Implicit conversion to Vector3.
         /// </summary>
-        /// <param name="tc"></param>
         public static implicit operator Vector3(TrackedCollider tc)
         {
             return tc.Position;

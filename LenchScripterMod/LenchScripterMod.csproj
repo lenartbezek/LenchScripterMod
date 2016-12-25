@@ -57,6 +57,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -67,9 +68,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlockHandlerController.cs" />
+    <Compile Include="BlockController.cs" />
     <Compile Include="Blocks\Automatron.cs" />
-    <Compile Include="Blocks\BlockHandler.cs" />
+    <Compile Include="Block.cs" />
     <Compile Include="Blocks\Cannon.cs" />
     <Compile Include="Blocks\Cog.cs" />
     <Compile Include="Blocks\Decoupler.cs" />
@@ -84,20 +85,33 @@
     <Compile Include="Blocks\VectorThruster.cs" />
     <Compile Include="Blocks\WaterCannon.cs" />
     <Compile Include="Internal\Configuration.cs" />
-    <Compile Include="Internal\IdentifierDisplay.cs" />
+    <Compile Include="Internal\Watchlist.cs" />
+    <Compile Include="Resources\Images.cs" />
+    <Compile Include="UI\IdentifierDisplayWindow.cs" />
     <Compile Include="Functions.cs" />
     <Compile Include="Internal\DependencyInstaller.cs" />
     <Compile Include="Internal\MachineData.cs" />
     <Compile Include="Mark.cs" />
-    <Compile Include="Internal\Scripter.cs" />
+    <Compile Include="Internal\Script.cs" />
+    <Compile Include="UI\ScriptOptionsWindow.cs" />
     <Compile Include="UI\Toolbar.cs" />
-    <Compile Include="Updater.cs" />
+    <Compile Include="Internal\Updater.cs" />
     <Compile Include="PythonEnvironment.cs" />
-    <Compile Include="ScripterMod.cs" />
-    <Compile Include="Internal\ScriptOptions.cs" />
+    <Compile Include="Mod.cs" />
     <Compile Include="TrackedCollider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Internal\Watchlist.cs" />
+    <Compile Include="UI\WatchlistWindow.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ic_python_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ic_clear_32.png" />
+    <EmbeddedResource Include="Resources\ic_code_32.png" />
+    <EmbeddedResource Include="Resources\ic_edit_32.png" />
+    <EmbeddedResource Include="Resources\ic_eye_32.png" />
+    <EmbeddedResource Include="Resources\ic_key_32.png" />
+    <EmbeddedResource Include="Resources\ic_settings_32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

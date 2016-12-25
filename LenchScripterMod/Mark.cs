@@ -67,11 +67,9 @@ namespace Lench.Scripter
         /// </summary>
         public void Clear(bool manualCall = true)
         {
-            if (DestroyOnSimulationStop || manualCall)
-            {
-                Destroy(gameObject);
-                Destroy(this);
-            }
+            if (!DestroyOnSimulationStop && !manualCall) return;
+            Destroy(gameObject);
+            Destroy(this);
         }
     }
 }

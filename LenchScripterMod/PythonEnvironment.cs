@@ -36,8 +36,6 @@ namespace Lench.Scripter
         private static object _engine;
 
         private readonly object _scope;
-        private Action _fixedupdate;
-        private Action _update;
 
         /// <summary>
         ///     Creates a new Python Environment and sets up the scope.
@@ -303,7 +301,6 @@ namespace Lench.Scripter
                     method.GetParameters().Count() == 1 &&
                     method.GetParameters()[0].ParameterType == _scriptScope)
                 .Invoke(compiled, new[] {_scope});
-            GetFunctions();
         }
 
         /// <summary>
@@ -325,7 +322,6 @@ namespace Lench.Scripter
                     method.GetParameters().Count() == 1 &&
                     method.GetParameters()[0].ParameterType == _scriptScope)
                 .Invoke(compiled, new[] {_scope});
-            GetFunctions();
         }
 
         /// <summary>
@@ -351,25 +347,6 @@ namespace Lench.Scripter
         }
 
         /// <summary>
-        ///     Calls Python Update function.
-        ///     Does nothing if currently loaded script has no Update function.
-        /// </summary>
-        public void CallUpdate()
-        {
-            _update?.Invoke();
-        }
-
-        /// <summary>
-        ///     Calls Python FixedUpdate function.
-        ///     Does nothing if currently loaded script has no FixedUpdate function.
-        /// </summary>
-        /// <returns></returns>
-        public void CallFixedUpdate()
-        {
-            _fixedupdate?.Invoke();
-        }
-
-        /// <summary>
         ///     Evaluates Python expression and returns result.
         /// </summary>
         /// <param name="expression">Python expression.</param>
@@ -377,15 +354,6 @@ namespace Lench.Scripter
         public object Execute(string expression)
         {
             return _executeMethod.Invoke(_engine, new[] {expression, _scope});
-        }
-
-        private void GetFunctions()
-        {
-            if (Contains("Update"))
-                _update = GetVariable<Action>("Update");
-
-            if (Contains("FixedUpdate"))
-                _fixedupdate = GetVariable<Action>("FixedUpdate");
         }
 
         /// <summary>

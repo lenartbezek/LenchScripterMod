@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using spaar.ModLoader;
+﻿using spaar.ModLoader;
 using spaar.ModLoader.UI;
 using UnityEngine;
 // ReSharper disable PossibleLossOfFraction
@@ -10,7 +9,7 @@ namespace Lench.Scripter.UI
 {
     internal class IdentifierDisplayWindow
     {
-        private GenericBlock _block;
+        public GenericBlock Block;
 
         public bool Visible { get; set; }
 
@@ -22,15 +21,9 @@ namespace Lench.Scripter.UI
             set { GUIUtility.systemCopyBuffer = value; }
         }
 
-        public void ShowBlock(GenericBlock block)
-        {
-            _block = block;
-            Visible = true;
-        }
-
         public IdentifierDisplayWindow()
         {
-            var component = Mod.GameObject.AddComponent<IdentifierDisplayComponent>();
+            var component = Mod.Controller.AddComponent<IdentifierDisplayComponent>();
             component.Handler = this;
         }
 
@@ -46,16 +39,29 @@ namespace Lench.Scripter.UI
 
             private void OnGUI()
             {
-                if (!Elements.IsInitialized || StatMaster.isSimulating || Handler == null) return;
+                if (!Elements.IsInitialized ||
+                    StatMaster.isSimulating ||
+                    Handler == null ||
+                    !Handler.Visible) return;
 
                 InitialiseWindowRect();
 
                 GUI.skin = ModGUI.Skin;
                 GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
-                _windowRect = GUILayout.Window(_windowID, _windowRect, DoWindow, "Block ID", GUILayout.Height(100));
+                _windowRect = GUILayout.Window(_windowID, _windowRect, DoWindow, "Block ID", GUILayout.Height(128));
 
                 Handler.Position.x = _windowRect.x < Screen.width / 2 ? _windowRect.x : _windowRect.x - Screen.width;
                 Handler.Position.y = _windowRect.y < Screen.height / 2 ? _windowRect.y : _windowRect.y - Screen.height;
+            }
+
+            private void Update()
+            {
+                if (Input.GetKeyDown(KeyCode.LeftShift) &&
+                    Game.AddPiece != null &&
+                    Game.AddPiece.HoveredBlock != null)
+                {
+                    Handler.Block = Game.AddPiece.HoveredBlock;
+                }
             }
 
             private void InitialiseWindowRect()
@@ -84,35 +90,35 @@ namespace Lench.Scripter.UI
                     "×", Elements.Buttons.Red))
                     Handler.Visible = false;
 
-                string sequentialID;
-
-                try
+                if (Handler.Block == null)
                 {
-                    sequentialID = Block.GetID(Handler._block.Guid);
+                    GUILayout.FlexibleSpace();
+                    GUILayout.Label("Point on a block and press <b>LeftShift</b>\n to view it's identifiers.",
+                        new GUIStyle(Elements.Labels.Default) {alignment = TextAnchor.MiddleCenter});
+                    GUILayout.FlexibleSpace();
                 }
-                catch (KeyNotFoundException)
+                else
                 {
-                    Handler.Visible = false;
-                    return;
+                    var sequentialID = Scripter.Block.GetID(Handler.Block);
+
+                    // Sequential identifier field
+                    GUILayout.BeginHorizontal();
+
+                    GUILayout.TextField(sequentialID);
+                    if (GUILayout.Button("✂", Elements.Buttons.Red, GUILayout.Width(30)))
+                        Clipboard = sequentialID;
+
+                    GUILayout.EndHorizontal();
+
+                    // GUID field
+                    GUILayout.BeginHorizontal();
+
+                    GUILayout.TextField(Handler.Block.Guid.ToString());
+                    if (GUILayout.Button("✂", Elements.Buttons.Red, GUILayout.Width(30)))
+                        Clipboard = Handler.Block.Guid.ToString();
+
+                    GUILayout.EndHorizontal();
                 }
-
-                // Sequential identifier field
-                GUILayout.BeginHorizontal();
-
-                GUILayout.TextField(sequentialID);
-                if (GUILayout.Button("✂", Elements.Buttons.Red, GUILayout.Width(30)))
-                    Clipboard = sequentialID;
-
-                GUILayout.EndHorizontal();
-
-                // GUID field
-                GUILayout.BeginHorizontal();
-
-                GUILayout.TextField(Handler._block.Guid.ToString());
-                if (GUILayout.Button("✂", Elements.Buttons.Red, GUILayout.Width(30)))
-                    Clipboard = Handler._block.Guid.ToString();
-
-                GUILayout.EndHorizontal();
 
                 GUI.DragWindow(new Rect(0, 0, _windowRect.width, GUI.skin.window.padding.top));
             }

@@ -27,6 +27,8 @@ namespace Lench.Scripter
 
         internal static event Action OnFixedUpdate;
 
+        private static bool _rebuildIDs;
+
         // Map: Building GUID -> Sequential ID
         internal static Dictionary<Guid, string> BuildingBlocks;
 
@@ -76,6 +78,12 @@ namespace Lench.Scripter
         {
             private void Update()
             {
+                // Initialize block identifiers
+                if (!StatMaster.isSimulating && _rebuildIDs)
+                {
+                    InitializeIDs();
+                }
+
                 OnUpdate?.Invoke();
             }
 
@@ -175,7 +183,7 @@ namespace Lench.Scripter
         /// </summary>
         public static void FlagForIDRebuild()
         {
-            
+            _rebuildIDs = true;
         }
 
         /// <summary>
@@ -193,6 +201,7 @@ namespace Lench.Scripter
                 typeCount[name] = typeCount.ContainsKey(name) ? typeCount[name] + 1 : 1;
                 BuildingBlocks[block.Guid] = name + " " + typeCount[name];
             }
+            _rebuildIDs = false;
         }
 
         /// <summary>
@@ -203,7 +212,7 @@ namespace Lench.Scripter
         /// </summary>
         public static void Initialize()
         {
-            _component = Mod.GameObject.AddComponent<BlockHandlerControllerComponent>();
+            _component = Mod.Controller.AddComponent<BlockHandlerControllerComponent>();
 
             IDToBlockHandler = new Dictionary<string, Block>();
             GUIDToBlockHandler = new Dictionary<Guid, Block>();
@@ -264,6 +273,14 @@ namespace Lench.Scripter
                 Types[blockType] = blockHandler;
             else
                 Types.Add(blockType, blockHandler);
+        }
+
+        internal static void OnSimulationToggle(bool active)
+        {
+            if (active)
+                Initialize();
+            else
+                Destroy();
         }
     }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Lench.Scripter.Internal;
 using spaar.ModLoader;
@@ -15,68 +14,25 @@ namespace Lench.Scripter.UI
     /// <summary>
     ///     Displays global Python variables in a GUI.
     /// </summary>
-    internal class Watchlist
+    internal class WatchlistWindow
     {
         private const float EditWindowWidth = 240;
         private const float EditWindowHeight = 124;
 
-        private readonly List<VariableWatch> _watched = new List<VariableWatch>();
         public Vector2 Position;
 
-        public Watchlist()
+        public WatchlistWindow()
         {
-            var component = Mod.GameObject.AddComponent<WatchlistComponent>();
+            var component = Mod.Controller.AddComponent<WatchlistComponent>();
             component.Handler = this;
         }
 
         public bool Visible { get; set; }
 
-        /// <summary>
-        ///     Adds a variable to the watchlist.
-        ///     If it's already added, it only updates the value.
-        /// </summary>
-        /// <param name="name">variable name</param>
-        /// <param name="value">reported value</param>
-        /// <param name="global">is global</param>
-        public void Add(string name, object value, bool global = false)
-        {
-            var newVar = new VariableWatch(name) {Global = global};
-            newVar.ReportValue(value);
-            foreach (var v in _watched)
-                if (v.Equals(newVar))
-                {
-                    if (value != null)
-                        v.ReportValue(value);
-                    return;
-                }
-            _watched.Add(newVar);
-        }
-
-        /// <summary>
-        ///     Returns a variable from the watchlist.
-        /// </summary>
-        /// <param name="name">Name of the variable.</param>
-        /// <returns>VariableWatch class</returns>
-        public VariableWatch Get(string name)
-        {
-            foreach (var v in _watched)
-                if (v.GetName() == name) return v;
-            return new VariableWatch(name);
-        }
-
-        /// <summary>
-        ///     Removes all variables from the watchlist.
-        /// </summary>
-        public void ClearWatchlist()
-        {
-            _watched.Clear();
-        }
-
         // ReSharper disable once ClassNeverInstantiated.Local
         private class WatchlistComponent : MonoBehaviour
         {
             private readonly int _editWindowID = Util.GetWindowID();
-
             private readonly int _mainWindowID = Util.GetWindowID();
 
             private bool _editing;
@@ -89,8 +45,10 @@ namespace Lench.Scripter.UI
             private string _newVariableName = "";
             private string _newVariableValue;
 
+            private Texture2D _tex = Resources.Images.ic_clear_32;
+
             private Vector2 _scrollPosition = Vector2.zero;
-            public Watchlist Handler;
+            public WatchlistWindow Handler;
 
             private void OnGUI()
             {
@@ -144,6 +102,11 @@ namespace Lench.Scripter.UI
                     "×", Elements.Buttons.Red))
                     Handler.Visible = false;
 
+                // Draw clear button
+                if (GUI.Button(new Rect(_mainWindowRect.width - 76, 8, 30, 30),
+                    _tex, Elements.Buttons.Red))
+                    Watchlist.Clear();
+
                 var toBeRemoved = new List<VariableWatch>();
 
                 _newVariableName = GUI.TextField(new Rect(68, 48, 248, 20), _newVariableName,
@@ -152,19 +115,19 @@ namespace Lench.Scripter.UI
                     Regex.Replace(_newVariableName, @"\s+", "") != "")
                 {
                     _newVariableName = Regex.Replace(_newVariableName, @"\s+", "");
-                    Handler.Add(_newVariableName, null, true);
+                    Watchlist.Add(_newVariableName, null, true);
                     _newVariableName = "";
                 }
 
                 GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
                 _scrollPosition = GUI.BeginScrollView(
-                    new Rect(4, 72, 312, 400),
+                    new Rect(4, 72, 312, 424),
                     _scrollPosition,
-                    new Rect(0, 0, 296, 4 + Handler._watched.Count * 24));
+                    new Rect(0, 0, 296, 4 + Watchlist.Watched.Count * 24));
                 GUI.backgroundColor = oldColor;
 
                 var i = 0;
-                foreach (var v in Handler._watched)
+                foreach (var v in Watchlist.Watched)
                 {
                     // Button for removing line
                     if (GUI.Button(new Rect(4, 4 + i * 24, 20, 20), "×", Elements.Buttons.Red))
@@ -202,12 +165,9 @@ namespace Lench.Scripter.UI
                 }
 
                 // Remove variables
-                foreach (var v in toBeRemoved) Handler._watched.Remove(v);
+                foreach (var v in toBeRemoved) Watchlist.Watched.Remove(v);
 
                 GUI.EndScrollView();
-
-                if (GUI.Button(new Rect(4, 476, 312, 20), "Clear Watchlist", Elements.Buttons.Red))
-                    Handler.ClearWatchlist();
 
                 GUI.DragWindow(new Rect(0, 0, _mainWindowRect.width, GUI.skin.window.padding.top));
             }
@@ -234,105 +194,6 @@ namespace Lench.Scripter.UI
 
                 GUI.DragWindow(new Rect(0, 0, _editWindowRect.width, GUI.skin.window.padding.top));
             }
-        }
-    }
-
-    /// <summary>
-    ///     Represents a single variable.
-    /// </summary>
-    internal class VariableWatch : IEquatable<VariableWatch>
-    {
-        private readonly string _name;
-        private object _value;
-        internal bool Global;
-
-        internal VariableWatch(string name)
-        {
-            _name = name;
-        }
-
-        /// <summary>
-        ///     Returns true if the entries represent the same variable.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public bool Equals(VariableWatch other)
-        {
-            return other != null && _name == other._name && Global == other.Global;
-        }
-
-        /// <summary>
-        ///     Used to report the value.
-        ///     Checks if the variable is global.
-        /// </summary>
-        /// <param name="value"></param>
-        public void ReportValue(object value)
-        {
-            if (value == null) return;
-            _value = value;
-
-            if (Global) return;
-            if (!Script.Python.Contains(_name)) return;
-            var globalValue = Script.Python[_name];
-            Global = value.Equals(globalValue);
-        }
-
-        /// <summary>
-        ///     Returns the variable's display name.
-        /// </summary>
-        public string GetName()
-        {
-            return _name;
-        }
-
-        /// <summary>
-        ///     Looks for the global variable. If not found,
-        ///     returns the last reported value.
-        /// </summary>
-        /// <returns></returns>
-        public string GetValue()
-        {
-            if (Global && Game.IsSimulating)
-                if (Script.Python.Contains(_name))
-                    _value = Script.Python[_name];
-            try
-            {
-                return _value.ToString();
-            }
-            catch
-            {
-                return "";
-            }
-        }
-
-        /// <summary>
-        ///     Returns an edit string used in edit variable window.
-        ///     Supposed to be a Lua expression to initialize the edited variable.
-        /// </summary>
-        /// <returns></returns>
-        public string GetEditString()
-        {
-            if (_value == null) return "";
-            var type = _value.GetType();
-            if (type == typeof(Vector4))
-                return "Vector3" + _value;
-            if (type == typeof(Vector3))
-                return "Vector3" + _value;
-            if (type == typeof(Vector2))
-                return "Vector2" + _value;
-            if (type == typeof(string))
-                return '"' + _value.ToString() + '"';
-            return _value.ToString();
-        }
-
-        /// <summary>
-        ///     Executes Lua statement to set the value.
-        /// </summary>
-        /// <param name="value"></param>
-        public void SetValue(string value)
-        {
-            if (Global && Script.Python != null)
-                Script.Python.Execute(_name + " = " + value);
         }
     }
 }

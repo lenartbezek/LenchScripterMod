@@ -6,50 +6,49 @@ namespace Lench.Scripter.Internal
 {
     internal static class MachineData
     {
-        internal static void Load(MachineInfo machineInfo)
+        public static event Action<string> OnLoadSuccess;
+        public static event Action<string> OnLoadWarning;
+        public static event Action<string> OnSaveSuccess;
+        public static event Action<string> OnSaveWarning;
+
+        public static void Load(MachineInfo machineInfo)
         {
-            ScriptOptions.Instance.ScriptName = machineInfo.Name;
+            Script.FileName = machineInfo.Name;
             if (!machineInfo.MachineData.HasKey("LenchScripterMod-Version"))
             {
-                ScriptOptions.Instance.BsgHasCode = false;
-                ScriptOptions.Instance.Code = null;
+                Script.EmbeddedCode = null;
+                OnLoadWarning?.Invoke("No embedded code found.");
             }
             else
             {
                 var version = new Version(machineInfo.MachineData.ReadString("LenchScripterMod-Version").TrimStart('v'));
                 if (version > Assembly.GetExecutingAssembly().GetName().Version)
-                    ScriptOptions.Instance.NoteMessage = $"Loaded code is from a newer version v{version}.\nSome features might be incompatible.";
+                    OnLoadWarning?.Invoke($"Loaded code is from a newer version v{version}.\nSome features might be incompatible.");
                 if (new Version(2, 0, 0) > version)
-                    ScriptOptions.Instance.ErrorMessage = $"Loaded code is from version v{version}.\nLua code is no longer supported.";
+                    OnLoadWarning?.Invoke($"Loaded code is from version v{version}.\nLua code is no longer supported.");
                 var code = machineInfo.MachineData.ReadString("LenchScripterMod-Code");
-                ScriptOptions.Instance.Code = code;
-                ScriptOptions.Instance.BsgHasCode = true;
-                ScriptOptions.Instance.SuccessMessage = "Successfully loaded code from .bsg.";
+                Script.EmbeddedCode = code;
+                OnLoadSuccess?.Invoke("Successfully loaded embedded code.");
             }
 
-            ScriptOptions.Instance.CheckForScript();
+            Script.SetSource();
         }
 
-        internal static void Save(MachineInfo machineInfo)
+        public static void Save(MachineInfo machineInfo)
         {
-            ScriptOptions.Instance.CheckForScript();
-            if (ScriptOptions.Instance.SaveToBsg)
+            if (Script.SaveToBsg)
             {
-                ScriptOptions.Instance.CheckForScript();
-                var code = File.ReadAllText(ScriptOptions.Instance.ScriptPath);
+                var code = File.ReadAllText(Script.FilePath);
                 machineInfo.MachineData.Write("LenchScripterMod-Version",
                     Assembly.GetExecutingAssembly().GetName().Version.ToString());
                 machineInfo.MachineData.Write("LenchScripterMod-Code", code);
-                ScriptOptions.Instance.Code = code;
-                ScriptOptions.Instance.BsgHasCode = true;
-                ScriptOptions.Instance.SuccessMessage = "Successfully saved code to .bsg.";
-                ScriptOptions.Instance.NoteMessage = null;
+                Script.EmbeddedCode = code;
+                OnSaveSuccess?.Invoke("Successfully embedded code.");
             }
             else
             {
-                ScriptOptions.Instance.SuccessMessage = null;
-                if (ScriptOptions.Instance.Code != null)
-                    ScriptOptions.Instance.NoteMessage = "Code has not been saved to .bsg file.";
+                if (Script.EmbeddedCode != null)
+                    OnSaveWarning?.Invoke("Embedded code has not been updated.");
             }
         }
     }

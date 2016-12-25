@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lench.Scripter.Blocks;
 using Lench.Scripter.Internal;
 using UnityEngine;
 
@@ -65,15 +64,15 @@ namespace Lench.Scripter
         /// </summary>
         /// <param name="blockId">Block identifier string.</param>
         /// <returns>Block object.</returns>
-        public static BlockHandler GetBlock(string blockId)
+        public static Block GetBlock(string blockId)
         {
             try
             {
-                return BlockHandlerController.GetBlock(new Guid(blockId));
+                return Block.Get(new Guid(blockId));
             }
             catch (FormatException)
             {
-                return BlockHandlerController.GetBlock(blockId);
+                return Block.Get(blockId);
             }
         }
 
@@ -112,7 +111,7 @@ namespace Lench.Scripter
         /// <param name="name">Name of the global variable.</param>
         public static void Watch(string name)
         {
-            Watchlist.Instance.AddToWatchlist(name, null, true);
+            Watchlist.Add(name, null, true);
         }
 
         /// <summary>
@@ -122,7 +121,7 @@ namespace Lench.Scripter
         /// <param name="value">Variable value to be reported.</param>
         public static void Watch(string name, object value)
         {
-            Watchlist.Instance.AddToWatchlist(name, value);
+            Watchlist.Add(name, value);
         }
 
         /// <summary>
@@ -130,7 +129,7 @@ namespace Lench.Scripter
         /// </summary>
         public static void ClearWatchlist()
         {
-            Watchlist.Instance.ClearWatchlist();
+            Watchlist.Clear();
         }
 
         /// <summary>
@@ -138,7 +137,7 @@ namespace Lench.Scripter
         /// </summary>
         public static void UseDegrees()
         {
-            BlockHandler.UseDegrees();
+            Block.UseDegrees();
         }
 
         /// <summary>
@@ -146,7 +145,7 @@ namespace Lench.Scripter
         /// </summary>
         public static void UseRadians()
         {
-            BlockHandler.UseRadians();
+            Block.UseRadians();
         }
 
         /// <summary>
@@ -215,7 +214,7 @@ namespace Lench.Scripter
         {
             var obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             obj.name = "Mark";
-            obj.transform.parent = Internal.Scripter.Instance.transform;
+            obj.transform.parent = Mod.Controller.transform;
             var m = obj.AddComponent<Mark>();
             m.Move(pos);
             Marks.Add(m);
