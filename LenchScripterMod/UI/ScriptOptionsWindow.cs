@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.IO;
 using Lench.Scripter.Internal;
 using spaar.ModLoader;
@@ -14,14 +15,30 @@ namespace Lench.Scripter.UI
         public Vector2 Position;
         public bool Visible { get; set; }
 
-        public string SuccessMessage { get; set; }
-        public string NoteMessage { get; set; }
-        public string ErrorMessage { get; set; }
+        private string _successMessage;
+        private string _noteMessage;
+        private string _errorMessage;
 
         public ScriptOptionsWindow()
         {
             var component = Mod.Controller.AddComponent<ScriptOptionsWindowComponent>();
             component.Handler = this;
+
+            Internal.MachineData.OnLoadSuccess += message => _successMessage = message;
+            Internal.MachineData.OnSaveSuccess += message => _successMessage = message;
+            Internal.MachineData.OnLoadWarning += message => _noteMessage = message;
+            Internal.MachineData.OnSaveWarning += message => _noteMessage = message;
+            Game.OnSimulationToggle += OnSimulationToggle;
+            Script.OnStart += () => _successMessage = "Script is running.";
+            Script.OnStop += () => _successMessage = "Script has stopped.";
+            Script.OnError += () => _errorMessage = "Script runtime error.";
+        }
+
+        public void OnSimulationToggle(bool active)
+        {
+            _successMessage = null;
+            _noteMessage = null;
+            _errorMessage = null;
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local
@@ -134,12 +151,11 @@ namespace Lench.Scripter.UI
                 GUILayout.Label(" ", Elements.Labels.Title);
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Save code to .bsg", Elements.InputFields.Default);
-                var b =
-                    GUILayout.Toggle(Script.SaveToBsg, "Import",
+                var b = GUILayout.Toggle(Script.SaveToBsg, "Import",
                         Script.FilePath != null ? Elements.Buttons.Default : Elements.Buttons.Disabled,
                         GUILayout.Width(100)) && Script.FilePath != null;
                 if (b != Script.SaveToBsg)
-                    Handler.NoteMessage = b
+                    Handler._noteMessage = b
                         ? "Code will be saved to .bsg when you\n save the machine."
                         : "Code will not be saved to .bsg when you\n save the machine.";
                 Script.SaveToBsg = b;
@@ -153,29 +169,42 @@ namespace Lench.Scripter.UI
                 if (GUILayout.Button("Export",
                     Script.EmbeddedCode != null ? Elements.Buttons.Default : Elements.Buttons.Disabled,
                     GUILayout.Width(100)))
-                    Script.Export();
+                {
+                    try
+                    {
+                        var path = Script.Export();
+                        if (path.StartsWith(Application.dataPath))
+                            path = "... " + path.Substring(Application.dataPath.Length);
+                        Handler._successMessage = "Successfully exported embedded code to\n" + path;
+                    }
+                    catch (Exception e)
+                    {
+                        Handler._errorMessage = e.Message;
+                    }
+                }
+                    
                 DrawEnabledBadge(Script.EmbeddedCode != null);
                 GUILayout.EndHorizontal();
 
                 // Draw message
                 GUILayout.Label(" ", Elements.Labels.Title);
-                if (Handler.SuccessMessage != null)
+                if (Handler._successMessage != null)
                 {
                     GUILayout.Label("\n<color=#00FF00>Success</color>",
                         new GUIStyle(Elements.Labels.Title) {richText = true});
-                    GUILayout.Label(Handler.SuccessMessage);
+                    GUILayout.Label(Handler._successMessage);
                 }
-                if (Handler.NoteMessage != null)
+                if (Handler._noteMessage != null)
                 {
                     GUILayout.Label("\n<color=#FFFF00>Note</color>",
                         new GUIStyle(Elements.Labels.Title) {richText = true});
-                    GUILayout.Label(Handler.NoteMessage);
+                    GUILayout.Label(Handler._noteMessage);
                 }
-                if (Handler.ErrorMessage != null)
+                if (Handler._errorMessage != null)
                 {
                     GUILayout.Label("\n<color=#FF0000>Error</color>",
                         new GUIStyle(Elements.Labels.Title) {richText = true});
-                    GUILayout.Label(Handler.ErrorMessage);
+                    GUILayout.Label(Handler._errorMessage);
                 }
 
                 // Draw close button

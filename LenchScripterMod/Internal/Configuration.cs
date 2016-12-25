@@ -8,6 +8,7 @@ namespace Lench.Scripter.Internal
         internal static void Load()
         {
             Mod.UpdateCheckerEnabled = GetBool("mod-updater-enabled", true);
+            Script.Enabled = GetBool("script-enabled", true);
 
             Mod.WatchlistWindow.Position = new Vector2
             {
@@ -27,12 +28,15 @@ namespace Lench.Scripter.Internal
                 y = GetFloat("ScriptOptionsYPos", -400)
             };
 
+            Mod.Toolbar.Position = GetFloat("ToolbarPos", 400);
+
             PythonEnvironment.Version = GetString("PythonVersion", "ironpython2.7");
         }
 
         internal static void Save()
         {
             SetBool("mod-updater-enabled", Mod.UpdateCheckerEnabled);
+            SetBool("script-enabled", Script.Enabled);
 
             SetFloat("WatchlistXPos", Mod.WatchlistWindow.Position.x);
             SetFloat("WatchlistYPos", Mod.WatchlistWindow.Position.y);
@@ -42,6 +46,8 @@ namespace Lench.Scripter.Internal
 
             SetFloat("ScriptOptionsXPos", Mod.ScriptOptionsWindow.Position.x);
             SetFloat("ScriptOptionsYPos", Mod.ScriptOptionsWindow.Position.y);
+
+            SetFloat("ToolbarPos", Mod.Toolbar.Position);
 
             SetString("PythonVersion", PythonEnvironment.Version);
 

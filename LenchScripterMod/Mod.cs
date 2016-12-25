@@ -12,6 +12,7 @@ using UnityEngine;
 using Configuration = Lench.Scripter.Internal.Configuration;
 using MachineData = Lench.Scripter.Internal.MachineData;
 using Object = UnityEngine.Object;
+// ReSharper disable UnusedMember.Local
 
 namespace Lench.Scripter
 {
@@ -66,6 +67,7 @@ namespace Lench.Scripter
             Game.OnSimulationToggle += Script.OnSimulationToggle;
             Game.OnBlockPlaced += block => Block.FlagForIDRebuild();
             Game.OnBlockRemoved += Block.FlagForIDRebuild;
+            Block.OnInitialisation += Script.Start;
 
             XmlSaver.OnSave += MachineData.Save;
             XmlLoader.OnLoad += MachineData.Load;
@@ -81,55 +83,15 @@ namespace Lench.Scripter
             Commands.RegisterCommand("python", PythonCommand,
                 "Executes Python expression.");
 
-            SettingsMenu.RegisterSettingsButton("SCRIPT", enabled => Script.Enabled = enabled, true, 12);
-
             Controller = new GameObject("LenchScripterMod") { hideFlags = HideFlags.DontSave };
-            var component = Controller.AddComponent<ModController>();
-            component.StartCoroutine(CreateToolbar());
+            Controller.AddComponent<ModController>();
 
             IdentifierDisplayWindow = new IdentifierDisplayWindow();
             ScriptOptionsWindow = new ScriptOptionsWindow();
             WatchlistWindow = new WatchlistWindow();
-
-            Script.LoadEngine();
-            LoadedAPI = true;
-
-            Configuration.Load();
-        }
-
-        /// <summary>
-        ///     Disables the mod from executing scripts.
-        ///     Destroys GameObjects.
-        /// </summary>
-        public override void OnUnload()
-        {
-            Configuration.Save();
-
-            Game.OnSimulationToggle -= Block.OnSimulationToggle;
-            Game.OnSimulationToggle -= Script.OnSimulationToggle;
-            Game.OnBlockRemoved -= Block.FlagForIDRebuild;
-
-            XmlSaver.OnSave -= MachineData.Save;
-            XmlLoader.OnLoad -= MachineData.Load;
-
-            LoadedScripter = false;
-            LoadedAPI = false;
-
-            Object.Destroy(Controller);
-        }
-
-        internal class ModController : MonoBehaviour
-        {
-            
-        }
-
-        internal static IEnumerator CreateToolbar()
-        {
-            if (!Elements.IsInitialized) yield return null;
             Toolbar = new Toolbar
             {
                 Texture = Images.ic_python_32,
-                Visible = true,
                 Buttons =
                 {
                     new Toolbar.Button
@@ -154,6 +116,59 @@ namespace Lench.Scripter
                     }
                 }
             };
+
+            Object.DontDestroyOnLoad(DependencyInstaller.Instance);
+
+            LoadedAPI = true;
+
+            Configuration.Load();
+
+            SettingsMenu.RegisterSettingsButton("SCRIPT", enabled => Script.Enabled = enabled, Script.Enabled, 12);
+
+            if (UpdateCheckerEnabled)
+                CheckForModUpdate();
+        }
+
+        /// <summary>
+        ///     Disables the mod from executing scripts.
+        ///     Destroys GameObjects.
+        /// </summary>
+        public override void OnUnload()
+        {
+            Configuration.Save();
+
+            Game.OnSimulationToggle -= Block.OnSimulationToggle;
+            Game.OnSimulationToggle -= Script.OnSimulationToggle;
+            Game.OnBlockRemoved -= Block.FlagForIDRebuild;
+            Block.OnInitialisation -= Script.Start;
+
+            XmlSaver.OnSave -= MachineData.Save;
+            XmlLoader.OnLoad -= MachineData.Load;
+
+            LoadedScripter = false;
+            LoadedAPI = false;
+
+            Object.Destroy(Controller);
+        }
+
+        internal class ModController : MonoBehaviour
+        {
+            private void Start()
+            {
+                if (Script.LoadEngine(true)) return;
+
+                Debug.Log("[LenchScripterMod]: Additional assets required.\n" +
+                          "\tFiles will be placed in Mods/Resources/LenchScripter.\n" +
+                          "\tType `lsm python 2.7` or `lsm python 3.0` to download them.");
+                DependencyInstaller.Visible = true;
+            }
+
+            private void Update()
+            {
+                if (Toolbar != null)
+                    Toolbar.Visible = !StatMaster.inMenu &&
+                        Game.AddPiece != null;
+            }
         }
 
         /// <summary>
@@ -166,6 +181,9 @@ namespace Lench.Scripter
         {
             if (args.Length == 0)
                 return "Executes a Python expression.";
+
+            if (Script.Python == null)
+                return "Python engine not initialized.";
 
             var expression = args.Aggregate("", (current, t) => current + (t + " "));
 

@@ -44,11 +44,12 @@ namespace Lench.Scripter.Internal
             get { return _enabled; }
             set
             {
-                if (StatMaster.isSimulating && value && PythonEnvironment.Loaded)
+                _enabled = value;
+                if (!Mod.LoadedScripter) return;
+                if (StatMaster.isSimulating && Block.Initialised && value)
                     Start();
                 else
                     Stop();
-                _enabled = value;
             }
         }
         private static bool _enabled;
@@ -93,25 +94,35 @@ namespace Lench.Scripter.Internal
         {
             if (PythonEnvironment.LoadPythonAssembly())
             {
-                PythonEnvironment.InitializeEngine();
-                CreateScriptingEnvironment();
-                _component = Mod.Controller.AddComponent<ScriptComponent>();
+                try
+                {
+                    PythonEnvironment.InitializeEngine();
+                    CreateScriptingEnvironment();
+                    _component = Mod.Controller.AddComponent<ScriptComponent>();
 
-                if (verbose)
-                    ModConsole.AddMessage(LogType.Log,
-                        $"[LenchScripterMod]: {Python.Execute("sys.version")}");
+                    if (verbose)
+                        ModConsole.AddMessage(LogType.Log, $"[LenchScripterMod]: {Python.Execute("sys.version")}");
 
-                Mod.LoadedScripter = true;
-                return true;
+                    Mod.LoadedScripter = true;
+                }
+                catch (Exception e)
+                {
+                    if (verbose)
+                    {
+                        ModConsole.AddMessage(LogType.Log, "[LenchScripterMod]: Error while initializing python engine:", e.ToString());
+                    }
+                    Mod.LoadedScripter = false;
+                }
             }
-            Mod.LoadedScripter = false;
-            return false;
+            else
+            {
+                Mod.LoadedScripter = false;
+            }
+            return Mod.LoadedScripter;
         }
 
         private static void CreateScriptingEnvironment()
         {
-            if (!Mod.LoadedScripter) return;
-
             Python = new PythonEnvironment();
         }
 
@@ -123,7 +134,7 @@ namespace Lench.Scripter.Internal
         /// <summary>
         ///     Saves machine data code to .py file.
         /// </summary>
-        public static void Export()
+        public static string Export()
         {
             if (EmbeddedCode == null)
                 throw new Exception("This machine contains no code to be exported.");
@@ -131,6 +142,7 @@ namespace Lench.Scripter.Internal
             var path = FileName.EndsWith(".py") ? FileName : FileName + ".py";
             path = string.Concat(Application.dataPath, "/Scripts/", path);
             File.WriteAllText(path, EmbeddedCode);
+            return path;
         }
 
         /// <summary>
@@ -158,8 +170,8 @@ namespace Lench.Scripter.Internal
             {
                 try
                 {
-                    var dir = Path.GetDirectoryName(paths[i]);
-                    var file = Path.GetFileName(paths[i]);
+                    var dir = Path.GetDirectoryName(paths[i]) ?? "";
+                    var file = Path.GetFileName(paths[i]) ?? "";
                     _watchers[i] = new FileSystemWatcher(dir, file);
                 }
                 catch
@@ -203,6 +215,8 @@ namespace Lench.Scripter.Internal
 
         public static void Start()
         {
+            if (!Enabled || !Mod.LoadedScripter) return;
+
             try
             {
                 switch (Source)
@@ -216,8 +230,10 @@ namespace Lench.Scripter.Internal
                     default:
                         return;
                 }
-                _update = Python.GetVariable<Action>("Update");
-                _fixedUpdate = Python.GetVariable<Action>("FixedUpdate");
+                if (Python.Contains("Update"))
+                    _update = Python.GetVariable<Action>("Update");
+                if (Python.Contains("FixedUpdate"))
+                    _fixedUpdate = Python.GetVariable<Action>("FixedUpdate");
                 _component.enabled = true;
                 OnStart?.Invoke();
             }
@@ -230,6 +246,7 @@ namespace Lench.Scripter.Internal
         public static void Stop()
         {
             _component.enabled = false;
+            Functions.ClearMarks();
             OnStop?.Invoke();
         }
 
@@ -242,12 +259,11 @@ namespace Lench.Scripter.Internal
 
         internal static void OnSimulationToggle(bool isSimulating)
         {
-            if (!Enabled || !PythonEnvironment.Loaded) return;
+            if (!Enabled || !Mod.LoadedScripter) return;
+            if (_component.enabled) Stop();
 
             DestroyScriptingEnvironment();
             CreateScriptingEnvironment();
-
-            if (isSimulating) Start();
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local
@@ -255,8 +271,6 @@ namespace Lench.Scripter.Internal
         {
             private void Update()
             {
-                if (!StatMaster.isSimulating) return;
-
                 // Call script update.
                 try
                 {
@@ -270,9 +284,7 @@ namespace Lench.Scripter.Internal
 
             private void FixedUpdate()
             {
-                if (!StatMaster.isSimulating) return;
-
-                // Call script update.
+                // Call script fixed update.
                 try
                 {
                     _fixedUpdate?.Invoke();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Lench.Scripter.Blocks;
@@ -212,8 +213,6 @@ namespace Lench.Scripter
         /// </summary>
         public static void Initialize()
         {
-            _component = Mod.Controller.AddComponent<BlockHandlerControllerComponent>();
-
             IDToBlockHandler = new Dictionary<string, Block>();
             GUIDToBlockHandler = new Dictionary<Guid, Block>();
             BbToBlockHandler = new Dictionary<BlockBehaviour, Block>();
@@ -231,6 +230,13 @@ namespace Lench.Scripter
 
             Initialised = true;
             OnInitialisation?.Invoke();
+        }
+
+        private static IEnumerator WaitAndInitialize()
+        {
+            while (!StatMaster.isSimulating || ReferenceMaster.SimulationBlocks.Count < ReferenceMaster.BuildingBlocks.Count)
+                yield return null;
+            Initialize();
         }
 
         /// <summary>
@@ -278,9 +284,14 @@ namespace Lench.Scripter
         internal static void OnSimulationToggle(bool active)
         {
             if (active)
-                Initialize();
+            {
+                _component = Mod.Controller.AddComponent<BlockHandlerControllerComponent>();
+                _component.StartCoroutine(WaitAndInitialize());
+            }
             else
+            {
                 Destroy();
+            } 
         }
     }
 

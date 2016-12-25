@@ -37,25 +37,21 @@ namespace Lench.Scripter.Internal
         private Rect _windowRect = new Rect(0, 0, 200, 360);
         public override string Name => "Dependency Installer";
 
-        public bool Visible { get; set; }
+        public static bool Visible { get; set; }
 
         // ReSharper disable once InconsistentNaming
         // ReSharper disable once UnusedMember.Local
         private void OnGUI()
         {
-            if (Visible && Elements.IsInitialized && Time.time > 1)
-            {
-                GUI.skin = ModGUI.Skin;
-                GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
-                GUI.skin.window.padding.left = 8;
-                GUI.skin.window.padding.right = 8;
-                GUI.skin.window.padding.bottom = 8;
-                _windowRect.x = (Screen.width - _windowRect.width) / 2;
-                _windowRect.y = Screen.height - 400;
-                _windowRect = GUILayout.Window(_windowId, _windowRect, DoWindow, "Additional assets required",
-                    GUILayout.Height(200),
-                    GUILayout.Width(360));
-            }
+            if (!Visible || !Elements.IsInitialized || Time.time < 1) return;
+
+            GUI.skin = ModGUI.Skin;
+            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f, 0.7f);
+            _windowRect.x = (Screen.width - _windowRect.width) / 2;
+            _windowRect.y = Screen.height - 400;
+            _windowRect = GUILayout.Window(_windowId, _windowRect, DoWindow, "Additional assets required",
+                GUILayout.Height(200),
+                GUILayout.Width(360));
         }
 
         private void DoWindow(int id)
@@ -129,22 +125,21 @@ namespace Lench.Scripter.Internal
                                 _infoText += "\n" + FileNames[i] + " <color=green>✓</color>";
 
                                 _filesDownloaded++;
-                                if (_filesDownloaded == FilesRequired)
+                                if (_filesDownloaded != FilesRequired) return;
+
+                                // finish download and load assemblies
+                                _downloadButtonText = "Loading";
+                                if (Script.LoadEngine(true))
                                 {
-                                    // finish download and load assemblies
-                                    _downloadButtonText = "Loading";
-                                    if (Script.LoadEngine())
-                                    {
-                                        Instance.Visible = false;
-                                    }
-                                    else
-                                    {
-                                        _downloadButtonText = "Retry";
-                                        _infoText =
-                                            "<b><color=red>Download failed</color></b>\nFailed to initialize Python engine.";
-                                    }
-                                    _downloadingInProgress = false;
+                                    Visible = false;
                                 }
+                                else
+                                {
+                                    _downloadButtonText = "Retry";
+                                    _infoText =
+                                        "<b><color=red>Download failed</color></b>\nFailed to initialize Python engine.";
+                                }
+                                _downloadingInProgress = false;
                             }
                         };
 
