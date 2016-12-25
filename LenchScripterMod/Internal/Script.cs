@@ -4,6 +4,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using spaar.ModLoader;
 using UnityEngine;
+#pragma warning disable 649
 
 // ReSharper disable UnusedMember.Local
 
@@ -32,6 +33,9 @@ namespace Lench.Scripter.Internal
 
         private static ScriptComponent _component;
 
+        private static FileSystemWatcher[] _watchers;
+        private static string[] _paths;
+
         /// <summary>
         ///     Is script execution enabled.
         /// </summary>
@@ -57,11 +61,13 @@ namespace Lench.Scripter.Internal
             {
                 if (_name == value) return;
                 _name = value;
-                FilePath = FindScript(_name);
+                StartWatchers(_name);
+                SetSource();
             }
         }
         private static string _name = "";
-        public static string FilePath { get; private set; }
+
+        public static string FilePath => _paths?.FirstOrDefault(s => !string.IsNullOrEmpty(s));
         public static string EmbeddedCode { get; set; }
         public static bool SaveToBsg { get; set; }
         public static SourceType Source { get; set; } = SourceType.None;
@@ -128,13 +134,16 @@ namespace Lench.Scripter.Internal
         }
 
         /// <summary>
-        ///     Attempts to find the script file.
+        ///     Start watchers that attempt to find the script file.
         /// </summary>
         /// <param name="name">Script search pattern.</param>
-        /// <returns>Returns absolute path to the string or null if none is found.</returns>
-        public static string FindScript([NotNull] string name)
+        public static void StartWatchers([NotNull] string name)
         {
-            var possibleFiles = new[]
+            if (_watchers != null)
+                foreach (var w in _watchers)
+                    w?.Dispose();
+
+            var paths = new[]
             {
                 name,
                 string.Concat(Application.dataPath, "/Scripts/", name, ".py"),
@@ -142,7 +151,54 @@ namespace Lench.Scripter.Internal
                 string.Concat(name, ".py")
             };
 
-            return possibleFiles.FirstOrDefault(File.Exists);
+            _watchers = new FileSystemWatcher[paths.Length];
+            _paths = new string[paths.Length];
+
+            for (var i = 0; i < _watchers.Length; i++)
+            {
+                try
+                {
+                    var dir = Path.GetDirectoryName(paths[i]);
+                    var file = Path.GetFileName(paths[i]);
+                    _watchers[i] = new FileSystemWatcher(dir, file);
+                }
+                catch
+                {
+                    continue;
+                }
+                finally
+                {
+                    _watchers[i]?.Dispose();
+                }
+                
+                var index = i; // copy to local var
+
+                Action handleCreate = delegate
+                {
+#if DEBUG
+                    Debug.Log($"File {paths[index]} found.");
+#endif
+                    _paths[index] = paths[index];
+                    SetSource();
+                };
+                Action handleDelete = delegate
+                {
+#if DEBUG
+                    Debug.Log($"File {paths[index]} lost.");
+#endif
+                    _paths[index] = null;
+                    SetSource();
+                };
+
+                if (File.Exists(paths[index])) handleCreate.Invoke();
+
+                _watchers[index].EnableRaisingEvents = true;
+                _watchers[index].Created += delegate { handleCreate(); };
+                _watchers[index].Renamed += delegate { handleDelete(); };
+                _watchers[index].Deleted += delegate { handleDelete(); };
+
+                _watchers[index].BeginInit();
+            }
         }
 
         public static void Start()
