@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -7,7 +6,6 @@ using Lench.Scripter.Internal;
 using Lench.Scripter.Resources;
 using Lench.Scripter.UI;
 using spaar.ModLoader;
-using spaar.ModLoader.UI;
 using UnityEngine;
 using Configuration = Lench.Scripter.Internal.Configuration;
 using MachineData = Lench.Scripter.Internal.MachineData;

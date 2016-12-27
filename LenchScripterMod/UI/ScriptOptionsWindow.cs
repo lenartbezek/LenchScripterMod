@@ -28,17 +28,24 @@ namespace Lench.Scripter.UI
             Internal.MachineData.OnSaveSuccess += message => _successMessage = message;
             Internal.MachineData.OnLoadWarning += message => _noteMessage = message;
             Internal.MachineData.OnSaveWarning += message => _noteMessage = message;
-            Game.OnSimulationToggle += OnSimulationToggle;
-            Script.OnStart += () => _successMessage = "Script is running.";
-            Script.OnStop += () => _successMessage = "Script has stopped.";
-            Script.OnError += () => _errorMessage = "Script runtime error.";
-        }
-
-        public void OnSimulationToggle(bool active)
-        {
-            _successMessage = null;
-            _noteMessage = null;
-            _errorMessage = null;
+            Script.OnStart += () =>
+            {
+                _successMessage = "Script is running.";
+                _noteMessage = null;
+                _errorMessage = null;
+            };
+            Script.OnStop += () =>
+            {
+                _successMessage = "Script has stopped.";
+                _noteMessage = null;
+                _errorMessage = null;
+            };
+            Script.OnError += () =>
+            {
+                _successMessage = null;
+                _noteMessage = null;
+                _errorMessage = "Script runtime error.";
+            };
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local

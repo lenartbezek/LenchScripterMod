@@ -15,8 +15,9 @@ namespace Lench.Scripter
     /// </summary>
     public class PythonEnvironment
     {
-        private static Assembly _ironPythonAssembly;
-        private static Assembly _microsoftScriptingAssembly;
+        internal static Assembly IronPythonAssembly;
+        internal static Assembly MicrosoftScriptingAssembly;
+        internal static Assembly MicrosoftDynamicAssembly;
 
         private static string _version = "ironpython2.7";
 
@@ -33,25 +34,32 @@ namespace Lench.Scripter
         private static MethodInfo _containsVariableMethod;
 
         private static object _eo;
-        private static object _engine;
-
         private readonly object _scope;
+
+        internal static object Engine;
 
         /// <summary>
         ///     Creates a new Python Environment and sets up the scope.
         /// </summary>
-        public PythonEnvironment()
+        public PythonEnvironment(object scope = null, bool redirectOutput = true)
         {
             // Initialize engine
-            if (_engine == null)
+            if (Engine == null)
                 InitializeEngine();
 
             // Initialize scope
-            _scope = _scriptEngine.GetMethods()
-                .Single(method =>
-                    method.Name == "CreateScope" &&
-                    method.GetParameters().Count() == 0)
-                .Invoke(_engine, null);
+            if (scope == null)
+            {
+                _scope = _scriptEngine.GetMethods()
+                    .Single(method =>
+                        method.Name == "CreateScope" &&
+                        method.GetParameters().Count() == 0)
+                    .Invoke(Engine, null);
+            }
+            else
+            {
+                _scope = scope;
+            }
 
             // Set up environment
             Execute("import clr");
@@ -63,10 +71,13 @@ namespace Lench.Scripter
             Execute("from Lench.Scripter import Functions as Besiege");
 
             // Redirect standard output
-            Execute("import sys");
-            this["pythonenv"] = this;
-            Execute("sys.stdout = pythonenv");
-            Execute("del pythonenv");
+            if (redirectOutput)
+            {
+                Execute("import sys");
+                this["pythonenv"] = this;
+                Execute("sys.stdout = pythonenv");
+                Execute("del pythonenv");
+            }
 
             OnInitialization?.Invoke(this);
         }
@@ -122,7 +133,10 @@ namespace Lench.Scripter
         /// <summary>
         ///     Are Python assemblies loaded and engine ready to be initialised.
         /// </summary>
-        public static bool Loaded => !(_ironPythonAssembly == null || _microsoftScriptingAssembly == null);
+        public static bool Loaded =>
+            IronPythonAssembly != null &&
+            MicrosoftScriptingAssembly != null &&
+            MicrosoftDynamicAssembly != null;
 
         /// <summary>
         ///     Is script enabled to be ran on simulation start.
@@ -137,11 +151,11 @@ namespace Lench.Scripter
         {
             try
             {
-                _ironPythonAssembly = Assembly.LoadFile(LibPath + "IronPython.dll");
-                _microsoftScriptingAssembly = Assembly.LoadFile(LibPath + "Microsoft.Scripting.dll");
+                IronPythonAssembly = Assembly.LoadFile(LibPath + "IronPython.dll");
+                MicrosoftScriptingAssembly = Assembly.LoadFile(LibPath + "Microsoft.Scripting.dll");
+                MicrosoftDynamicAssembly = Assembly.LoadFile(LibPath + "Microsoft.Dynamic.dll");
                 Assembly.LoadFile(LibPath + "IronPython.Modules.dll");
                 Assembly.LoadFile(LibPath + "Microsoft.Scripting.Core.dll");
-                Assembly.LoadFile(LibPath + "Microsoft.Dynamic.dll");
 
                 return true;
             }
@@ -157,7 +171,7 @@ namespace Lench.Scripter
         /// <returns></returns>
         public static string FormatException(Exception e)
         {
-            if (_engine == null)
+            if (Engine == null)
                 throw new InvalidOperationException("Python engine not initialised.");
             if (_eo == null)
                 _eo = _scriptEngine.GetMethods()
@@ -166,7 +180,7 @@ namespace Lench.Scripter
                         method.IsGenericMethodDefinition)
                     .GetGenericMethodDefinition()
                     .MakeGenericMethod(_exceptionOperations)
-                    .Invoke(_engine, new object[] {null});
+                    .Invoke(Engine, new object[] {null});
             if (e.InnerException != null)
                 e = e.InnerException;
             return
@@ -180,16 +194,16 @@ namespace Lench.Scripter
         /// </summary>
         public static void InitializeEngine()
         {
-            if (_ironPythonAssembly == null || _microsoftScriptingAssembly == null)
+            if (!Loaded)
                 throw new InvalidOperationException("IronPython assemblies not loaded. Script engine not available.");
 
-            _python = _ironPythonAssembly.GetType("IronPython.Hosting.Python");
-            _scriptEngine = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptEngine");
-            _scriptScope = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptScope");
-            _scriptRuntime = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptRuntime");
-            _scriptSource = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptSource");
-            _compiledCode = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.CompiledCode");
-            _exceptionOperations = _microsoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ExceptionOperations");
+            _python = IronPythonAssembly.GetType("IronPython.Hosting.Python");
+            _scriptEngine = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptEngine");
+            _scriptScope = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptScope");
+            _scriptRuntime = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptRuntime");
+            _scriptSource = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ScriptSource");
+            _compiledCode = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.CompiledCode");
+            _exceptionOperations = MicrosoftScriptingAssembly.GetType("Microsoft.Scripting.Hosting.ExceptionOperations");
 
             _executeMethod = _scriptEngine.GetMethods()
                 .Single(method =>
@@ -201,16 +215,16 @@ namespace Lench.Scripter
             _setVariableMethod = _scriptScope.GetMethod("SetVariable", new[] {typeof(string), typeof(object)});
             _containsVariableMethod = _scriptScope.GetMethod("ContainsVariable", new[] {typeof(string)});
 
-            _engine = _python.GetMethods()
+            Engine = _python.GetMethods()
                 .Single(method =>
                     method.Name == "CreateEngine" &&
                     method.GetParameters().Count() == 0)
                 .Invoke(null, null);
 
             // Add search path
-            var paths = _scriptEngine.GetMethod("GetSearchPaths").Invoke(_engine, null) as ICollection<string>;
+            var paths = _scriptEngine.GetMethod("GetSearchPaths").Invoke(Engine, null) as ICollection<string>;
             paths.Add(Application.dataPath + "/Scripts/");
-            _scriptEngine.GetMethod("SetSearchPaths").Invoke(_engine, new object[] {paths});
+            _scriptEngine.GetMethod("SetSearchPaths").Invoke(Engine, new object[] {paths});
         }
 
         /// <summary>
@@ -218,12 +232,12 @@ namespace Lench.Scripter
         /// </summary>
         public static void DestroyEngine()
         {
-            if (_engine != null)
+            if (Engine != null)
             {
-                var runtime = _scriptEngine.GetProperty("Runtime").GetValue(_engine, null);
+                var runtime = _scriptEngine.GetProperty("Runtime").GetValue(Engine, null);
                 _scriptRuntime.GetMethod("Shutdown").Invoke(runtime, null);
             }
-            _engine = null;
+            Engine = null;
             _eo = null;
         }
 
@@ -289,7 +303,7 @@ namespace Lench.Scripter
         public void LoadCode(string code)
         {
             var source = _scriptEngine.GetMethod("CreateScriptSourceFromString", new[] {typeof(string)})
-                .Invoke(_engine, new object[] {code});
+                .Invoke(Engine, new object[] {code});
             var compiled = _scriptSource.GetMethods().
                 FirstOrDefault(method =>
                     method.Name == "Compile" &&
@@ -310,7 +324,7 @@ namespace Lench.Scripter
         public void LoadScript(string path)
         {
             var source = _scriptEngine.GetMethod("CreateScriptSourceFromFile", new[] {typeof(string)})
-                .Invoke(_engine, new object[] {path});
+                .Invoke(Engine, new object[] {path});
             var compiled = _scriptSource.GetMethods()
                 .FirstOrDefault(method =>
                     method.Name == "Compile" &&
@@ -332,7 +346,7 @@ namespace Lench.Scripter
         public Func<object> Compile(string code)
         {
             var source = _scriptEngine.GetMethod("CreateScriptSourceFromString", new[] {typeof(string)})
-                .Invoke(_engine, new object[] {code});
+                .Invoke(Engine, new object[] {code});
             var compiled = _scriptSource.GetMethods().
                 FirstOrDefault(method =>
                     method.Name == "Compile" &&
@@ -353,7 +367,7 @@ namespace Lench.Scripter
         /// <returns>Value of the expression.</returns>
         public object Execute(string expression)
         {
-            return _executeMethod.Invoke(_engine, new[] {expression, _scope});
+            return _executeMethod.Invoke(Engine, new[] {expression, _scope});
         }
 
         /// <summary>
