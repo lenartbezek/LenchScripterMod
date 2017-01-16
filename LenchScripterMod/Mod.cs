@@ -25,7 +25,7 @@ namespace Lench.Scripter
         public override string Author { get; } = "Lench";
         public override Version Version => Assembly.GetExecutingAssembly().GetName().Version;
         public override string VersionExtra { get; } = "";
-        public override string BesiegeVersion { get; } = "v0.4";
+        public override string BesiegeVersion { get; } = "v0.42";
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
 #pragma warning restore CS1591
