@@ -25,14 +25,13 @@ direction = 1
 # set wheel toggle mode
 wheel.SetToggleMode("AUTOMATIC", True)
 
-def Update():
-""" updates the speed on every frame """
+def Update(): # called on every frame
   # direction variable is defined globally
   global direction
 
   # if U is held down, speed is 1
   if Input.GetKey(KeyCode.U):
-    speed = 1 # set speed to 1 if U is pressed down
+    speed = 1
   else:
     speed = 0
     
@@ -40,7 +39,7 @@ def Update():
   if Input.GetKeyDown(KeyCode.I):
     direction *= -1
   # set wheel speed slider
-    wheel.SetSliderValue("SPEED", speed * direction)
+  wheel.SetSliderValue("SPEED", speed * direction)
 ```
 
 For more information, see the [wiki pages](https://github.com/lench4991/LenchScripterMod/wiki).
