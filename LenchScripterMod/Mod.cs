@@ -89,6 +89,7 @@ namespace Lench.Scripter
             Toolbar = new Toolbar
             {
                 Texture = Images.ic_python_32,
+                Visible = Script.Enabled,
                 Buttons =
                 {
                     new Toolbar.Button
@@ -119,7 +120,11 @@ namespace Lench.Scripter
             {
                 Text = "SCRIPT",
                 Value = Script.Enabled,
-                OnToggle = enabled => Script.Enabled = enabled
+                OnToggle = enabled =>
+                {
+                    Script.Enabled = enabled;
+                    Toolbar.Visible = enabled;
+                }
             };
             EnableScriptButton.Create();
 
