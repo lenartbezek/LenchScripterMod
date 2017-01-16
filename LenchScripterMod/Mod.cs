@@ -54,6 +54,9 @@ namespace Lench.Scripter
         internal static ScriptOptionsWindow ScriptOptionsWindow;
         internal static WatchlistWindow WatchlistWindow;
         internal static Toolbar Toolbar;
+        internal static SettingsButton EnableScriptButton;
+        internal static OptionsButton PythonVersion2Button;
+        internal static OptionsButton PythonVersion3Button;
 
         /// <summary>
         ///     Instantiates the mod and it's components.
@@ -69,10 +72,6 @@ namespace Lench.Scripter
 
             XmlSaver.OnSave += MachineData.Save;
             XmlLoader.OnLoad += MachineData.Load;
-
-            Keybindings.AddKeybinding("Show Block ID", new Key(KeyCode.None, KeyCode.LeftShift));
-            Keybindings.AddKeybinding("Watchlist", new Key(KeyCode.LeftControl, KeyCode.I));
-            Keybindings.AddKeybinding("Script Options", new Key(KeyCode.LeftControl, KeyCode.U));
 
             Commands.RegisterCommand("lsm", ConfigurationCommand,
                 "Scripter Mod configuration command.");
@@ -104,11 +103,6 @@ namespace Lench.Scripter
                     },
                     new Toolbar.Button
                     {
-                        Texture = Images.ic_code_32,
-                        OnClick = () => { }
-                    },
-                    new Toolbar.Button
-                    {
                         Texture = Images.ic_settings_32,
                         OnClick = () => { ScriptOptionsWindow.Visible = true; }
                     }
@@ -121,8 +115,54 @@ namespace Lench.Scripter
 
             Configuration.Load();
 
-            SettingsMenu.RegisterSettingsButton("SCRIPT", enabled => Script.Enabled = enabled, Script.Enabled, 12);
+            EnableScriptButton = new SettingsButton
+            {
+                Text = "SCRIPT",
+                Value = Script.Enabled,
+                OnToggle = enabled => Script.Enabled = enabled
+            };
+            EnableScriptButton.Create();
 
+            PythonVersion2Button = new OptionsButton
+            {
+                Text = "IronPython 2.7",
+                Value = PythonEnvironment.Version == "ironpython2.7",
+                OnToggle = enabled =>
+                {
+                    if (enabled)
+                    {
+                        if (PythonEnvironment.Version != "ironpython3.0") return;
+                        PythonVersion3Button.Value = false;
+                        Script.SetVersionAndReload("ironpython2.7");
+                    }
+                    else
+                    {
+                        PythonVersion2Button.Value = true;
+                    }
+                }
+            };
+            PythonVersion2Button.Create();
+
+            PythonVersion3Button = new OptionsButton
+            {
+                Text = "IronPython 3.0",
+                Value = PythonEnvironment.Version == "ironpython3.0",
+                OnToggle = enabled =>
+                {
+                    if (enabled)
+                    {
+                        if (PythonEnvironment.Version != "ironpython2.7") return;
+                        PythonVersion2Button.Value = false;
+                        Script.SetVersionAndReload("ironpython3.0");
+                    }
+                    else
+                    {
+                        PythonVersion3Button.Value = true;
+                    }
+                }
+            };
+            PythonVersion3Button.Create();
+            
             if (UpdateCheckerEnabled)
                 CheckForModUpdate();
         }
@@ -165,7 +205,8 @@ namespace Lench.Scripter
             {
                 if (Toolbar != null)
                     Toolbar.Visible = !StatMaster.inMenu &&
-                        Game.AddPiece != null;
+                                      !StatMaster.isSimulating &&
+                                       Game.AddPiece != null;
             }
         }
 
@@ -243,19 +284,9 @@ namespace Lench.Scripter
                                 return (string)Script.Python.Execute("sys.version");
                             case "2.7":
                                 PythonEnvironment.Version = "ironpython2.7";
-                                if (!Script.LoadEngine(true))
-                                {
-                                    PythonEnvironment.DestroyEngine();
-                                    DependencyInstaller.InstallIronPython();
-                                }
                                 return null;
                             case "3.0":
                                 PythonEnvironment.Version = "ironpython3.0";
-                                if (!Script.LoadEngine(true))
-                                {
-                                    PythonEnvironment.DestroyEngine();
-                                    DependencyInstaller.InstallIronPython();
-                                }
                                 return null;
                             default:
                                 return "Invalid argument [version/2.7/3.0]. Enter 'lsm' for all available commands.";

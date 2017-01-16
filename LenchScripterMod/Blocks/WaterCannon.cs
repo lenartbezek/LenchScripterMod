@@ -40,8 +40,10 @@ namespace Lench.Scripter.Blocks
                 case "SHOOT":
                     Shoot();
                     return;
+                default:
+                    base.Action(actionName);
+                    return;
             }
-            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

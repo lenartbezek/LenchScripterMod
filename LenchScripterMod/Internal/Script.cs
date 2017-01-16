@@ -87,6 +87,21 @@ namespace Lench.Scripter.Internal
         }
 
         /// <summary>
+        ///     Sets the Python engine version and reloads.
+        /// </summary>
+        public static void SetVersionAndReload(string version)
+        {
+            var requiresReload = PythonEnvironment.Version != version;
+            PythonEnvironment.Version = version;
+
+            if (!requiresReload) return;
+            if (LoadEngine(true)) return;
+
+            PythonEnvironment.DestroyEngine();
+            DependencyInstaller.InstallIronPython();
+        }
+
+        /// <summary>
         ///     Loads mod's scripting features.
         ///     Returns true if successful.
         /// </summary>

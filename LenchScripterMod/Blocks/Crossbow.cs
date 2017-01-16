@@ -1,16 +1,19 @@
 ﻿namespace Lench.Scripter.Blocks
 {
     /// <summary>
-    ///     Handler for spaar's Automatron block.
+    ///     Handler for the crossbow block.
     /// </summary>
-    public class Automatron : Block
+    public class Crossbow : Block
     {
+        private readonly CrossBowBlock _cbb;
+
         /// <summary>
         ///     Creates a Block handler.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
-        public Automatron(BlockBehaviour bb) : base(bb)
+        public Crossbow(BlockBehaviour bb) : base(bb)
         {
+            _cbb = bb.GetComponent<CrossBowBlock>();
         }
 
         /// <summary>
@@ -23,8 +26,8 @@
             actionName = actionName.ToUpper();
             switch (actionName)
             {
-                case "ACTIVATE":
-                    Activate();
+                case "SHOOT":
+                    Shoot();
                     return;
                 default:
                     base.Action(actionName);
@@ -33,11 +36,20 @@
         }
 
         /// <summary>
-        ///     Triggers the block.
+        ///     Shoots the crossbow.
         /// </summary>
-        public void Activate()
+        public void Shoot()
         {
-            Bs.SendMessage("TriggerActions");
+            _cbb.SendMessage("FIRE");
+        }
+
+        /// <summary>
+        ///     Number of arrows remaining.
+        /// </summary>
+        public int Ammo
+        {
+            get { return _cbb.ammo; }
+            set { _cbb.ammo = value; }
         }
     }
 }

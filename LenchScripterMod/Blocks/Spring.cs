@@ -7,7 +7,7 @@ namespace Lench.Scripter.Blocks
     /// </summary>
     public class Spring : Block
     {
-        private readonly SpringCode sc;
+        private readonly SpringCode _sc;
 
         /// <summary>
         ///     Creates a Block handler.
@@ -15,7 +15,7 @@ namespace Lench.Scripter.Blocks
         /// <param name="bb">BlockBehaviour object.</param>
         public Spring(BlockBehaviour bb) : base(bb)
         {
-            sc = bb.GetComponent<SpringCode>();
+            _sc = bb.GetComponent<SpringCode>();
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Lench.Scripter.Blocks
         public override void Action(string actionName)
         {
             actionName = actionName.ToUpper();
-            if (sc.winchMode)
+            if (_sc.winchMode)
             {
                 switch (actionName)
                 {
@@ -59,13 +59,13 @@ namespace Lench.Scripter.Blocks
         public void SetInput(float rate = 1)
         {
             if (Mathf.Abs(rate) < 0.02) return;
-            if (sc.winchMode)
+            if (_sc.winchMode)
                 if (rate > 0)
-                    sc.WinchContract(rate);
+                    _sc.WinchContract(rate);
                 else
-                    sc.WinchUnwind(-rate);
+                    _sc.WinchUnwind(-rate);
             else
-                sc.Contract(rate, sc.startPoint.position, sc.endPoint.position);
+                _sc.Contract(rate);
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Lench.Scripter.Blocks
         /// </summary>
         public void Contract(float rate = 1)
         {
-            sc.Contract(rate, sc.startPoint.position, sc.endPoint.position);
+            _sc.Contract(rate);
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Lench.Scripter.Blocks
         /// </summary>
         public void Wind(float rate = 1)
         {
-            sc.WinchContract(rate);
+            _sc.WinchContract(rate);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Lench.Scripter.Blocks
         /// </summary>
         public void Unwind(float rate = 1)
         {
-            sc.WinchUnwind(rate);
+            _sc.WinchUnwind(rate);
         }
     }
 }

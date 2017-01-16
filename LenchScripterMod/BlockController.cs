@@ -51,6 +51,7 @@ namespace Lench.Scripter
             {(int) BlockType.Wheel, typeof(Cog)},
             {(int) BlockType.LargeWheel, typeof(Cog)},
             {(int) BlockType.Drill, typeof(Cog)},
+            {(int) BlockType.Crossbow, typeof(Crossbow)},
             {(int) BlockType.Decoupler, typeof(Decoupler)},
             {(int) BlockType.Flamethrower, typeof(Flamethrower)},
             {(int) BlockType.FlyingBlock, typeof(FlyingSpiral)},
@@ -62,6 +63,7 @@ namespace Lench.Scripter
             {(int) BlockType.RopeWinch, typeof(Spring)},
             {(int) BlockType.SteeringHinge, typeof(Steering)},
             {(int) BlockType.SteeringBlock, typeof(Steering)},
+            {(int) BlockType.Vacuum, typeof(Vacuum)},
             {(int) BlockType.WaterCannon, typeof(WaterCannon)},
             {410, typeof(Automatron)},
             {790, typeof(VectorThruster)}

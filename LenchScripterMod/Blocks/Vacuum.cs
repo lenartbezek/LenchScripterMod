@@ -1,16 +1,19 @@
 ﻿namespace Lench.Scripter.Blocks
 {
     /// <summary>
-    ///     Handler for spaar's Automatron block.
+    ///     Handler for cannon blocks; Cannon and Shrapnel Cannon.
     /// </summary>
-    public class Automatron : Block
+    public class Vacuum : Block
     {
+        private readonly VacuumBlock _vb;
+
         /// <summary>
         ///     Creates a Block handler.
         /// </summary>
         /// <param name="bb">BlockBehaviour object.</param>
-        public Automatron(BlockBehaviour bb) : base(bb)
+        public Vacuum(BlockBehaviour bb) : base(bb)
         {
+            _vb = bb.GetComponent<VacuumBlock>();
         }
 
         /// <summary>
@@ -33,11 +36,11 @@
         }
 
         /// <summary>
-        ///     Triggers the block.
+        ///     Activates the vacuum block.
         /// </summary>
         public void Activate()
         {
-            Bs.SendMessage("TriggerActions");
+            // TODO
         }
     }
 }

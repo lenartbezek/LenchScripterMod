@@ -54,8 +54,10 @@ namespace Lench.Scripter.Blocks
                 case "RIGHT":
                     SetInput(-1);
                     return;
+                default:
+                    base.Action(actionName);
+                    return;
             }
-            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

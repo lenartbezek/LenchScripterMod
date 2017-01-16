@@ -53,8 +53,10 @@ namespace Lench.Scripter.Blocks
                 case "EXTEND":
                     Extend();
                     return;
+                default:
+                    base.Action(actionName);
+                    return;
             }
-            throw new ActionNotFoundException($"Block {BlockName} has no {actionName} action.");
         }
 
         /// <summary>

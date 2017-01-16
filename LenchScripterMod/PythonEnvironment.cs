@@ -111,17 +111,17 @@ namespace Lench.Scripter
 
         /// <summary>
         ///     Currently selected ironpython version. Can only be "ironpython2.7" or "ironpython3.0".
+        ///     Engine needs to be reloaded after changing this.
         /// </summary>
         public static string Version
         {
             get { return _version; }
             set
             {
-                if (value == "ironpython2.7" || value == "ironpython3.0")
-                    _version = value;
-                else
-                    throw new Exception(
-                        "Invalid Python version. Supported values are 'ironpython2.7' and 'ironpython3.0'.");
+                if (value != "ironpython2.7" && value != "ironpython3.0")
+                    throw new Exception("Invalid Python version. Supported values are 'ironpython2.7' and 'ironpython3.0'.");
+
+                _version = value;
             }
         }
 
