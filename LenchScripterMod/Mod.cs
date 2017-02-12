@@ -88,23 +88,64 @@ namespace Lench.Scripter
             WatchlistWindow = new WatchlistWindow();
             Toolbar = new Toolbar
             {
-                Texture = Images.ic_python_32,
+                Texture = Images.IconPython,
                 Visible = Script.Enabled,
                 Buttons =
                 {
                     new Toolbar.Button
                     {
-                        Texture = Images.ic_key_32,
+                        Style = new GUIStyle()
+                        {
+                            normal = { background = Images.ButtonKeyNormal },
+                            focused = { background = Images.ButtonKeyFocus },
+                            hover = { background = Images.ButtonKeyHover },
+                            active = { background = Images.ButtonKeyActive },
+                            fixedWidth = 32,
+                            fixedHeight = 32
+                        },
+                        Text="",
                         OnClick = () => { IdentifierDisplayWindow.Visible = true; }
                     },
                     new Toolbar.Button
                     {
-                        Texture = Images.ic_eye_32,
+                        Style = new GUIStyle()
+                        {
+                            normal = { background = Images.ButtonListNormal },
+                            focused = { background = Images.ButtonListFocus },
+                            hover = { background = Images.ButtonListHover },
+                            active = { background = Images.ButtonListActive },
+                            fixedWidth = 32,
+                            fixedHeight = 32
+                        },
+                        Text="",
                         OnClick = () => { WatchlistWindow.Visible = true; }
                     },
                     new Toolbar.Button
                     {
-                        Texture = Images.ic_settings_32,
+                        Style = new GUIStyle()
+                        {
+                            normal = { background = Images.ButtonScriptNormal },
+                            focused = { background = Images.ButtonScriptFocus },
+                            hover = { background = Images.ButtonScriptHover },
+                            active = { background = Images.ButtonScriptActive },
+                            fixedWidth = 32,
+                            fixedHeight = 32
+                        },
+                        Text="",
+                        OnClick = () => { /* TODO: Open script */ }
+                    },
+                    new Toolbar.Button
+                    {
+                        Style = new GUIStyle()
+                        {
+                            normal = { background = Images.ButtonSettingsNormal },
+                            focused = { background = Images.ButtonSettingsFocus },
+                            hover = { background = Images.ButtonSettingsHover },
+                            active = { background = Images.ButtonSettingsActive },
+                            fixedWidth = 32,
+                            fixedHeight = 32
+                        },
+                        Text="",
                         OnClick = () => { ScriptOptionsWindow.Visible = true; }
                     }
                 }

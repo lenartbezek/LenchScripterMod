@@ -45,7 +45,7 @@ namespace Lench.Scripter.UI
             private string _newVariableName = "";
             private string _newVariableValue;
 
-            private readonly Texture2D _tex = Resources.Images.ic_clear_32;
+            private readonly Texture2D _tex = Resources.Images.IconClear;
 
             private Vector2 _scrollPosition = Vector2.zero;
             public WatchlistWindow Handler;

@@ -37,23 +37,23 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Steam\steamapps\common\Besiege\Besiege_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(BESIEGE_LOCATION)\Besiege_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Steam\steamapps\common\Besiege\Besiege_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>$(BESIEGE_LOCATION)\Besiege_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-UnityScript, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Steam\steamapps\common\Besiege\Besiege_Data\Managed\Assembly-UnityScript.dll</HintPath>
+      <HintPath>$(BESIEGE_LOCATION)\Besiege_Data\Managed\Assembly-UnityScript.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-UnityScript-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Steam\steamapps\common\Besiege\Besiege_Data\Managed\Assembly-UnityScript-firstpass.dll</HintPath>
+      <HintPath>$(BESIEGE_LOCATION)\Besiege_Data\Managed\Assembly-UnityScript-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="SpaarModLoader, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Steam\steamapps\common\Besiege\Besiege_Data\Mods\SpaarModLoader.dll</HintPath>
+      <HintPath>$(BESIEGE_LOCATION)\Besiege_Data\Mods\SpaarModLoader.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -64,7 +64,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Steam\steamapps\common\Besiege\Besiege_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(BESIEGE_LOCATION)\Besiege_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -105,19 +105,30 @@
     <Compile Include="UI\WatchlistWindow.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\ic_python_32.png" />
+    <EmbeddedResource Include="Resources\ic_python.png" />
+    <EmbeddedResource Include="Resources\ic_clear.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\ic_clear_32.png" />
-    <EmbeddedResource Include="Resources\ic_code_32.png" />
-    <EmbeddedResource Include="Resources\ic_edit_32.png" />
-    <EmbeddedResource Include="Resources\ic_eye_32.png" />
-    <EmbeddedResource Include="Resources\ic_key_32.png" />
-    <EmbeddedResource Include="Resources\ic_settings_32.png" />
+    <EmbeddedResource Include="Resources\button_key_active.png" />
+    <EmbeddedResource Include="Resources\button_key_focus.png" />
+    <EmbeddedResource Include="Resources\button_key_hover.png" />
+    <EmbeddedResource Include="Resources\button_key_normal.png" />
+    <EmbeddedResource Include="Resources\button_list_active.png" />
+    <EmbeddedResource Include="Resources\button_list_focus.png" />
+    <EmbeddedResource Include="Resources\button_list_hover.png" />
+    <EmbeddedResource Include="Resources\button_list_normal.png" />
+    <EmbeddedResource Include="Resources\button_script_active.png" />
+    <EmbeddedResource Include="Resources\button_script_focus.png" />
+    <EmbeddedResource Include="Resources\button_script_hover.png" />
+    <EmbeddedResource Include="Resources\button_script_normal.png" />
+    <EmbeddedResource Include="Resources\button_settings_active.png" />
+    <EmbeddedResource Include="Resources\button_settings_focus.png" />
+    <EmbeddedResource Include="Resources\button_settings_hover.png" />
+    <EmbeddedResource Include="Resources\button_settings_normal.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetPath)" "D:\Steam\steamapps\common\Besiege\Besiege_Data\Mods\$(TargetName).dll"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(TargetPath)" "%25BESIEGE_LOCATION%25\Besiege_Data\Mods\$(TargetName).dll"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <StartAction>Program</StartAction>
