@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Lench.Scripter.Internal;
@@ -24,7 +25,9 @@ namespace Lench.Scripter
         public override string DisplayName { get; } = "Lench Scripter Mod";
         public override string Author { get; } = "Lench";
         public override Version Version => Assembly.GetExecutingAssembly().GetName().Version;
-        public override string VersionExtra { get; } = "";
+#if DEBUG
+        public override string VersionExtra { get; } = "debug";
+#endif
         public override string BesiegeVersion { get; } = "v0.42";
         public override bool CanBeUnloaded { get; } = true;
         public override bool Preload { get; } = false;
@@ -94,7 +97,7 @@ namespace Lench.Scripter
                 {
                     new Toolbar.Button
                     {
-                        Style = new GUIStyle()
+                        Style = new GUIStyle
                         {
                             normal = { background = Images.ButtonKeyNormal },
                             focused = { background = Images.ButtonKeyFocus },
@@ -108,7 +111,7 @@ namespace Lench.Scripter
                     },
                     new Toolbar.Button
                     {
-                        Style = new GUIStyle()
+                        Style = new GUIStyle
                         {
                             normal = { background = Images.ButtonListNormal },
                             focused = { background = Images.ButtonListFocus },
@@ -122,7 +125,7 @@ namespace Lench.Scripter
                     },
                     new Toolbar.Button
                     {
-                        Style = new GUIStyle()
+                        Style = new GUIStyle
                         {
                             normal = { background = Images.ButtonScriptNormal },
                             focused = { background = Images.ButtonScriptFocus },
@@ -132,7 +135,23 @@ namespace Lench.Scripter
                             fixedHeight = 32
                         },
                         Text="",
-                        OnClick = () => { /* TODO: Open script */ }
+                        OnClick = () =>
+                        {
+                            if (File.Exists(Script.FilePath))
+                            {
+#if DEBUG
+                                Debug.Log($"Opening file {Script.FilePath} ...");
+#endif
+                                Application.OpenURL(Script.FilePath);
+                            }
+                            else if (!string.IsNullOrEmpty(Script.EmbeddedCode))
+                            {
+#if DEBUG
+                                Debug.Log($"Exporting code ...");
+#endif
+                                Application.OpenURL(Script.Export());
+                            }
+                        }
                     },
                     new Toolbar.Button
                     {
