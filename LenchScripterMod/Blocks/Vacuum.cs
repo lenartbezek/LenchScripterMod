@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using UnityEngine;
 
-namespace Lench.Scripter.Blocks
+namespace Lench.AdvancedControls.Blocks
 {
     /// <summary>
     ///     Handler for cannon blocks; Cannon and Shrapnel Cannon.

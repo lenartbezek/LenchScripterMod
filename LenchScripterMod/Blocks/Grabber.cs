@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Lench.Scripter.Blocks
+namespace Lench.AdvancedControls.Blocks
 {
     /// <summary>
     ///     Handler for the Grabber block.

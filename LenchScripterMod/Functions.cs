@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using Lench.Scripter.Internal;
 using UnityEngine;
 
-namespace Lench.Scripter
+namespace Lench.AdvancedControls
 {
     /// <summary>
     ///     Used as a wrapper for all Python accessible functions.
@@ -11,9 +9,6 @@ namespace Lench.Scripter
     /// </summary>
     public static class Functions
     {
-        // List of placed marks
-        private static readonly List<Mark> Marks = new List<Mark>();
-
         // Measuring time since the start of simulation
         private static float _startTime;
 
@@ -106,33 +101,6 @@ namespace Lench.Scripter
         }
 
         /// <summary>
-        ///     Adds a global variable to the watchlist.
-        /// </summary>
-        /// <param name="name">Name of the global variable.</param>
-        public static void Watch(string name)
-        {
-            Watchlist.Add(name, null, true);
-        }
-
-        /// <summary>
-        ///     Adds a value to watchlist under the specified display name.
-        /// </summary>
-        /// <param name="name">Display name of the variable.</param>
-        /// <param name="value">Variable value to be reported.</param>
-        public static void Watch(string name, object value)
-        {
-            Watchlist.Add(name, value);
-        }
-
-        /// <summary>
-        ///     Clears all entries from the watchlist.
-        /// </summary>
-        public static void ClearWatchlist()
-        {
-            Watchlist.Clear();
-        }
-
-        /// <summary>
         ///     Toggles all functions to return angles in degrees.
         /// </summary>
         public static void UseDegrees()
@@ -154,9 +122,8 @@ namespace Lench.Scripter
         /// <returns>Returns an x, y, z positional vector of the hit.</returns>
         public static Vector3 GetRaycastHit()
         {
-            RaycastHit hit;
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit))
+            var ray = Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
                 return hit.point;
             throw new Exception("Your raycast does not intersect with a collider.");
         }
@@ -169,67 +136,10 @@ namespace Lench.Scripter
         /// <returns>Returns position of the hit.</returns>
         public static Vector3 GetRaycastHit(Vector3 origin, Vector3 direction)
         {
-            RaycastHit hit;
             var ray = new Ray(origin, direction.normalized);
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out RaycastHit hit))
                 return hit.point;
             throw new Exception("Your raycast does not intersect with a collider.");
-        }
-
-        /// <summary>
-        ///     Uses raycast to find out what collider the mouse cursor is pointing at.
-        ///     If not sucessfull, returns zero vector.
-        /// </summary>
-        /// <returns>Returns an x, y, z positional vector of the hit.</returns>
-        public static TrackedCollider GetRaycastCollider()
-        {
-            RaycastHit hit;
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit))
-                return new TrackedCollider(hit.collider, hit.point);
-            throw new Exception("Your raycast does not intersect with a collider.");
-        }
-
-        /// <summary>
-        ///     Casts ray defined by origin and direction vectors.
-        /// </summary>
-        /// <param name="origin">Origin vector of the raycast.</param>
-        /// <param name="direction">Direction vector of the raycast.</param>
-        /// <returns>Returns TrackedCollider object of the hit.</returns>
-        public static TrackedCollider GetRaycastCollider(Vector3 origin, Vector3 direction)
-        {
-            RaycastHit hit;
-            var ray = new Ray(origin, direction.normalized);
-            if (Physics.Raycast(ray, out hit))
-                return new TrackedCollider(hit.collider, hit.point);
-            throw new Exception("Your raycast does not intersect with a collider.");
-        }
-
-        /// <summary>
-        ///     Creates a mark at a given position.
-        /// </summary>
-        /// <param name="pos">Vector3 specifying position.</param>
-        /// <returns>Reference to the mark.</returns>
-        public static Mark CreateMark(Vector3 pos)
-        {
-            var obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            obj.name = "Mark";
-            obj.transform.parent = Mod.Controller.transform;
-            var m = obj.AddComponent<Mark>();
-            m.Move(pos);
-            Marks.Add(m);
-            return m;
-        }
-
-        /// <summary>
-        ///     Clears all marks.
-        ///     Called by user or at the end of the simulation.
-        /// </summary>
-        public static void ClearMarks(bool manualCall = true)
-        {
-            foreach (var m in Marks)
-                m.Clear(manualCall);
-            Marks.Clear();
         }
     }
 }
