@@ -135,7 +135,7 @@ namespace Lench.Scripter
                 return angularVelocity;
             }
         }
-        public virtual Vector3 AngualarVelocityDeg => AngularVelocity * (180f / Mathf.PI);
+        public virtual Vector3 AngularVelocityDeg => AngularVelocity * (180f / Mathf.PI);
         public virtual Vector3 AngularVelocityRad => AngularVelocity;
 
         /// <summary>
