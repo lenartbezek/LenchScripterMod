@@ -79,7 +79,6 @@ namespace Lench.Scripter.Blocks
         /// <param name="angle">Float value in degrees.</param>
         public void SetAngle(float angle)
         {
-            angle /= ConvertToRadians;
             angle *= _sw.Flipped ? -1 : 1;
             if (float.IsNaN(angle))
                 throw new ArgumentException("Value is not a number (NaN).");
@@ -99,7 +98,7 @@ namespace Lench.Scripter.Blocks
         /// <returns>Float value in degrees or radians as specified.</returns>
         public float GetAngle()
         {
-            return (float) AngleyToBeField.GetValue(_sw) * ConvertToRadians;
+            return (float) AngleyToBeField.GetValue(_sw);
         }
 
         /// <summary>

@@ -12,18 +12,6 @@ namespace Lench.Scripter
     public partial class Block
     {
         /// <summary>
-        ///     Used to convert radians to degrees in all functions returning radians.
-        ///     If radians are the desired angle unit, it will be set to 1, otherwise Mathf.Rad2Deg.
-        /// </summary>
-        protected static float ConvertToDegrees = Mathf.Rad2Deg;
-
-        /// <summary>
-        ///     Used to convert degrees to radians in all functions returning degrees.
-        ///     If degrees are the desired angle unit, it will be set to 1, otherwise Mathf.Deg2Rad.
-        /// </summary>
-        protected static float ConvertToRadians = 1;
-
-        /// <summary>
         ///     BlockBehaviour object of this handler.
         /// </summary>
         protected readonly BlockBehaviour Bb;
@@ -36,7 +24,6 @@ namespace Lench.Scripter
         /// <summary>
         ///     Creates a Block handler.
         /// </summary>
-        /// <param name="bb">BlockBehaviour object.</param>
         public Block(BlockBehaviour bb)
         {
             Bb = bb;
@@ -64,38 +51,21 @@ namespace Lench.Scripter
         /// <summary>
         ///     Returns true if the block has RigidBody.
         /// </summary>
-        /// <returns>Boolean value.</returns>
         public virtual bool Exists => Bb != null && Bb.GetComponent<Rigidbody>() != null;
 
-        /// <summary>
-        ///     Returns the block's forward vector.
-        /// </summary>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
         public virtual Vector3 Forward => Bb.transform.forward;
-
-        /// <summary>
-        ///     Returns the block's up vector.
-        /// </summary>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
         public virtual Vector3 Up => Bb.transform.up;
-
-        /// <summary>
-        ///     Returns the block's right vector.
-        /// </summary>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
         public virtual Vector3 Right => Bb.transform.right;
 
         /// <summary>
-        ///     Returns the position of the block.
+        ///     Position of the block.
         /// </summary>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
         public virtual Vector3 Position => Bb.transform.position;
 
         /// <summary>
-        ///     Returns the velocity of the block in units per second.
+        ///     Velocity of the block in units per second.
         ///     Throws NoRigidBodyException if the block has no RigidBody.
         /// </summary>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
         public virtual Vector3 Velocity
         {
             get
@@ -108,9 +78,8 @@ namespace Lench.Scripter
         }
 
         /// <summary>
-        ///     Returns the mass of the block.
+        ///     Mass of the block.
         /// </summary>
-        /// <returns>Float value.</returns>
         public virtual float Mass
         {
             get
@@ -123,9 +92,8 @@ namespace Lench.Scripter
         }
 
         /// <summary>
-        ///     Returns the center of mass of the block, relative to the block's position.
+        ///     Center of mass of the block, relative to the block's position.
         /// </summary>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
         public virtual Vector3 CenterOfMass
         {
             get
@@ -138,25 +106,24 @@ namespace Lench.Scripter
         }
 
         /// <summary>
-        ///     Returns the block's rotation in the form of it's Euler angles.
+        ///     Blocks rotation as euler angles.
         /// </summary>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
-        public virtual Vector3 EulerAngles
-        {
-            get
-            {
-                var d2R = new Vector3(ConvertToRadians, ConvertToRadians, ConvertToRadians);
-                var euler = Bb.transform.eulerAngles;
-                euler.Scale(d2R);
-                return euler;
-            }
-        }
+        public virtual Vector3 Rotation => Bb.transform.eulerAngles;
+        public virtual Vector3 RotationRad => Rotation * (Mathf.PI / 180f);
+        public virtual Vector3 RotationDeg => Rotation;
+
+        [Obsolete("Use Block.Rotation instead.")]
+        public Vector3 EulerAngles => Rotation;
 
         /// <summary>
-        ///     Returns the block's angular velocity.
+        ///     Blocks rotation as a quaternion.
+        /// </summary>
+        public virtual Quaternion RotationQuaternion => Bb.transform.rotation;
+
+        /// <summary>
+        ///     Blocks angular velocity in radians per second.
         ///     Throws NoRigidBodyException if the block has no RigidBody.
         /// </summary>
-        /// <returns>UnityEngine.Vector3 vector.</returns>
         public virtual Vector3 AngularVelocity
         {
             get
@@ -164,17 +131,45 @@ namespace Lench.Scripter
                 var body = Bb.GetComponent<Rigidbody>();
                 if (body == null) throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
 
-                var convertUnits = new Vector3(ConvertToDegrees, ConvertToDegrees, ConvertToDegrees);
                 var angularVelocity = body.angularVelocity;
-                angularVelocity.Scale(convertUnits);
                 return angularVelocity;
             }
         }
+        public virtual Vector3 AngualarVelocityDeg => AngularVelocity * (180f / Mathf.PI);
+        public virtual Vector3 AngularVelocityRad => AngularVelocity;
 
-        internal BlockBehaviour GetBlockBehaviour()
+        /// <summary>
+        ///     Blocks inertia tensor.
+        ///     Throws NoRigidBodyException if the block has no RigidBody.
+        /// </summary>
+        public virtual Vector3 InertiaTensor
         {
-            return Bb;
+            get
+            {
+                var body = Bb.GetComponent<Rigidbody>();
+                if (body == null) throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
+
+                return body.inertiaTensor;
+            }
         }
+
+        /// <summary>
+        ///     Blocks inertia tensor rotation.
+        ///     Throws NoRigidBodyException if the block has no RigidBody.
+        /// </summary>
+        public virtual Quaternion InertiaTensorRotationQuaternion
+        {
+            get
+            {
+                var body = Bb.GetComponent<Rigidbody>();
+                if (body == null) throw new NoRigidBodyException("Block " + BlockName + " has no rigid body.");
+
+                return body.inertiaTensorRotation;
+            }
+        }
+        public virtual Vector3 InertiaTensorRotation => InertiaTensorRotationQuaternion.eulerAngles;
+        public virtual Vector3 InertiaTensorRotationDeg => InertiaTensorRotation;
+        public virtual Vector3 InertiaTensorRotationRad => InertiaTensorRotation * (Mathf.PI / 180f);
 
         /// <summary>
         ///     Unsubscribes block handler from Update events.
@@ -208,24 +203,6 @@ namespace Lench.Scripter
         }
 
         /// <summary>
-        ///     Makes any future calls to angle functions return degrees.
-        /// </summary>
-        public static void UseDegrees()
-        {
-            ConvertToDegrees = Mathf.Rad2Deg;
-            ConvertToRadians = 1;
-        }
-
-        /// <summary>
-        ///     Makes any future calls to angle functions return radians.
-        /// </summary>
-        public static void UseRadians()
-        {
-            ConvertToDegrees = 1;
-            ConvertToRadians = Mathf.Deg2Rad;
-        }
-
-        /// <summary>
         ///     Invokes the block's action.
         ///     Throws ActionNotFoundException if the block does not poses such action.
         /// </summary>
@@ -251,10 +228,7 @@ namespace Lench.Scripter
         /// <returns></returns>
         public virtual List<string> GetSliders()
         {
-            var sliders = new List<string>();
-            foreach (var m in Bb.Sliders)
-                sliders.Add(m.DisplayName.ToUpper());
-            return sliders;
+            return Bb.Sliders.Select(m => m.DisplayName.ToUpper()).ToList();
         }
 
         /// <summary>

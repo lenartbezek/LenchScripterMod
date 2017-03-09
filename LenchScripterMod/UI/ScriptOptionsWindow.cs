@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.IO;
 using Lench.Scripter.Internal;
 using spaar.ModLoader;
@@ -131,8 +130,7 @@ namespace Lench.Scripter.UI
                 if (GUILayout.Button("Open Scripts folder", Elements.Buttons.ComponentField))
                 {
                     var dir = Application.dataPath + "/Scripts/";
-                    if (!Directory.Exists(dir))
-                        Directory.CreateDirectory(dir);
+                    Directory.CreateDirectory(dir);
                     Application.OpenURL(dir);
                 }
 

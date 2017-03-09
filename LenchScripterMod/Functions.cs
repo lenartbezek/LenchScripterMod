@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Lench.Scripter.Internal;
 using UnityEngine;
 
@@ -31,13 +32,10 @@ namespace Lench.Scripter
         {
             get
             {
-                var center = Vector3.zero;
-                foreach (var bb in Machine.Active().Blocks)
-                {
-                    var body = bb.GetComponent<Rigidbody>();
-                    if (body != null)
-                        center += body.worldCenterOfMass * body.mass;
-                }
+                var center = Machine.Active().Blocks
+                    .Select(bb => bb.GetComponent<Rigidbody>())
+                    .Where(body => body != null)
+                    .Aggregate(Vector3.zero, (current, body) => current + body.worldCenterOfMass * body.mass);
                 return center / Machine.Active().Mass;
             }
         }
@@ -133,30 +131,13 @@ namespace Lench.Scripter
         }
 
         /// <summary>
-        ///     Toggles all functions to return angles in degrees.
-        /// </summary>
-        public static void UseDegrees()
-        {
-            Block.UseDegrees();
-        }
-
-        /// <summary>
-        ///     Toggles all functions to returns angles in radians.
-        /// </summary>
-        public static void UseRadians()
-        {
-            Block.UseRadians();
-        }
-
-        /// <summary>
         ///     Uses raycast to find out where mouse cursor is pointing.
         /// </summary>
         /// <returns>Returns an x, y, z positional vector of the hit.</returns>
         public static Vector3 GetRaycastHit()
         {
-            RaycastHit hit;
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out RaycastHit hit))
                 return hit.point;
             throw new Exception("Your raycast does not intersect with a collider.");
         }
@@ -169,9 +150,8 @@ namespace Lench.Scripter
         /// <returns>Returns position of the hit.</returns>
         public static Vector3 GetRaycastHit(Vector3 origin, Vector3 direction)
         {
-            RaycastHit hit;
             var ray = new Ray(origin, direction.normalized);
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out RaycastHit hit))
                 return hit.point;
             throw new Exception("Your raycast does not intersect with a collider.");
         }
@@ -183,9 +163,8 @@ namespace Lench.Scripter
         /// <returns>Returns an x, y, z positional vector of the hit.</returns>
         public static TrackedCollider GetRaycastCollider()
         {
-            RaycastHit hit;
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out RaycastHit hit))
                 return new TrackedCollider(hit.collider, hit.point);
             throw new Exception("Your raycast does not intersect with a collider.");
         }
@@ -198,9 +177,8 @@ namespace Lench.Scripter
         /// <returns>Returns TrackedCollider object of the hit.</returns>
         public static TrackedCollider GetRaycastCollider(Vector3 origin, Vector3 direction)
         {
-            RaycastHit hit;
             var ray = new Ray(origin, direction.normalized);
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out RaycastHit hit))
                 return new TrackedCollider(hit.collider, hit.point);
             throw new Exception("Your raycast does not intersect with a collider.");
         }
