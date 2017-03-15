@@ -107,7 +107,7 @@ namespace Lench.Scripter
                             fixedHeight = 32
                         },
                         Text="",
-                        OnClick = () => { IdentifierDisplayWindow.Visible = true; }
+                        OnClick = OpenIdentifier
                     },
                     new Toolbar.Button
                     {
@@ -121,7 +121,7 @@ namespace Lench.Scripter
                             fixedHeight = 32
                         },
                         Text="",
-                        OnClick = () => { WatchlistWindow.Visible = true; }
+                        OnClick = OpenWatchlist
                     },
                     new Toolbar.Button
                     {
@@ -135,23 +135,7 @@ namespace Lench.Scripter
                             fixedHeight = 32
                         },
                         Text="",
-                        OnClick = () =>
-                        {
-                            if (File.Exists(Script.FilePath))
-                            {
-#if DEBUG
-                                Debug.Log($"Opening file {Script.FilePath} ...");
-#endif
-                                Application.OpenURL(Script.FilePath);
-                            }
-                            else if (!string.IsNullOrEmpty(Script.EmbeddedCode))
-                            {
-#if DEBUG
-                                Debug.Log($"Exporting code ...");
-#endif
-                                Application.OpenURL(Script.Export());
-                            }
-                        }
+                        OnClick = OpenScript
                     },
                     new Toolbar.Button
                     {
@@ -165,7 +149,7 @@ namespace Lench.Scripter
                             fixedHeight = 32
                         },
                         Text="",
-                        OnClick = () => { ScriptOptionsWindow.Visible = true; }
+                        OnClick = OpenSettings
                     }
                 }
             };
@@ -190,7 +174,7 @@ namespace Lench.Scripter
 
             PythonVersion2Button = new OptionsButton
             {
-                Text = "IronPython 2.7",
+                Text = "Python 2.7",
                 Value = PythonEnvironment.Version == "ironpython2.7",
                 OnToggle = enabled =>
                 {
@@ -210,7 +194,7 @@ namespace Lench.Scripter
 
             PythonVersion3Button = new OptionsButton
             {
-                Text = "IronPython 3.0",
+                Text = "Python 3.0",
                 Value = PythonEnvironment.Version == "ironpython3.0",
                 OnToggle = enabled =>
                 {
@@ -230,6 +214,39 @@ namespace Lench.Scripter
             
             if (UpdateCheckerEnabled)
                 CheckForModUpdate();
+        }
+
+        private static void OpenIdentifier()
+        {
+            IdentifierDisplayWindow.Visible = true;
+        }
+
+        private static void OpenWatchlist()
+        {
+            WatchlistWindow.Visible = true;
+        }
+
+        private static void OpenScript()
+        {
+            if (File.Exists(Script.FilePath))
+            {
+#if DEBUG
+                Debug.Log($"Opening file {Script.FilePath} ...");
+#endif
+                Application.OpenURL(Script.FilePath);
+            }
+            else if (!string.IsNullOrEmpty(Script.EmbeddedCode))
+            {
+#if DEBUG
+                Debug.Log($"Exporting code ...");
+#endif
+                Application.OpenURL(Script.Export());
+            }
+        }
+
+        private static void OpenSettings()
+        {
+            ScriptOptionsWindow.Visible = true;
         }
 
         /// <summary>
@@ -278,9 +295,6 @@ namespace Lench.Scripter
         /// <summary>
         ///     Called on python console command.
         /// </summary>
-        /// <param name="args"></param>
-        /// <param name="namedArgs"></param>
-        /// <returns></returns>
         public static string PythonCommand(string[] args, IDictionary<string, string> namedArgs)
         {
             if (args.Length == 0)
@@ -308,9 +322,6 @@ namespace Lench.Scripter
         /// <summary>
         ///     Called on lsm console command.
         /// </summary>
-        /// <param name="args"></param>
-        /// <param name="namedArgs"></param>
-        /// <returns></returns>
         public static string ConfigurationCommand(string[] args, IDictionary<string, string> namedArgs)
         {
             if (args.Length <= 0)

@@ -156,6 +156,7 @@ namespace Lench.Scripter.Internal
 
             var path = FileName.EndsWith(".py") ? FileName : FileName + ".py";
             path = string.Concat(Application.dataPath, "/Scripts/", path);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.WriteAllText(path, EmbeddedCode);
             return path;
         }

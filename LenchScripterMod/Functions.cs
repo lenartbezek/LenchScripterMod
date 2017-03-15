@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace Lench.AdvancedControls
@@ -26,13 +26,10 @@ namespace Lench.AdvancedControls
         {
             get
             {
-                var center = Vector3.zero;
-                foreach (var bb in Machine.Active().Blocks)
-                {
-                    var body = bb.GetComponent<Rigidbody>();
-                    if (body != null)
-                        center += body.worldCenterOfMass * body.mass;
-                }
+                var center = Machine.Active().Blocks
+                    .Select(bb => bb.GetComponent<Rigidbody>())
+                    .Where(body => body != null)
+                    .Aggregate(Vector3.zero, (current, body) => current + body.worldCenterOfMass * body.mass);
                 return center / Machine.Active().Mass;
             }
         }
@@ -100,21 +97,6 @@ namespace Lench.AdvancedControls
             return Time.time - _startTime;
         }
 
-        /// <summary>
-        ///     Toggles all functions to return angles in degrees.
-        /// </summary>
-        public static void UseDegrees()
-        {
-            Block.UseDegrees();
-        }
-
-        /// <summary>
-        ///     Toggles all functions to returns angles in radians.
-        /// </summary>
-        public static void UseRadians()
-        {
-            Block.UseRadians();
-        }
 
         /// <summary>
         ///     Uses raycast to find out where mouse cursor is pointing.
@@ -139,6 +121,32 @@ namespace Lench.AdvancedControls
             var ray = new Ray(origin, direction.normalized);
             if (Physics.Raycast(ray, out RaycastHit hit))
                 return hit.point;
+            throw new Exception("Your raycast does not intersect with a collider.");
+        }
+        /// <summary>
+        ///     Uses raycast to find out what collider the mouse cursor is pointing at.
+        ///     If not sucessfull, returns zero vector.
+        /// </summary>
+        /// <returns>Returns an x, y, z positional vector of the hit.</returns>
+        public static TrackedCollider GetRaycastCollider()
+        {
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+                return new TrackedCollider(hit.collider, hit.point);
+            throw new Exception("Your raycast does not intersect with a collider.");
+        }
+
+        /// <summary>
+        ///     Casts ray defined by origin and direction vectors.
+        /// </summary>
+        /// <param name="origin">Origin vector of the raycast.</param>
+        /// <param name="direction">Direction vector of the raycast.</param>
+        /// <returns>Returns TrackedCollider object of the hit.</returns>
+        public static TrackedCollider GetRaycastCollider(Vector3 origin, Vector3 direction)
+        {
+            var ray = new Ray(origin, direction.normalized);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+                return new TrackedCollider(hit.collider, hit.point);
             throw new Exception("Your raycast does not intersect with a collider.");
         }
     }
