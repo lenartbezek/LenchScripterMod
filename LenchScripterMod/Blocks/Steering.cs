@@ -126,7 +126,14 @@ namespace Lench.AdvancedControls.Blocks
             {
                 if (_speedSlider.Value != 0)
                 {
-                    _sw.GetComponent<Rigidbody>()?.WakeUp();
+                    try
+                    {
+                        if (_sw.Rigidbody.IsSleeping()) _sw.Rigidbody.WakeUp();
+                    }
+                    catch
+                    {
+                        // ignore TODO: Revisit
+                    }
 
                     var speed = _desiredInput * 100f * _sw.targetAngleSpeed * _speedSlider.Value;
 

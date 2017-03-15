@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Lench.AdvancedControls
@@ -130,7 +131,7 @@ namespace Lench.AdvancedControls
         /// <returns>Returns an x, y, z positional vector of the hit.</returns>
         public static TrackedCollider GetRaycastCollider()
         {
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            var ray = Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
                 return new TrackedCollider(hit.collider, hit.point);
             throw new Exception("Your raycast does not intersect with a collider.");

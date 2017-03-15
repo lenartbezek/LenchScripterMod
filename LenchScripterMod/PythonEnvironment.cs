@@ -67,8 +67,9 @@ namespace Lench.AdvancedControls
             Execute("clr.AddReference(\"UnityEngine\")");
             Execute("from UnityEngine import Vector2, Vector3, Vector4, Mathf, Time, Input, KeyCode, Color");
 
-            Execute("clr.AddReference(\"LenchScripterMod\")");
-            Execute("from Lench.Scripter import Functions as Besiege");
+            Execute("clr.AddReference(\"AdvancedControlsMod\")");
+            Execute("from Lench.AdvancedControls import Functions as Besiege");
+            Execute("from Lench.AdvancedControls import AdvancedControls");
 
             // Redirect standard output
             if (redirectOutput)
