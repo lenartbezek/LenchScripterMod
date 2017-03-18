@@ -2,7 +2,7 @@
 using UnityEngine;
 // ReSharper disable CompareOfFloatsByEqualityOperator
 
-namespace Lench.AdvancedControls.Blocks
+namespace Lench.Scripter.Blocks
 {
     /// <summary>
     ///     Handler for the Piston block.

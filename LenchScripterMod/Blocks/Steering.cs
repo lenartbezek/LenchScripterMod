@@ -3,7 +3,7 @@ using System.Reflection;
 using UnityEngine;
 // ReSharper disable CompareOfFloatsByEqualityOperator
 
-namespace Lench.AdvancedControls.Blocks
+namespace Lench.Scripter.Blocks
 {
     /// <summary>
     ///     Handler for steering blocks; Steering and Steering Hinge.

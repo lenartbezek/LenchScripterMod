@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 // ReSharper disable SpecifyStringComparison
 
-namespace Lench.AdvancedControls
+namespace Lench.Scripter
 {
     /// <summary>
     ///     Base class for all block handlers.

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Lench.AdvancedControls.Blocks
+namespace Lench.Scripter.Blocks
 {
     /// <summary>
     ///     Handler for the Rocket block.

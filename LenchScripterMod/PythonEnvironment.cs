@@ -8,7 +8,7 @@ using UnityEngine;
 // ReSharper disable UseMethodAny.2
 // ReSharper disable PossibleNullReferenceException
 
-namespace Lench.AdvancedControls
+namespace Lench.Scripter
 {
     /// <summary>
     ///     Class handling Python environment.
@@ -371,13 +371,11 @@ namespace Lench.AdvancedControls
             return _executeMethod.Invoke(Engine, new[] {expression, _scope});
         }
 
-
         /// <summary>
         ///     Used by the Python engine as standard output.
         ///     Not intended to be called.
         /// </summary>
         /// <param name="s">Message to be sent.</param>
-#pragma warning disable IDE1006 // Naming Styles
         // ReSharper disable once InconsistentNaming
         public void write(object s)
         {

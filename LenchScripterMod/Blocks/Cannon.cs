@@ -1,4 +1,4 @@
-﻿namespace Lench.AdvancedControls.Blocks
+﻿namespace Lench.Scripter.Blocks
 {
     /// <summary>
     ///     Handler for cannon blocks; Cannon and Shrapnel Cannon.

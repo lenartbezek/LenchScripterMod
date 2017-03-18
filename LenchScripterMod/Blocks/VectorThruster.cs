@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Lench.AdvancedControls.Blocks
+namespace Lench.Scripter.Blocks
 {
     /// <summary>
     ///     Block handler for Pixali's VectorThruster block (ID: 790)

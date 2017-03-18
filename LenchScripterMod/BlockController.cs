@@ -2,14 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Lench.AdvancedControls.Blocks;
+using Lench.Scripter.Blocks;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable PossibleNullReferenceException
 
-namespace Lench.AdvancedControls
+namespace Lench.Scripter
 {
     /// <summary>
     ///     Block handlers API of the scripting mod.
