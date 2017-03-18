@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Lench.Scripter.Blocks
+namespace Lench.AdvancedControls.Blocks
 {
     /// <summary>
     ///     Handler for the Spring and Rope blocks.
