@@ -62,6 +62,8 @@ namespace Lench.Scripter
             }
 
             // Set up environment
+            Execute("import sys");
+            Execute("sys.modules.clear()");
             Execute("import clr");
             Execute("clr.AddReference(\"System\")");
             Execute("clr.AddReference(\"UnityEngine\")");
@@ -73,7 +75,6 @@ namespace Lench.Scripter
             // Redirect standard output
             if (redirectOutput)
             {
-                Execute("import sys");
                 this["pythonenv"] = this;
                 Execute("sys.stdout = pythonenv");
                 Execute("del pythonenv");
