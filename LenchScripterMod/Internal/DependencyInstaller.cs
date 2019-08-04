@@ -22,7 +22,7 @@ namespace Lench.Scripter.Internal
         private static readonly long[] ReceivedSize = new long[FilesRequired];
         private static readonly long[] TotalSize = new long[FilesRequired];
 
-        private const string BaseUri = "http://lench4991.github.io/LenchScripterMod/files/";
+        private const string BaseUri = "http://lenartbezek.github.io/LenchScripterMod/files/";
 
         private static readonly string[] FileNames =
         {
