@@ -1,6 +1,6 @@
-[![GitHub license](https://img.shields.io/github/license/lench4991/LenchScripterMod.svg)](https://github.com/lench4991/LenchScripterMod/blob/master/LICENSE.md)
-[![GitHub release](https://img.shields.io/github/release/lench4991/LenchScripterMod.svg)](https://github.com/lench4991/LenchScripterMod/releases)
-[![GitHub total downloads](https://img.shields.io/github/downloads/lench4991/LenchScripterMod/total.svg)](https://github.com/lench4991/LenchScripterMod/releases)
+[![GitHub license](https://img.shields.io/github/license/lenartbezek/LenchScripterMod.svg)](https://github.com/lenartbezek/LenchScripterMod/blob/master/LICENSE.md)
+[![GitHub release](https://img.shields.io/github/release/lenartbezek/LenchScripterMod.svg)](https://github.com/lenartbezek/LenchScripterMod/releases)
+[![GitHub total downloads](https://img.shields.io/github/downloads/lenartbezek/LenchScripterMod/total.svg)](https://github.com/lenartbezek/LenchScripterMod/releases)
 
 # Lench Scripter Mod
 
@@ -42,4 +42,4 @@ def Update(): # called on every frame
   wheel.SetSliderValue("SPEED", speed * direction)
 ```
 
-For more information, see the [wiki pages](https://github.com/lench4991/LenchScripterMod/wiki).
+For more information, see the [wiki pages](https://github.com/lenartbezek/LenchScripterMod/wiki).
